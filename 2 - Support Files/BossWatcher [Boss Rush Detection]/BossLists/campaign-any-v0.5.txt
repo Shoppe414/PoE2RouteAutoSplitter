@@ -1,0 +1,47 @@
+# Campaign Required Bosses Only - v0.5 core-progression baseline
+# Derived required-boss target set for the current v0.5 campaign, not an official speedrun.com ruleset.
+# Optional/side bosses are omitted, including The Rotten Druid and Diamora, Song of Death.
+# Act 4 uses the v0.5 required-boss baseline used by this project.
+# Future campaign/league changes can require updating this profile.
+# Targets: 40
+
+01|the_bloated_miller|The Bloated Miller
+02|the_rust_king|The Rust King
+03|draven|Draven, the Eternal Praetor
+04|asinia|Asinia, the Praetor's Consort
+05|lachlann|Lachlann of Endless Lament
+06|the_executioner|The Executioner
+07|count_geonor|Count Geonor
+08|rathbreaker|Rathbreaker
+09|rudja_the_dread_engineer|Rudja, the Dread Engineer
+10|jamanra_risen_king|Jamanra, the Risen King
+11|azarian_forsaken_son|Azarian, the Forsaken Son
+12|iktab_the_deathlord|Iktab, the Deathlord
+13|ekbab_ancient_steed|Ekbab, Ancient Steed
+14|zalmarath_the_colossus|Zalmarath, the Colossus
+15|tor_gul_the_defiler|Tor Gul, the Defiler
+16|jamanra_abomination|Jamanra, the Abomination
+17|xyclucian_the_chimera|Xyclucian, the Chimera
+18|zicoatl_warden_core|Zicoatl, Warden of the Core
+19|queen_of_filth|The Queen of Filth
+20|ketzuli_high_priest_sun|Ketzuli, High Priest of the Sun
+21|viper_napuatzi|Viper Napuatzi
+22|doryani_royal_thaumaturge|Doryani, Royal Thaumaturge
+23|the_prisoner|The Prisoner
+24|krutog_lord_of_kin|Krutog, Lord of Kin
+25|scourge_of_the_sky|Scourge of the Skies
+26|torvian_hand_saviour|Torvian, Hand of the Saviour
+27|benedictus_first_herald|Benedictus, First Herald of Utopia
+28|tavakai_the_chieftain|Tavakai, the Chieftain
+29|isolde_white_shroud|Isolde of the White Shroud
+30|heldra_black_pyre|Heldra of the Black Pyre
+31|siora_blade_mists|Siora, Blade of the Mists
+32|thane_wulfric|Thane Wulfric
+33|lady_elswyth|Lady Elswyth
+34|elzarah_cobra_lord|Elzarah, the Cobra Lord
+35|vornas_fell_flame|Vornas, the Fell Flame
+36|azmadi_faridun_prince|Azmadi, the Faridun Prince
+37|rakkar_frozen_talon|Rakkar, the Frozen Talon
+38|stormgore_guardian|Stormgore, the Guardian
+39|zelina_blood_priestess|Zelina, Blood Priestess
+40|zolin_blood_priest|Zolin, Blood Priest

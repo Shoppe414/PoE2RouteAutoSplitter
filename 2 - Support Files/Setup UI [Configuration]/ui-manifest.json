@@ -1,0 +1,554 @@
+{
+  "Version": "1.4.0",
+  "AreaCatalog": "01 - Ordered Route [Exploration]/zones.csv",
+  "BossCatalog": "BossWatcher [Boss Rush Detection]/bosses.txt",
+  "BossSupportOnlyList": "BossWatcher [Boss Rush Detection]/BossLists/support-only.txt",
+  "CustomAslSource": "14 - Custom Route [Exploration + Boss Rush]/PathOfExile2_MixedObjectiveAutosplitter.asl",
+  "BossWatcherDirectory": "BossWatcher [Boss Rush Detection]",
+  "Presets": [
+    {
+      "DisplayName": "Campaign 100% - Ordered",
+      "Group": "[Exploration] Ordered Route",
+      "LssSource": "01 - Ordered Route [Exploration]/Path of Exile 2 - Ordered Campaign 100%.lss",
+      "AslSource": "01 - Ordered Route [Exploration]/PathOfExile2_RouteAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "01 - Ordered Route [Exploration]/routes/campaign-100-percent.txt",
+          "Target": "poe2_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Ordered campaign exploration route with one split per configured area."
+    },
+    {
+      "DisplayName": "Act 1 Practice - Ordered",
+      "Group": "[Exploration] Ordered Route",
+      "LssSource": "01 - Ordered Route [Exploration]/layouts/Path of Exile 2 - Act 1 Practice Ordered.lss",
+      "AslSource": "01 - Ordered Route [Exploration]/PathOfExile2_RouteAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "01 - Ordered Route [Exploration]/routes/act1-practice.txt",
+          "Target": "poe2_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Ordered Act 1 exploration practice route."
+    },
+    {
+      "DisplayName": "Act 2 Practice - Ordered",
+      "Group": "[Exploration] Ordered Route",
+      "LssSource": "01 - Ordered Route [Exploration]/layouts/Path of Exile 2 - Act 2 Practice Ordered.lss",
+      "AslSource": "01 - Ordered Route [Exploration]/PathOfExile2_RouteAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "01 - Ordered Route [Exploration]/routes/act2-practice.txt",
+          "Target": "poe2_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Ordered Act 2 exploration practice route."
+    },
+    {
+      "DisplayName": "Act 3 Practice - Ordered",
+      "Group": "[Exploration] Ordered Route",
+      "LssSource": "01 - Ordered Route [Exploration]/layouts/Path of Exile 2 - Act 3 Practice Ordered.lss",
+      "AslSource": "01 - Ordered Route [Exploration]/PathOfExile2_RouteAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "01 - Ordered Route [Exploration]/routes/act3-practice.txt",
+          "Target": "poe2_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Ordered Act 3 exploration practice route."
+    },
+    {
+      "DisplayName": "Act 4 Practice - Ordered",
+      "Group": "[Exploration] Ordered Route",
+      "LssSource": "01 - Ordered Route [Exploration]/layouts/Path of Exile 2 - Act 4 Practice Ordered.lss",
+      "AslSource": "01 - Ordered Route [Exploration]/PathOfExile2_RouteAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "01 - Ordered Route [Exploration]/routes/act4-practice.txt",
+          "Target": "poe2_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Ordered Act 4 exploration practice route."
+    },
+    {
+      "DisplayName": "Campaign Any% - Ordered",
+      "Group": "[Exploration] Ordered Route",
+      "LssSource": "01 - Ordered Route [Exploration]/layouts/Path of Exile 2 - Campaign Any% Ordered.lss",
+      "AslSource": "01 - Ordered Route [Exploration]/PathOfExile2_RouteAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "01 - Ordered Route [Exploration]/routes/campaign-any-percent.txt",
+          "Target": "poe2_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Ordered campaign Any% exploration baseline."
+    },
+    {
+      "DisplayName": "Flexible Campaign",
+      "Group": "[Exploration] Flexible Route",
+      "LssSource": "02 - Flexible Route [Exploration]/Path of Exile 2 - Flexible Campaign.lss",
+      "AslSource": "02 - Flexible Route [Exploration]/PathOfExile2_FlexibleAreaAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "02 - Flexible Route [Exploration]/poe2_area_groups.txt",
+          "Target": "poe2_area_groups.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Flexible exploration mode that resolves supported areas without requiring a strict route order."
+    },
+    {
+      "DisplayName": "Level 100 - Every 10 Levels",
+      "Group": "Level Race",
+      "LssSource": "03 - Level Race/Path of Exile 2 - Level 100 - Every 10 Levels.lss",
+      "AslSource": "03 - Level Race/PathOfExile2_LevelRaceAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "03 - Level Race/poe2_level_race.txt",
+          "Target": "poe2_level_race.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Level-race splits at the configured level milestones."
+    },
+    {
+      "DisplayName": "Act 1 All Areas Flexible",
+      "Group": "[Exploration] Area Checklist / Flexible Rush",
+      "LssSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Act 1 All Areas Flexible.lss",
+      "AslSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/PathOfExile2_AreaChecklistAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "04 - Area Checklist and Flexible Act Rush [Exploration]/presets/act1-all-areas.txt",
+          "Target": "poe2_area_checklist.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Unordered exploration checklist; each configured area is completed once in any order."
+    },
+    {
+      "DisplayName": "Act 1 Any% Flexible",
+      "Group": "[Exploration] Area Checklist / Flexible Rush",
+      "LssSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Act 1 Any% Flexible.lss",
+      "AslSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/PathOfExile2_AreaChecklistAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "04 - Area Checklist and Flexible Act Rush [Exploration]/presets/act1-any-percent.txt",
+          "Target": "poe2_area_checklist.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Unordered exploration checklist; each configured area is completed once in any order."
+    },
+    {
+      "DisplayName": "Act 2 All Areas Flexible",
+      "Group": "[Exploration] Area Checklist / Flexible Rush",
+      "LssSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Act 2 All Areas Flexible.lss",
+      "AslSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/PathOfExile2_AreaChecklistAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "04 - Area Checklist and Flexible Act Rush [Exploration]/presets/act2-all-areas.txt",
+          "Target": "poe2_area_checklist.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Unordered exploration checklist; each configured area is completed once in any order."
+    },
+    {
+      "DisplayName": "Act 2 Any% Flexible",
+      "Group": "[Exploration] Area Checklist / Flexible Rush",
+      "LssSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Act 2 Any% Flexible.lss",
+      "AslSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/PathOfExile2_AreaChecklistAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "04 - Area Checklist and Flexible Act Rush [Exploration]/presets/act2-any-percent.txt",
+          "Target": "poe2_area_checklist.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Unordered exploration checklist; each configured area is completed once in any order."
+    },
+    {
+      "DisplayName": "Act 3 All Areas Flexible",
+      "Group": "[Exploration] Area Checklist / Flexible Rush",
+      "LssSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Act 3 All Areas Flexible.lss",
+      "AslSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/PathOfExile2_AreaChecklistAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "04 - Area Checklist and Flexible Act Rush [Exploration]/presets/act3-all-areas.txt",
+          "Target": "poe2_area_checklist.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Unordered exploration checklist; each configured area is completed once in any order."
+    },
+    {
+      "DisplayName": "Act 3 Any% Flexible",
+      "Group": "[Exploration] Area Checklist / Flexible Rush",
+      "LssSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Act 3 Any% Flexible.lss",
+      "AslSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/PathOfExile2_AreaChecklistAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "04 - Area Checklist and Flexible Act Rush [Exploration]/presets/act3-any-percent.txt",
+          "Target": "poe2_area_checklist.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Unordered exploration checklist; each configured area is completed once in any order."
+    },
+    {
+      "DisplayName": "Act 4 All Areas Flexible",
+      "Group": "[Exploration] Area Checklist / Flexible Rush",
+      "LssSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Act 4 All Areas Flexible.lss",
+      "AslSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/PathOfExile2_AreaChecklistAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "04 - Area Checklist and Flexible Act Rush [Exploration]/presets/act4-all-areas.txt",
+          "Target": "poe2_area_checklist.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Unordered exploration checklist; each configured area is completed once in any order."
+    },
+    {
+      "DisplayName": "Act 4 Any% Flexible",
+      "Group": "[Exploration] Area Checklist / Flexible Rush",
+      "LssSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Act 4 Any% Flexible.lss",
+      "AslSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/PathOfExile2_AreaChecklistAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "04 - Area Checklist and Flexible Act Rush [Exploration]/presets/act4-any-percent.txt",
+          "Target": "poe2_area_checklist.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Unordered exploration checklist; each configured area is completed once in any order."
+    },
+    {
+      "DisplayName": "All Interludes Flexible",
+      "Group": "[Exploration] Area Checklist / Flexible Rush",
+      "LssSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - All Interludes Flexible.lss",
+      "AslSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/PathOfExile2_AreaChecklistAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "04 - Area Checklist and Flexible Act Rush [Exploration]/presets/all-interludes.txt",
+          "Target": "poe2_area_checklist.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Unordered exploration checklist; each configured area is completed once in any order."
+    },
+    {
+      "DisplayName": "Campaign All Areas Explorer",
+      "Group": "[Exploration] Area Checklist / Flexible Rush",
+      "LssSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Campaign All Areas Explorer.lss",
+      "AslSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/PathOfExile2_AreaChecklistAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "04 - Area Checklist and Flexible Act Rush [Exploration]/presets/campaign-all-areas.txt",
+          "Target": "poe2_area_checklist.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Unordered exploration checklist; each configured area is completed once in any order."
+    },
+    {
+      "DisplayName": "Campaign Any% Flexible",
+      "Group": "[Exploration] Area Checklist / Flexible Rush",
+      "LssSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Campaign Any% Flexible.lss",
+      "AslSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/PathOfExile2_AreaChecklistAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "04 - Area Checklist and Flexible Act Rush [Exploration]/presets/campaign-any-percent.txt",
+          "Target": "poe2_area_checklist.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Unordered exploration checklist; each configured area is completed once in any order."
+    },
+    {
+      "DisplayName": "Interlude 1 All Areas Flexible",
+      "Group": "[Exploration] Area Checklist / Flexible Rush",
+      "LssSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Interlude 1 All Areas Flexible.lss",
+      "AslSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/PathOfExile2_AreaChecklistAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "04 - Area Checklist and Flexible Act Rush [Exploration]/presets/interlude-1-all-areas.txt",
+          "Target": "poe2_area_checklist.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Unordered exploration checklist; each configured area is completed once in any order."
+    },
+    {
+      "DisplayName": "Interlude 2 All Areas Flexible",
+      "Group": "[Exploration] Area Checklist / Flexible Rush",
+      "LssSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Interlude 2 All Areas Flexible.lss",
+      "AslSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/PathOfExile2_AreaChecklistAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "04 - Area Checklist and Flexible Act Rush [Exploration]/presets/interlude-2-all-areas.txt",
+          "Target": "poe2_area_checklist.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Unordered exploration checklist; each configured area is completed once in any order."
+    },
+    {
+      "DisplayName": "Interlude 3 All Areas Flexible",
+      "Group": "[Exploration] Area Checklist / Flexible Rush",
+      "LssSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Interlude 3 All Areas Flexible.lss",
+      "AslSource": "04 - Area Checklist and Flexible Act Rush [Exploration]/PathOfExile2_AreaChecklistAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "04 - Area Checklist and Flexible Act Rush [Exploration]/presets/interlude-3-all-areas.txt",
+          "Target": "poe2_area_checklist.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Unordered exploration checklist; each configured area is completed once in any order."
+    },
+    {
+      "DisplayName": "Act 1 All Areas Ordered Segment",
+      "Group": "[Exploration] Ordered Segment Practice",
+      "LssSource": "05 - Ordered Segment and Act Practice [Exploration]/layouts/Path of Exile 2 - Act 1 All Areas Ordered Segment.lss",
+      "AslSource": "05 - Ordered Segment and Act Practice [Exploration]/PathOfExile2_OrderedSegmentAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "05 - Ordered Segment and Act Practice [Exploration]/presets/act1-all-areas.txt",
+          "Target": "poe2_segment_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Ordered segment/act practice route for the selected campaign section."
+    },
+    {
+      "DisplayName": "Act 1 Any% Ordered Segment",
+      "Group": "[Exploration] Ordered Segment Practice",
+      "LssSource": "05 - Ordered Segment and Act Practice [Exploration]/layouts/Path of Exile 2 - Act 1 Any% Ordered Segment.lss",
+      "AslSource": "05 - Ordered Segment and Act Practice [Exploration]/PathOfExile2_OrderedSegmentAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "05 - Ordered Segment and Act Practice [Exploration]/presets/act1-any-percent.txt",
+          "Target": "poe2_segment_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Ordered segment/act practice route for the selected campaign section."
+    },
+    {
+      "DisplayName": "Act 2 All Areas Ordered Segment",
+      "Group": "[Exploration] Ordered Segment Practice",
+      "LssSource": "05 - Ordered Segment and Act Practice [Exploration]/layouts/Path of Exile 2 - Act 2 All Areas Ordered Segment.lss",
+      "AslSource": "05 - Ordered Segment and Act Practice [Exploration]/PathOfExile2_OrderedSegmentAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "05 - Ordered Segment and Act Practice [Exploration]/presets/act2-all-areas.txt",
+          "Target": "poe2_segment_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Ordered segment/act practice route for the selected campaign section."
+    },
+    {
+      "DisplayName": "Act 2 Any% Ordered Segment",
+      "Group": "[Exploration] Ordered Segment Practice",
+      "LssSource": "05 - Ordered Segment and Act Practice [Exploration]/layouts/Path of Exile 2 - Act 2 Any% Ordered Segment.lss",
+      "AslSource": "05 - Ordered Segment and Act Practice [Exploration]/PathOfExile2_OrderedSegmentAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "05 - Ordered Segment and Act Practice [Exploration]/presets/act2-any-percent.txt",
+          "Target": "poe2_segment_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Ordered segment/act practice route for the selected campaign section."
+    },
+    {
+      "DisplayName": "Act 3 All Areas Ordered Segment",
+      "Group": "[Exploration] Ordered Segment Practice",
+      "LssSource": "05 - Ordered Segment and Act Practice [Exploration]/layouts/Path of Exile 2 - Act 3 All Areas Ordered Segment.lss",
+      "AslSource": "05 - Ordered Segment and Act Practice [Exploration]/PathOfExile2_OrderedSegmentAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "05 - Ordered Segment and Act Practice [Exploration]/presets/act3-all-areas.txt",
+          "Target": "poe2_segment_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Ordered segment/act practice route for the selected campaign section."
+    },
+    {
+      "DisplayName": "Act 3 Any% Ordered Segment",
+      "Group": "[Exploration] Ordered Segment Practice",
+      "LssSource": "05 - Ordered Segment and Act Practice [Exploration]/layouts/Path of Exile 2 - Act 3 Any% Ordered Segment.lss",
+      "AslSource": "05 - Ordered Segment and Act Practice [Exploration]/PathOfExile2_OrderedSegmentAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "05 - Ordered Segment and Act Practice [Exploration]/presets/act3-any-percent.txt",
+          "Target": "poe2_segment_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Ordered segment/act practice route for the selected campaign section."
+    },
+    {
+      "DisplayName": "Act 4 All Areas Ordered Segment",
+      "Group": "[Exploration] Ordered Segment Practice",
+      "LssSource": "05 - Ordered Segment and Act Practice [Exploration]/layouts/Path of Exile 2 - Act 4 All Areas Ordered Segment.lss",
+      "AslSource": "05 - Ordered Segment and Act Practice [Exploration]/PathOfExile2_OrderedSegmentAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "05 - Ordered Segment and Act Practice [Exploration]/presets/act4-all-areas.txt",
+          "Target": "poe2_segment_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Ordered segment/act practice route for the selected campaign section."
+    },
+    {
+      "DisplayName": "Act 4 Any% Ordered Segment",
+      "Group": "[Exploration] Ordered Segment Practice",
+      "LssSource": "05 - Ordered Segment and Act Practice [Exploration]/layouts/Path of Exile 2 - Act 4 Any% Ordered Segment.lss",
+      "AslSource": "05 - Ordered Segment and Act Practice [Exploration]/PathOfExile2_OrderedSegmentAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "05 - Ordered Segment and Act Practice [Exploration]/presets/act4-any-percent.txt",
+          "Target": "poe2_segment_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Ordered segment/act practice route for the selected campaign section."
+    },
+    {
+      "DisplayName": "Interlude 1 Ordered Segment",
+      "Group": "[Exploration] Ordered Segment Practice",
+      "LssSource": "05 - Ordered Segment and Act Practice [Exploration]/layouts/Path of Exile 2 - Interlude 1 Ordered Segment.lss",
+      "AslSource": "05 - Ordered Segment and Act Practice [Exploration]/PathOfExile2_OrderedSegmentAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "05 - Ordered Segment and Act Practice [Exploration]/presets/interlude-1.txt",
+          "Target": "poe2_segment_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Ordered segment/act practice route for the selected campaign section."
+    },
+    {
+      "DisplayName": "Interlude 2 Ordered Segment",
+      "Group": "[Exploration] Ordered Segment Practice",
+      "LssSource": "05 - Ordered Segment and Act Practice [Exploration]/layouts/Path of Exile 2 - Interlude 2 Ordered Segment.lss",
+      "AslSource": "05 - Ordered Segment and Act Practice [Exploration]/PathOfExile2_OrderedSegmentAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "05 - Ordered Segment and Act Practice [Exploration]/presets/interlude-2.txt",
+          "Target": "poe2_segment_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Ordered segment/act practice route for the selected campaign section."
+    },
+    {
+      "DisplayName": "Interlude 3 Ordered Segment",
+      "Group": "[Exploration] Ordered Segment Practice",
+      "LssSource": "05 - Ordered Segment and Act Practice [Exploration]/layouts/Path of Exile 2 - Interlude 3 Ordered Segment.lss",
+      "AslSource": "05 - Ordered Segment and Act Practice [Exploration]/PathOfExile2_OrderedSegmentAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "05 - Ordered Segment and Act Practice [Exploration]/presets/interlude-3.txt",
+          "Target": "poe2_segment_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": false,
+      "Description": "Ordered segment/act practice route for the selected campaign section."
+    },
+    {
+      "DisplayName": "Campaign 100% - Dynamic",
+      "Group": "[Boss Rush]",
+      "LssSource": "06 - Campaign 100 - Dynamic [Boss Rush]/Path of Exile 2 - BossRush - Campaign 100% - Dynamic.lss",
+      "AslSource": "06 - Campaign 100 - Dynamic [Boss Rush]/PathOfExile2_BossRush_campaign100-dynamic_v0.2.0.asl",
+      "RuntimeFiles": [],
+      "RequiresBossWatcher": true,
+      "Description": "Boss Rush mode. Requires BossWatcher; the setup UI can launch it with the correct target event file."
+    },
+    {
+      "DisplayName": "Campaign 100% - Predefined",
+      "Group": "[Boss Rush]",
+      "LssSource": "07 - Campaign 100 - Predefined [Boss Rush]/Path of Exile 2 - BossRush - Campaign 100% - Predefined.lss",
+      "AslSource": "07 - Campaign 100 - Predefined [Boss Rush]/PathOfExile2_BossRush_campaign100-predefined_v0.2.0.asl",
+      "RuntimeFiles": [],
+      "RequiresBossWatcher": true,
+      "Description": "Boss Rush mode. Requires BossWatcher; the setup UI can launch it with the correct target event file."
+    },
+    {
+      "DisplayName": "Campaign Any% v0.5 - Dynamic",
+      "Group": "[Boss Rush]",
+      "LssSource": "08 - Campaign Any v0.5 - Dynamic [Boss Rush]/Path of Exile 2 - BossRush - Campaign Any% v0.5 - Dynamic.lss",
+      "AslSource": "08 - Campaign Any v0.5 - Dynamic [Boss Rush]/PathOfExile2_BossRush_campaign-any-v0.5-dynamic_v0.2.0.asl",
+      "RuntimeFiles": [],
+      "RequiresBossWatcher": true,
+      "Description": "Boss Rush mode. Requires BossWatcher; the setup UI can launch it with the correct target event file."
+    },
+    {
+      "DisplayName": "Campaign Required Bosses Only v0.5 - Predefined",
+      "Group": "[Boss Rush]",
+      "LssSource": "09 - Campaign Required Bosses Only v0.5 - Predefined [Boss Rush]/Path of Exile 2 - BossRush - Campaign Required Bosses Only v0.5 - Predefined.lss",
+      "AslSource": "09 - Campaign Required Bosses Only v0.5 - Predefined [Boss Rush]/PathOfExile2_BossRush_campaign-required-v0.5-predefined_v0.2.0.asl",
+      "RuntimeFiles": [],
+      "RequiresBossWatcher": true,
+      "Description": "Boss Rush mode. Requires BossWatcher; the setup UI can launch it with the correct target event file."
+    },
+    {
+      "DisplayName": "Pinnacle v0.5 - Dynamic",
+      "Group": "[Boss Rush]",
+      "LssSource": "10 - Pinnacle v0.5 - Dynamic [Boss Rush]/Path of Exile 2 - BossRush - Pinnacle v0.5 - Dynamic.lss",
+      "AslSource": "10 - Pinnacle v0.5 - Dynamic [Boss Rush]/PathOfExile2_BossRush_pinnacle-v0.5-dynamic_v0.2.0.asl",
+      "RuntimeFiles": [],
+      "RequiresBossWatcher": true,
+      "Description": "Boss Rush mode. Requires BossWatcher; the setup UI can launch it with the correct target event file."
+    },
+    {
+      "DisplayName": "Pinnacle v0.5 - Predefined",
+      "Group": "[Boss Rush]",
+      "LssSource": "11 - Pinnacle v0.5 - Predefined [Boss Rush]/Path of Exile 2 - BossRush - Pinnacle v0.5 - Predefined.lss",
+      "AslSource": "11 - Pinnacle v0.5 - Predefined [Boss Rush]/PathOfExile2_BossRush_pinnacle-v0.5-predefined_v0.2.0.asl",
+      "RuntimeFiles": [],
+      "RequiresBossWatcher": true,
+      "Description": "Boss Rush mode. Requires BossWatcher; the setup UI can launch it with the correct target event file."
+    },
+    {
+      "DisplayName": "Campaign 100% - Dynamic",
+      "Group": "[Exploration + Boss Rush]",
+      "LssSource": "12 - Campaign 100 - Dynamic [Exploration + Boss Rush]/Path of Exile 2 - Mixed - Campaign 100% - Exploration + Boss Rush.lss",
+      "AslSource": "12 - Campaign 100 - Dynamic [Exploration + Boss Rush]/PathOfExile2_MixedObjectiveAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "12 - Campaign 100 - Dynamic [Exploration + Boss Rush]/poe2_mixed_route.txt",
+          "Target": "poe2_mixed_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": true,
+      "Description": "Combined exploration and boss objectives. Areas and bosses resolve dynamically in the same run."
+    },
+    {
+      "DisplayName": "Campaign Any% v0.5 - Dynamic",
+      "Group": "[Exploration + Boss Rush]",
+      "LssSource": "13 - Campaign Any v0.5 - Dynamic [Exploration + Boss Rush]/Path of Exile 2 - Mixed - Campaign Any% v0.5 - Exploration + Boss Rush.lss",
+      "AslSource": "13 - Campaign Any v0.5 - Dynamic [Exploration + Boss Rush]/PathOfExile2_MixedObjectiveAutosplitter.asl",
+      "RuntimeFiles": [
+        {
+          "Source": "13 - Campaign Any v0.5 - Dynamic [Exploration + Boss Rush]/poe2_mixed_route.txt",
+          "Target": "poe2_mixed_route.txt"
+        }
+      ],
+      "RequiresBossWatcher": true,
+      "Description": "Combined exploration and boss objectives. Areas and bosses resolve dynamically in the same run."
+    }
+  ]
+}

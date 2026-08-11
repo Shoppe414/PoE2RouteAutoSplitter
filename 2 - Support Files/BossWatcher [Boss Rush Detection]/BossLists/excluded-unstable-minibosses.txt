@@ -1,0 +1,17 @@
+# Excluded unstable mini-bosses
+# These named rare minibosses are deliberately absent from bosses.txt and the standard split-mode whitelists.
+# Rationale: BossRush completion must be based on stable boss-UI disappearance. Named rares/mini-bosses do not consistently provide that UI contract.
+
+areagne_forgotten_witch|Areagne, Forgotten Witch|Named rare miniboss; no stable full boss-UI tracking guarantee.
+vargir_feral_mutt|Vargir the Feral Mutt|Named rare miniboss; no stable full boss-UI tracking guarantee.
+lim_the_impaler|L'im the Impaler|Named rare miniboss; no stable full boss-UI tracking guarantee.
+ninth_treasure_keth|The Ninth Treasure of Keth|Named rare miniboss; no stable full boss-UI tracking guarantee.
+mugin_frost_bringer|Mugin, Frost Bringer|Named rare miniboss; no stable full boss-UI tracking guarantee.
+hunin_storm_caller|Hunin, Storm Caller|Named rare miniboss; no stable full boss-UI tracking guarantee.
+ranbu_pale_shaman|Ranbu the Pale Shaman|Named rare miniboss; no stable full boss-UI tracking guarantee.
+garkam_ranbus_maul|Garkam, Ranbu's Maul|Named rare miniboss; no stable full boss-UI tracking guarantee.
+brood_queen|The Brood Queen|Named rare miniboss; no stable full boss-UI tracking guarantee.
+noxious_behemoth|The Noxious Behemoth|Named rare miniboss; no stable full boss-UI tracking guarantee.
+narg_vile_word|Narg of the Vile Word|Named rare miniboss; no stable full boss-UI tracking guarantee.
+clawcrunch|Clawcrunch|Named rare miniboss; no stable full boss-UI tracking guarantee.
+marrowclack_monstrous|Marrowclack the Monstrous|Named rare miniboss; no stable full boss-UI tracking guarantee.

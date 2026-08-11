@@ -1,0 +1,29 @@
+PoE2 Route AutoSplitter v1.4.0 - Validation
+
+Package-structure validation:
+- Release root contains exactly two directories: `1 - User Setup` and `2 - Support Files`.
+- No root-level files are included.
+- `1 - User Setup` contains the dedicated `LiveSplit Target` directory.
+- `2 - Support Files` contains all source, mode, BossWatcher, build, documentation, and support files.
+- No `.lsl` file is included anywhere in the release.
+
+Setup UI validation:
+- Manifest version is v1.4.0 and retains all 41 premade selections.
+- The default/fixed target is `1 - User Setup\LiveSplit Target`.
+- Target path is read-only and the Browse target control is removed.
+- Starter-layout button and starter-layout code are removed.
+- Setup output remains `.lss` + `.asl` + runtime files; no `.lsl` generation exists.
+- `Build.ps1` publishes with `PublishSingleFile=true` and copies `PoE2RouteSetup.exe` to `1 - User Setup`.
+- Setup UI startup exception logging remains enabled.
+
+Regression expectations:
+- All 14 autosplitter mode directories retain their v1.3.3 contents.
+- BossWatcher source/detection behavior is unchanged from v1.3.3.
+- Campaign 100% remains 67 bosses.
+- Required Bosses Only v0.5 remains 40 bosses.
+- Mixed Campaign 100% remains 165 objectives.
+- Mixed Campaign Any% v0.5 remains 117 objectives.
+
+Static/structural validation result: 185/185 checks passed.
+
+This environment does not compile or execute the Windows/.NET applications. Windows build/runtime testing is still required after extraction.

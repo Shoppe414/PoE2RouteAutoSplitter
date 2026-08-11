@@ -1,0 +1,101 @@
+# Path of Exile 2 BossWatcher v0.3.0 / BossRush boss definition catalog
+# Format: id|display name|alias1;alias2;...
+# 78 supported OCR identities: 67 Campaign 100% targets + 10 Pinnacle targets + 1 support-only identity.
+# Named rare minibosses are intentionally excluded; see BossLists/excluded-unstable-minibosses.txt.
+# Keep aliases conservative: every alias expands the fuzzy-OCR candidate set.
+
+# Act 1
+the_bloated_miller|The Bloated Miller|Bloated Miller
+beira_of_the_rotten_pack|Beira of the Rotten Pack|
+the_devourer|The Devourer|
+the_brambleghast|The Brambleghast|
+the_rust_king|The Rust King|
+the_rotten_druid|The Rotten Druid|
+asinia|Asinia, the Praetor's Consort|
+lachlann|Lachlann of Endless Lament|
+draven|Draven, the Eternal Praetor|
+crowbell|The Crowbell|The Crow Bell;Crow Bell
+king_in_the_mists|The King in the Mists|
+the_executioner|The Executioner|
+candlemass|Candlemass, the Living Rite|
+count_geonor|Count Geonor|Geonor, the Putrid Wolf;The Putrid Wolf
+
+# Act 2
+rathbreaker|Rathbreaker|
+rudja_the_dread_engineer|Rudja, the Dread Engineer|
+balbala|Balbala, the Traitor|
+jamanra_risen_king|Jamanra, the Risen King|
+kabala_constrictor_queen|Kabala, Constrictor Queen|
+azarian_forsaken_son|Azarian, the Forsaken Son|
+iktab_the_deathlord|Iktab, the Deathlord|
+ekbab_ancient_steed|Ekbab, Ancient Steed|
+zalmarath_the_colossus|Zalmarath, the Colossus|
+tor_gul_the_defiler|Tor Gul, the Defiler|
+jamanra_abomination|Jamanra, the Abomination|
+
+# Act 3
+rootdredge|Rootdredge|
+mighty_silverfist|Mighty Silverfist|
+xyclucian_the_chimera|Xyclucian, the Chimera|Xyclucian, the Chimeral
+blackjaw_the_remnant|Blackjaw, the Remnant|
+zicoatl_warden_core|Zicoatl, Warden of the Core|
+ignagduk|Ignagduk, the Bog Witch|
+mektul_forgemaster|Mektul, the Forgemaster|
+queen_of_filth|The Queen of Filth|
+ketzuli_high_priest_sun|Ketzuli, High Priest of the Sun|
+viper_napuatzi|Viper Napuatzi|
+doryani_royal_thaumaturge|Doryani, Royal Thaumaturge|Doryani's Triumph
+
+# Act 4
+captain_hartlin|Captain Hartlin|
+omniphobia_fear_manifest|Omniphobia, Fear Manifest|
+great_white_one|Great White One|The Great White One
+diamora_song_of_death|Diamora, Song of Death|
+the_prisoner|The Prisoner|
+the_blind_beast|The Blind Beast|
+krutog_lord_of_kin|Krutog, Lord of Kin|
+scourge_of_the_sky|Scourge of the Skies|Scourge of the Sky
+yama_the_white|Yama The White|
+torvian_hand_saviour|Torvian, Hand of the Saviour|
+benedictus_first_herald|Benedictus, First Herald of Utopia|
+tavakai_the_chieftain|Tavakai, the Chieftain|Tavakai, the Fallen;Tavakai, the Consumed
+
+# Interlude 1
+isolde_white_shroud|Isolde of the White Shroud|
+heldra_black_pyre|Heldra of the Black Pyre|
+siora_blade_mists|Siora, Blade of the Mists|
+sigbert_sullied_oath|Sigbert of the Sullied Oath|
+godwin_shattered_creed|Godwin of the Shattered Creed|
+oswin_dread_warden|Oswin, the Dread Warden|
+thane_wulfric|Thane Wulfric|
+lady_elswyth|Lady Elswyth|
+
+# Interlude 2
+akthi_final_sting|Akthi, the Final Sting|
+anundr_sandworm|Anundr, the Sandworm|
+elzarah_cobra_lord|Elzarah, the Cobra Lord|
+vornas_fell_flame|Vornas, the Fell Flame|
+azmadi_faridun_prince|Azmadi, the Faridun Prince|
+
+# Interlude 3
+lythara_wayward_spear|Lythara, the Wayward Spear|
+abominable_yeti|The Abominable Yeti|
+rakkar_frozen_talon|Rakkar, the Frozen Talon|
+stormgore_guardian|Stormgore, the Guardian|
+zelina_blood_priestess|Zelina, Blood Priestess|
+zolin_blood_priest|Zolin, Blood Priest|
+
+# Pinnacle v0.5
+atziri_red_queen|Atziri, the Red Queen|
+the_aberration|The Aberration|
+arbiter_of_ash|The Arbiter of Ash|
+arbiter_of_divinity|The Arbiter of Divinity|
+the_bodach|The Bodach|
+raven_trickster|The Raven Trickster|
+the_trialmaster|The Trialmaster|
+vessel_of_kulemak|Vessel of Kulemak|
+xesht_we_that_are_one|Xesht, We That Are One|
+zarokh_temporal|Zarokh, the Temporal|
+
+# Support-only
+plagueling|The Plagueling|

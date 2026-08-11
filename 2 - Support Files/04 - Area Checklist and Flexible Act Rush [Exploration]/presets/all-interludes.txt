@@ -1,0 +1,26 @@
+# All Interludes Flexible
+# Objectives are unordered.
+@start=manual
+
+P1_Town                                # The Refuge
+P1_1                                   # Scorched Farmlands
+P1_2                                   # Stones of Serle
+P1_3                                   # The Blackwood
+P1_4                                   # Holten
+P1_5                                   # Wolvenhold
+P1_6                                   # Holten Estate
+P2_Town                                # The Khari Bazaar
+P2_1                                   # The Khari Crossing
+P2_2                                   # Pools of Khatal
+P2_3                                   # Sel Khari Sanctuary
+P2_5                                   # The Galai Gates
+P2_6                                   # Qimah
+P2_7                                   # Qimah Reservoir
+P3_Town                                # The Glade
+P3_1                                   # Ashen Forest
+P3_2                                   # Kriar Village
+P3_3                                   # Glacial Tarn
+P3_4                                   # Howling Caves
+P3_5                                   # Kriar Peaks
+P3_6                                   # Etched Ravine
+P3_7                                   # The Cuachic Vault

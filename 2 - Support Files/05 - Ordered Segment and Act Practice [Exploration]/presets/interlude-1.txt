@@ -1,0 +1,9 @@
+# Interlude 1 Ordered Segment
+@start=P1_Town
+
+P1_1                                   # Scorched Farmlands
+P1_2                                   # Stones of Serle
+P1_3                                   # The Blackwood
+P1_4                                   # Holten
+P1_5                                   # Wolvenhold
+P1_6                                   # Holten Estate

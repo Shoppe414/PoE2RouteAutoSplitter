@@ -1,0 +1,11 @@
+# Interlude 3 All Areas Flexible
+# Objectives are unordered.
+@start=P3_Town
+
+P3_1                                   # Ashen Forest
+P3_2                                   # Kriar Village
+P3_3                                   # Glacial Tarn
+P3_4                                   # Howling Caves
+P3_5                                   # Kriar Peaks
+P3_6                                   # Etched Ravine
+P3_7                                   # The Cuachic Vault

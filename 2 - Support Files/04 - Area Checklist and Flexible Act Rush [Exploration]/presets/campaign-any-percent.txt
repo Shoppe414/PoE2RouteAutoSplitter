@@ -1,0 +1,81 @@
+# Campaign Any% Flexible
+# Objectives are unordered.
+@start=G1_1
+
+G1_town                                # Clearfell Encampment
+G1_2                                   # Clearfell
+G1_4                                   # The Grelwood
+G1_5                                   # The Red Vale
+G1_6                                   # The Grim Tangle
+G1_7                                   # Cemetery of the Eternals
+G1_9                                   # Tomb of the Consort
+G1_8                                   # Mausoleum of the Praetor
+G1_11                                  # Hunting Grounds
+G1_13_1                                # Ogham Farmlands
+G1_13_2                                # Ogham Village
+G1_14                                  # The Manor Ramparts
+G1_15                                  # Ogham Manor
+G2_1                                   # Vastiri Outskirts
+G2_town                                # The Ardura Caravan
+G2_3a                                  # The Halani Gates (blocked)
+G2_10_1                                # Mawdun Quarry
+G2_10_2                                # Mawdun Mine
+G2_2                                   # Traitor's Passage
+G2_3                                   # The Halani Gates
+G2_4_1                                 # Keth
+G2_4_2                                 # The Lost City
+G2_4_3                                 # Buried Shrines
+G2_5_1                                 # Mastodon Badlands
+G2_5_2                                 # The Bone Pits
+G2_6                                   # Valley of the Titans
+G2_7                                   # The Titan Grotto
+G2_8                                   # Deshar
+G2_9_1                                 # Path of Mourning
+G2_9_2                                 # The Spires of Deshar
+G2_12                                  # Dreadnought
+G3_1                                   # Sandswept Marsh
+G3_town                                # Ziggurat Encampment
+G3_3                                   # Jungle Ruins
+G3_2_1                                 # Infested Barrens
+G3_5                                   # Chimeral Wetlands
+G3_6_1                                 # Jiquani's Machinarium
+G3_6_2                                 # Jiquani's Sanctum
+G3_2_2                                 # The Matlan Waterways
+G3_8                                   # The Drowned City
+G3_11                                  # Apex of Filth
+G3_12                                  # Temple of Kopec
+G3_14                                  # Utzaal
+G3_16                                  # Aggorat
+G3_17                                  # The Black Chambers
+G4_town                                # Kingsmarch
+G4_1_1                                 # Isle of Kin
+G4_1_2                                 # Volcanic Warrens
+G4_5_1                                 # Abandoned Prison
+G4_5_2                                 # Solitary Confinement
+G4_7                                   # Shrike Island
+G4_8b                                  # Arastas
+G4_10                                  # The Excavation
+G4_11_1b                               # Ngakanu
+G4_11_2                                # Heart of the Tribe
+P1_Town                                # The Refuge
+P1_1                                   # Scorched Farmlands
+P1_2                                   # Stones of Serle
+P1_3                                   # The Blackwood
+P1_4                                   # Holten
+P1_5                                   # Wolvenhold
+P1_6                                   # Holten Estate
+P2_Town                                # The Khari Bazaar
+P2_1                                   # The Khari Crossing
+P2_2                                   # Pools of Khatal
+P2_3                                   # Sel Khari Sanctuary
+P2_5                                   # The Galai Gates
+P2_6                                   # Qimah
+P2_7                                   # Qimah Reservoir
+P3_Town                                # The Glade
+P3_1                                   # Ashen Forest
+P3_2                                   # Kriar Village
+P3_3                                   # Glacial Tarn
+P3_5                                   # Kriar Peaks
+P3_6                                   # Etched Ravine
+P3_7                                   # The Cuachic Vault
+G_Endgame_Town                         # The Ziggurat Refuge
