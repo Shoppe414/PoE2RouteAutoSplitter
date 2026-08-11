@@ -1,0 +1,25 @@
+# Path of Exile 2 Route AutoSplitter - v0.2.0
+# ACT 3 PRACTICE / VALIDATION
+
+# Manually start LiveSplit before entering the first listed area when using a high-level character.
+
+# ---- Act 3 ----
+G3_1                                   # Sandswept Marsh
+G3_town                                # Ziggurat Encampment
+G3_3                                   # Jungle Ruins
+G3_4                                   # The Venom Crypts
+G3_2_1                                 # Infested Barrens
+ExpeditionSubArea_Kalguur_Act3         # Mystic Refuge
+G3_5                                   # Chimeral Wetlands
+G3_6_1                                 # Jiquani's Machinarium
+G3_6_2                                 # Jiquani's Sanctum
+G3_2_2                                 # The Matlan Waterways
+G3_7                                   # The Azak Bog
+G3_8                                   # The Drowned City
+G3_9                                   # The Molten Vault
+G3_11                                  # Apex of Filth
+G3_12                                  # Temple of Kopec
+G3_10_Airlock                          # The Temple of Chaos
+G3_14                                  # Utzaal
+G3_16                                  # Aggorat
+G3_17                                  # The Black Chambers

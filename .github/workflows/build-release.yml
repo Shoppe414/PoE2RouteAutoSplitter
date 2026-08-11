@@ -1,0 +1,79 @@
+name: Build and publish Windows release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version (for example 2.0.0)
+        required: true
+        default: 2.0.0
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows-release:
+    runs-on: windows-2025
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up .NET 10 SDK
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Resolve release version
+        id: version
+        shell: pwsh
+        run: |
+          if ('${{ github.event_name }}' -eq 'push') {
+            $version = '${{ github.ref_name }}'.TrimStart('v')
+          } else {
+            $version = '${{ inputs.version }}'
+          }
+          if ($version -notmatch '^\d+\.\d+\.\d+$') {
+            throw "Version must look like 2.0.0. Received: $version"
+          }
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "Building version $version"
+
+      - name: Build installer and portable ZIP
+        shell: pwsh
+        run: |
+          & '.\2 - Support Files\Build-Release.ps1' -Version '${{ steps.version.outputs.version }}'
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: PoE2RouteAutoSplitter-v${{ steps.version.outputs.version }}
+          path: |
+            artifacts/PoE2RouteAutoSplitter-v${{ steps.version.outputs.version }}-Setup.exe
+            artifacts/PoE2RouteAutoSplitter-v${{ steps.version.outputs.version }}.zip
+            artifacts/SHA256SUMS.txt
+          if-no-files-found: error
+
+      - name: Publish GitHub Release assets
+        if: github.event_name == 'push'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = '${{ github.ref_name }}'
+          $version = '${{ steps.version.outputs.version }}'
+          $assets = @(
+            "artifacts\PoE2RouteAutoSplitter-v$version-Setup.exe",
+            "artifacts\PoE2RouteAutoSplitter-v$version.zip",
+            'artifacts\SHA256SUMS.txt'
+          )
+
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag @assets --clobber
+          } else {
+            gh release create $tag @assets --title "PoE2 Route AutoSplitter v$version" --generate-notes
+          }

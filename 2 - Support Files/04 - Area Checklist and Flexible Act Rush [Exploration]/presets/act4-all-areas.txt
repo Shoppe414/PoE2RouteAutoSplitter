@@ -1,0 +1,21 @@
+# Act 4 All Areas Flexible
+# Objectives are unordered.
+@start=G4_town
+
+G4_1_1                                 # Isle of Kin
+G4_1_2                                 # Volcanic Warrens
+G4_4_1                                 # Eye of Hinekora
+G4_4_2                                 # Halls of the Dead
+G4_4_3                                 # Trial of the Ancestors
+G4_2_1                                 # Kedge Bay
+G4_2_2                                 # Journey's End
+G4_5_1                                 # Abandoned Prison
+G4_5_2                                 # Solitary Confinement
+G4_3_1                                 # Whakapanu Island
+G4_3_2                                 # Singing Caverns
+G4_7                                   # Shrike Island
+G4_8b                                  # Arastas
+G4_10                                  # The Excavation
+G4_11_1b                               # Ngakanu
+G4_11_2                                # Heart of the Tribe
+G4_13                                  # Plunder's Point

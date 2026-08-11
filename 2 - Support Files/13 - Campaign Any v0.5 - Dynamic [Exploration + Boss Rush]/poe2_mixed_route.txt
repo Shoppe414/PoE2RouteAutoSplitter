@@ -1,0 +1,124 @@
+# Mixed - Campaign Any% v0.5 - Exploration + Boss Rush
+@start=G1_1
+@order=unordered
+
+# Exploration objectives
+area|G1_town                             # Clearfell Encampment
+area|G1_2                                # Clearfell
+area|G1_4                                # The Grelwood
+area|G1_5                                # The Red Vale
+area|G1_6                                # The Grim Tangle
+area|G1_7                                # Cemetery of the Eternals
+area|G1_9                                # Tomb of the Consort
+area|G1_8                                # Mausoleum of the Praetor
+area|G1_11                               # Hunting Grounds
+area|G1_13_1                             # Ogham Farmlands
+area|G1_13_2                             # Ogham Village
+area|G1_14                               # The Manor Ramparts
+area|G1_15                               # Ogham Manor
+area|G2_1                                # Vastiri Outskirts
+area|G2_town                             # The Ardura Caravan
+area|G2_3a                               # The Halani Gates (blocked)
+area|G2_10_1                             # Mawdun Quarry
+area|G2_10_2                             # Mawdun Mine
+area|G2_2                                # Traitor's Passage
+area|G2_3                                # The Halani Gates
+area|G2_4_1                              # Keth
+area|G2_4_2                              # The Lost City
+area|G2_4_3                              # Buried Shrines
+area|G2_5_1                              # Mastodon Badlands
+area|G2_5_2                              # The Bone Pits
+area|G2_6                                # Valley of the Titans
+area|G2_7                                # The Titan Grotto
+area|G2_8                                # Deshar
+area|G2_9_1                              # Path of Mourning
+area|G2_9_2                              # The Spires of Deshar
+area|G2_12                               # Dreadnought
+area|G3_1                                # Sandswept Marsh
+area|G3_town                             # Ziggurat Encampment
+area|G3_3                                # Jungle Ruins
+area|G3_2_1                              # Infested Barrens
+area|G3_5                                # Chimeral Wetlands
+area|G3_6_1                              # Jiquani's Machinarium
+area|G3_6_2                              # Jiquani's Sanctum
+area|G3_2_2                              # The Matlan Waterways
+area|G3_8                                # The Drowned City
+area|G3_11                               # Apex of Filth
+area|G3_12                               # Temple of Kopec
+area|G3_14                               # Utzaal
+area|G3_16                               # Aggorat
+area|G3_17                               # The Black Chambers
+area|G4_town                             # Kingsmarch
+area|G4_1_1                              # Isle of Kin
+area|G4_1_2                              # Volcanic Warrens
+area|G4_5_1                              # Abandoned Prison
+area|G4_5_2                              # Solitary Confinement
+area|G4_7                                # Shrike Island
+area|G4_8b                               # Arastas
+area|G4_10                               # The Excavation
+area|G4_11_1b                            # Ngakanu
+area|G4_11_2                             # Heart of the Tribe
+area|P1_Town                             # The Refuge
+area|P1_1                                # Scorched Farmlands
+area|P1_2                                # Stones of Serle
+area|P1_3                                # The Blackwood
+area|P1_4                                # Holten
+area|P1_5                                # Wolvenhold
+area|P1_6                                # Holten Estate
+area|P2_Town                             # The Khari Bazaar
+area|P2_1                                # The Khari Crossing
+area|P2_2                                # Pools of Khatal
+area|P2_3                                # Sel Khari Sanctuary
+area|P2_5                                # The Galai Gates
+area|P2_6                                # Qimah
+area|P2_7                                # Qimah Reservoir
+area|P3_Town                             # The Glade
+area|P3_1                                # Ashen Forest
+area|P3_2                                # Kriar Village
+area|P3_3                                # Glacial Tarn
+area|P3_5                                # Kriar Peaks
+area|P3_6                                # Etched Ravine
+area|P3_7                                # The Cuachic Vault
+area|G_Endgame_Town                      # The Ziggurat Refuge
+
+# Boss Rush objectives
+boss|the_bloated_miller                  # The Bloated Miller
+boss|the_rust_king                       # The Rust King
+boss|draven                              # Draven, the Eternal Praetor
+boss|asinia                              # Asinia, the Praetor's Consort
+boss|lachlann                            # Lachlann of Endless Lament
+boss|the_executioner                     # The Executioner
+boss|count_geonor                        # Count Geonor
+boss|rathbreaker                         # Rathbreaker
+boss|rudja_the_dread_engineer            # Rudja, the Dread Engineer
+boss|jamanra_risen_king                  # Jamanra, the Risen King
+boss|azarian_forsaken_son                # Azarian, the Forsaken Son
+boss|iktab_the_deathlord                 # Iktab, the Deathlord
+boss|ekbab_ancient_steed                 # Ekbab, Ancient Steed
+boss|zalmarath_the_colossus              # Zalmarath, the Colossus
+boss|tor_gul_the_defiler                 # Tor Gul, the Defiler
+boss|jamanra_abomination                 # Jamanra, the Abomination
+boss|xyclucian_the_chimera               # Xyclucian, the Chimera
+boss|zicoatl_warden_core                 # Zicoatl, Warden of the Core
+boss|queen_of_filth                      # The Queen of Filth
+boss|ketzuli_high_priest_sun             # Ketzuli, High Priest of the Sun
+boss|viper_napuatzi                      # Viper Napuatzi
+boss|doryani_royal_thaumaturge           # Doryani, Royal Thaumaturge
+boss|the_prisoner                        # The Prisoner
+boss|krutog_lord_of_kin                  # Krutog, Lord of Kin
+boss|scourge_of_the_sky                  # Scourge of the Skies
+boss|torvian_hand_saviour                # Torvian, Hand of the Saviour
+boss|benedictus_first_herald             # Benedictus, First Herald of Utopia
+boss|tavakai_the_chieftain               # Tavakai, the Chieftain
+boss|isolde_white_shroud                 # Isolde of the White Shroud
+boss|heldra_black_pyre                   # Heldra of the Black Pyre
+boss|siora_blade_mists                   # Siora, Blade of the Mists
+boss|thane_wulfric                       # Thane Wulfric
+boss|lady_elswyth                        # Lady Elswyth
+boss|elzarah_cobra_lord                  # Elzarah, the Cobra Lord
+boss|vornas_fell_flame                   # Vornas, the Fell Flame
+boss|azmadi_faridun_prince               # Azmadi, the Faridun Prince
+boss|rakkar_frozen_talon                 # Rakkar, the Frozen Talon
+boss|stormgore_guardian                  # Stormgore, the Guardian
+boss|zelina_blood_priestess              # Zelina, Blood Priestess
+boss|zolin_blood_priest                  # Zolin, Blood Priest

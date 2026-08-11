@@ -1,0 +1,21 @@
+# .NET build output
+**/bin/
+**/obj/
+**/publish/
+
+# Generated OCR data (downloaded during release builds)
+2 - Support Files/BossWatcher [Boss Rush Detection]/tessdata/eng.traineddata
+
+# Generated user/release binaries
+1 - User Setup/PoE2RouteSetup.exe
+1 - User Setup/PoE2RouteAutoSplitter-v*-Setup.exe
+1 - User Setup/LiveSplit Target/*
+!1 - User Setup/LiveSplit Target/.gitkeep
+
+# Release staging/artifacts
+artifacts/
+2 - Support Files/Installer [Windows]/Output/
+
+# Crash/runtime files
+**/PoE2RouteSetup-crash.log
+**/poe2_boss_events.log

@@ -1,0 +1,46 @@
+PATH OF EXILE 2 ROUTE AUTOSPLITTER v2.0.0
+
+NORMAL USERS
+============
+
+Do not compile the application and do not run PowerShell setup scripts.
+
+1. Download from the GitHub Release:
+     PoE2RouteAutoSplitter-v2.0.0-Setup.exe
+
+2. Run the installer.
+
+3. Launch PoE2 Route AutoSplitter from the Start Menu, optional desktop
+   shortcut, or the installed:
+     1 - User Setup\PoE2RouteSetup.exe
+
+4. Select a premade route or create a custom route and press:
+     Generate / Deploy Selected Setup
+
+5. Open the generated .lss from:
+     1 - User Setup\LiveSplit Target
+
+6. Use your own LiveSplit layout. Add/edit its Scriptable Auto Splitter
+   component and point it to the generated .asl in LiveSplit Target.
+
+7. For boss-enabled modes, press Start BossWatcher in the Setup UI.
+
+No .lsl layout file is generated or included.
+
+
+DEVELOPERS
+==========
+
+The Git repository intentionally does not contain compiled .exe files.
+
+To build the complete Windows release locally, run from 2 - Support Files:
+
+  .\Build-Release.ps1 -Version 2.0.0
+
+This creates the installer, portable ZIP, and checksums under the repository's
+artifacts directory. The installer is also copied into 1 - User Setup for local
+testing, but is ignored by Git.
+
+Creating/pushing a v2.0.0 tag triggers .github\workflows\build-release.yml,
+which performs the Windows build and attaches the installer/ZIP/checksums to
+the GitHub Release automatically.

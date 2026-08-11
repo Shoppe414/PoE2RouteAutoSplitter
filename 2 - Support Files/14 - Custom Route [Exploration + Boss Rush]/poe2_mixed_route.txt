@@ -1,0 +1,10 @@
+# Custom mixed Exploration + Boss Rush route
+# Copy this file beside LiveSplit.exe as poe2_mixed_route.txt after editing it.
+# @order may be unordered or ordered.
+@start=G1_1
+@order=unordered
+
+area|G1_town                         # Clearfell Encampment
+boss|the_bloated_miller              # The Bloated Miller
+area|G1_2                             # Clearfell
+boss|beira_of_the_rotten_pack        # Beira of the Rotten Pack

@@ -1,0 +1,24 @@
+# Act 2 All Areas Ordered Segment
+@start=G2_1
+
+G2_town                                # The Ardura Caravan
+G2_3a                                  # The Halani Gates (blocked)
+G2_10_1                                # Mawdun Quarry
+G2_10_2                                # Mawdun Mine
+G2_2                                   # Traitor's Passage
+G2_3                                   # The Halani Gates
+G2_4_1                                 # Keth
+G2_4_2                                 # The Lost City
+G2_4_3                                 # Buried Shrines
+G2_5_1                                 # Mastodon Badlands
+Abyss_Intro                            # Lightless Passage
+Abyss_Hub                              # The Well of Souls
+G2_5_2                                 # The Bone Pits
+G2_6                                   # Valley of the Titans
+G2_7                                   # The Titan Grotto
+ExpeditionSubArea_Kalguur_Act2         # Skull of the Titan
+G2_8                                   # Deshar
+G2_9_1                                 # Path of Mourning
+G2_9_2                                 # The Spires of Deshar
+G2_13                                  # Trial of the Sekhemas
+G2_12                                  # Dreadnought

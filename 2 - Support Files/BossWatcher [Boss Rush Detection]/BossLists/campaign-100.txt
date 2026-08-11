@@ -1,0 +1,74 @@
+# Campaign 100% BossRush
+# All supported campaign-area and temporary-interlude boss encounters in the v0.5 campaign baseline.
+# Includes optional proper bosses such as Beira of the Rotten Pack; named rare minibosses remain excluded.
+# Excludes The Plagueling as a split target; it remains a support-only OCR identity for Scourge of the Skies reconciliation.
+# Predefined order is a canonical clear list, not a claim that nonlinear Act 4/interlude routes must be cleared in this order.
+# Targets: 67
+
+01|the_bloated_miller|The Bloated Miller
+02|beira_of_the_rotten_pack|Beira of the Rotten Pack
+03|the_devourer|The Devourer
+04|the_brambleghast|The Brambleghast
+05|the_rust_king|The Rust King
+06|the_rotten_druid|The Rotten Druid
+07|draven|Draven, the Eternal Praetor
+08|asinia|Asinia, the Praetor's Consort
+09|lachlann|Lachlann of Endless Lament
+10|crowbell|The Crowbell
+11|king_in_the_mists|The King in the Mists
+12|the_executioner|The Executioner
+13|candlemass|Candlemass, the Living Rite
+14|count_geonor|Count Geonor
+15|rathbreaker|Rathbreaker
+16|rudja_the_dread_engineer|Rudja, the Dread Engineer
+17|balbala|Balbala, the Traitor
+18|jamanra_risen_king|Jamanra, the Risen King
+19|kabala_constrictor_queen|Kabala, Constrictor Queen
+20|azarian_forsaken_son|Azarian, the Forsaken Son
+21|iktab_the_deathlord|Iktab, the Deathlord
+22|ekbab_ancient_steed|Ekbab, Ancient Steed
+23|zalmarath_the_colossus|Zalmarath, the Colossus
+24|tor_gul_the_defiler|Tor Gul, the Defiler
+25|jamanra_abomination|Jamanra, the Abomination
+26|rootdredge|Rootdredge
+27|mighty_silverfist|Mighty Silverfist
+28|xyclucian_the_chimera|Xyclucian, the Chimera
+29|blackjaw_the_remnant|Blackjaw, the Remnant
+30|zicoatl_warden_core|Zicoatl, Warden of the Core
+31|ignagduk|Ignagduk, the Bog Witch
+32|mektul_forgemaster|Mektul, the Forgemaster
+33|queen_of_filth|The Queen of Filth
+34|ketzuli_high_priest_sun|Ketzuli, High Priest of the Sun
+35|viper_napuatzi|Viper Napuatzi
+36|doryani_royal_thaumaturge|Doryani, Royal Thaumaturge
+37|captain_hartlin|Captain Hartlin
+38|omniphobia_fear_manifest|Omniphobia, Fear Manifest
+39|great_white_one|Great White One
+40|diamora_song_of_death|Diamora, Song of Death
+41|the_prisoner|The Prisoner
+42|the_blind_beast|The Blind Beast
+43|krutog_lord_of_kin|Krutog, Lord of Kin
+44|scourge_of_the_sky|Scourge of the Skies
+45|yama_the_white|Yama The White
+46|torvian_hand_saviour|Torvian, Hand of the Saviour
+47|benedictus_first_herald|Benedictus, First Herald of Utopia
+48|tavakai_the_chieftain|Tavakai, the Chieftain
+49|isolde_white_shroud|Isolde of the White Shroud
+50|heldra_black_pyre|Heldra of the Black Pyre
+51|siora_blade_mists|Siora, Blade of the Mists
+52|sigbert_sullied_oath|Sigbert of the Sullied Oath
+53|godwin_shattered_creed|Godwin of the Shattered Creed
+54|oswin_dread_warden|Oswin, the Dread Warden
+55|thane_wulfric|Thane Wulfric
+56|lady_elswyth|Lady Elswyth
+57|akthi_final_sting|Akthi, the Final Sting
+58|anundr_sandworm|Anundr, the Sandworm
+59|elzarah_cobra_lord|Elzarah, the Cobra Lord
+60|vornas_fell_flame|Vornas, the Fell Flame
+61|azmadi_faridun_prince|Azmadi, the Faridun Prince
+62|lythara_wayward_spear|Lythara, the Wayward Spear
+63|abominable_yeti|The Abominable Yeti
+64|rakkar_frozen_talon|Rakkar, the Frozen Talon
+65|stormgore_guardian|Stormgore, the Guardian
+66|zelina_blood_priestess|Zelina, Blood Priestess
+67|zolin_blood_priest|Zolin, Blood Priest
