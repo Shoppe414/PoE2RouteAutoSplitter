@@ -11,7 +11,8 @@ PoE2 Route AutoSplitter provides premade and custom routes for:
 * Combined Exploration + Boss Rush
 * Campaign Any%
 * Campaign 100%
-* Required Bosses Only
+* Required Campaign Bosses Only
+* 0.5 Pinnacle bosses
 * Custom user-defined routes
 
 The included **PoE2RouteSetup** application handles most of the setup for you.
