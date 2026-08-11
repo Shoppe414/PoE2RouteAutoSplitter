@@ -28,3 +28,7 @@ After editing the route, create a matching `.lss` with:
 ```
 
 The supplied example layout has four rows and matches the supplied example route. Load only one ASL component at a time. Boss objectives require `BossWatcher [Boss Rush Detection]` to be running.
+
+## Optional area completion mode
+
+Custom routes continue to use entry-based area objectives by default. Advanced hand-edited routes may add `@areaCompletion=successor` when the `area|...` lines form a deliberate progression sequence. In that mode, an area is armed when entered and completes only when the next listed area is entered; unrelated detours and revisits do not trigger it. The Setup UI does not enable this automatically for custom routes.

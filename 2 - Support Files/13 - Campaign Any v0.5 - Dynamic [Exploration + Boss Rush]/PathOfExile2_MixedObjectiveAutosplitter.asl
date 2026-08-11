@@ -1,6 +1,6 @@
 /*
 Path of Exile 2 Mixed Objective AutoSplitter for LiveSplit
-v1.2.0 integration build
+v1.2.1 integration build
 
 Combines Exploration area-completion events from Client.txt with Boss Rush GONE events
 from poe2_boss_events.log. One mixed objective file controls both sources.
@@ -8,6 +8,7 @@ from poe2_boss_events.log. One mixed objective file controls both sources.
 Config beside LiveSplit.exe: poe2_mixed_route.txt
   @start=G1_1        or @start=manual
   @order=unordered   or @order=ordered
+  @areaCompletion=entry or @areaCompletion=successor
   area|G1_town
   boss|the_bloated_miller
 
@@ -231,6 +232,11 @@ startup
 
     vars.objectiveOrder = new System.Collections.Generic.List<string>();
     vars.objectiveSet = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+    vars.areaSequence = new System.Collections.Generic.List<string>();
+    vars.areaSuccessor = new System.Collections.Generic.Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase);
+    vars.armedAreaObjectives = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+    vars.areaCompletionQueue = new System.Collections.Generic.List<string>();
+    vars.areaSuccessorCompletion = false;
     vars.completed = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
     vars.completedOrder = new System.Collections.Generic.List<string>();
     vars.suppressed = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
@@ -258,6 +264,11 @@ init
 {
     vars.objectiveOrder = new System.Collections.Generic.List<string>();
     vars.objectiveSet = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+    vars.areaSequence = new System.Collections.Generic.List<string>();
+    vars.areaSuccessor = new System.Collections.Generic.Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase);
+    vars.armedAreaObjectives = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+    vars.areaCompletionQueue = new System.Collections.Generic.List<string>();
+    vars.areaSuccessorCompletion = false;
     vars.completed = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
     vars.completedOrder = new System.Collections.Generic.List<string>();
     vars.suppressed = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
@@ -306,6 +317,14 @@ init
                 else throw new System.Exception("@order must be ordered or unordered");
                 continue;
             }
+            if (line.StartsWith("@areaCompletion=", System.StringComparison.OrdinalIgnoreCase))
+            {
+                string value = line.Substring("@areaCompletion=".Length).Trim();
+                if (System.String.Equals(value, "successor", System.StringComparison.OrdinalIgnoreCase)) vars.areaSuccessorCompletion = true;
+                else if (System.String.Equals(value, "entry", System.StringComparison.OrdinalIgnoreCase)) vars.areaSuccessorCompletion = false;
+                else throw new System.Exception("@areaCompletion must be successor or entry");
+                continue;
+            }
 
             string[] parts = line.Split(new char[] { '|' }, 2);
             if (parts.Length != 2) throw new System.Exception("Objective must use area|ID or boss|ID: " + line);
@@ -315,6 +334,7 @@ init
             if (type == "area")
             {
                 if (!vars.areaNames.ContainsKey(id)) throw new System.Exception("Unknown area ID: " + id);
+                vars.areaSequence.Add(key);
             }
             else if (type == "boss")
             {
@@ -323,6 +343,17 @@ init
             else throw new System.Exception("Unknown objective type: " + type);
             if (!vars.objectiveSet.Add(key)) throw new System.Exception("Duplicate objective: " + line);
             vars.objectiveOrder.Add(key);
+        }
+
+        if (vars.areaSuccessorCompletion)
+        {
+            if (vars.areaSequence.Count == 0) throw new System.Exception("Successor area completion requires at least one area objective");
+            for (int i = 0; i < vars.areaSequence.Count; i++)
+            {
+                string areaKey = vars.areaSequence[i];
+                string triggerKey = i + 1 < vars.areaSequence.Count ? vars.areaSequence[i + 1] : areaKey;
+                vars.areaSuccessor[areaKey] = triggerKey.Substring("area:".Length);
+            }
         }
 
         if (vars.startAreaId != "" && !vars.areaNames.ContainsKey(vars.startAreaId))
@@ -350,8 +381,9 @@ init
         vars.configValid = true;
 
         string startName = vars.startAreaId == "" ? "manual" : vars.areaNames[vars.startAreaId];
-        string ready = "READY | v1.2.0 | Mode=MIXED_" + (vars.ordered ? "ORDERED" : "UNORDERED")
+        string ready = "READY | v1.2.1 | Mode=MIXED_" + (vars.ordered ? "ORDERED" : "UNORDERED")
             + " | Objectives=" + vars.objectiveOrder.Count + " | Start=" + startName
+            + " | AreaCompletion=" + (vars.areaSuccessorCompletion ? "SUCCESSOR_ENTRY" : "ENTRY")
             + " | Client.txt=" + vars.clientLogPath + " | BossEvents=" + vars.eventPath;
         System.IO.File.WriteAllText(vars.statusPath, ready + System.Environment.NewLine);
         if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath, System.DateTime.Now.ToString("s") + " " + ready + System.Environment.NewLine);
@@ -381,6 +413,8 @@ update
             string key = vars.completedOrder[vars.completedOrder.Count - 1];
             vars.completedOrder.RemoveAt(vars.completedOrder.Count - 1);
             vars.completed.Remove(key);
+            if (vars.areaSuccessorCompletion && key.StartsWith("area:", System.StringComparison.OrdinalIgnoreCase))
+                vars.armedAreaObjectives.Add(key);
             vars.lastUndoneKey = key;
             if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
                 System.DateTime.Now.ToString("s") + " UNDO_REARM | objective=" + key + " | liveSplitIndex=" + idx + System.Environment.NewLine);
@@ -397,6 +431,27 @@ update
     vars.lastObservedIndex = idx;
 
     if (vars.pendingKey != "") return true;
+
+    // Successor-entry area completion can queue more than one objective for the
+    // same transition (notably Cuachic Vault + terminal Ziggurat). Drain queued
+    // objectives before polling new BossWatcher or Client.txt events.
+    if (vars.areaCompletionQueue.Count > 0
+        && (timer.CurrentPhase == LiveSplit.Model.TimerPhase.Running || timer.CurrentPhase == LiveSplit.Model.TimerPhase.Paused))
+    {
+        string queuedKey = vars.areaCompletionQueue[0];
+        vars.areaCompletionQueue.RemoveAt(0);
+        if (!vars.completed.Contains(queuedKey) && !vars.suppressed.Contains(queuedKey))
+        {
+            string queuedId = queuedKey.Substring("area:".Length);
+            vars.pendingKey = queuedKey;
+            vars.pendingName = vars.areaNames.ContainsKey(queuedId) ? vars.areaNames[queuedId] : queuedId;
+            vars.pendingType = "area";
+            vars.pendingHasFirstMissing = false;
+            vars.pendingFirstMissing = System.DateTimeOffset.MinValue;
+            vars.lastUndoneKey = "";
+            return true;
+        }
+    }
 
     // Poll BossWatcher first. Only advance through the line actually inspected so queued dual-boss
     // GONE events remain available for consecutive LiveSplit updates.
@@ -484,15 +539,48 @@ update
             if (System.String.Equals(areaId, vars.lastAreaId, System.StringComparison.OrdinalIgnoreCase)) continue;
             vars.lastAreaId = areaId;
             string areaName = vars.areaNames[areaId];
+            string enteredKey = "area:" + areaId;
+
+            if (vars.areaSuccessorCompletion && vars.objectiveSet.Contains(enteredKey) && !vars.completed.Contains(enteredKey))
+                vars.armedAreaObjectives.Add(enteredKey);
 
             if (vars.startAreaId != "" && System.String.Equals(areaId, vars.startAreaId, System.StringComparison.OrdinalIgnoreCase) && timer.CurrentPhase == LiveSplit.Model.TimerPhase.NotRunning)
             {
                 vars.startTrigger = true;
-                if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath, System.DateTime.Now.ToString("s") + " START_TRIGGER | area=" + areaId + " " + areaName + " | source=" + source + System.Environment.NewLine);
+                if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath, System.DateTime.Now.ToString("s") + " START_TRIGGER | area=" + areaId + " " + areaName + " | armed=" + (vars.areaSuccessorCompletion ? "true" : "n/a") + " | source=" + source + System.Environment.NewLine);
                 break;
             }
 
-            string key = "area:" + areaId;
+            if (vars.areaSuccessorCompletion)
+            {
+                // Complete only an armed area whose configured successor is the area
+                // just entered. Returning to town, inventory detours, and revisits do
+                // not complete anything unless they are the explicit successor.
+                foreach (string candidateKey in vars.areaSequence)
+                {
+                    if (!vars.armedAreaObjectives.Contains(candidateKey) || vars.completed.Contains(candidateKey) || vars.suppressed.Contains(candidateKey)) continue;
+                    if (!vars.areaSuccessor.ContainsKey(candidateKey) || !System.String.Equals(vars.areaSuccessor[candidateKey], areaId, System.StringComparison.OrdinalIgnoreCase)) continue;
+                    if (!vars.areaCompletionQueue.Contains(candidateKey)) vars.areaCompletionQueue.Add(candidateKey);
+                }
+
+                if (vars.areaCompletionQueue.Count > 0
+                    && (timer.CurrentPhase == LiveSplit.Model.TimerPhase.Running || timer.CurrentPhase == LiveSplit.Model.TimerPhase.Paused))
+                {
+                    string key = vars.areaCompletionQueue[0];
+                    vars.areaCompletionQueue.RemoveAt(0);
+                    string completedId = key.Substring("area:".Length);
+                    vars.pendingKey = key;
+                    vars.pendingName = vars.areaNames.ContainsKey(completedId) ? vars.areaNames[completedId] : completedId;
+                    vars.pendingType = "area";
+                    vars.pendingHasFirstMissing = false;
+                    vars.pendingFirstMissing = System.DateTimeOffset.MinValue;
+                    vars.lastUndoneKey = "";
+                    break;
+                }
+                continue;
+            }
+
+            string key = enteredKey;
             if (!vars.objectiveSet.Contains(key) || vars.completed.Contains(key) || vars.suppressed.Contains(key)) continue;
             if (vars.ordered && (timer.CurrentSplitIndex < 0 || timer.CurrentSplitIndex >= vars.objectiveOrder.Count || !System.String.Equals(vars.objectiveOrder[timer.CurrentSplitIndex], key, System.StringComparison.OrdinalIgnoreCase)))
             {
@@ -622,6 +710,8 @@ onReset
 {
     vars.completed = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
     vars.completedOrder = new System.Collections.Generic.List<string>();
+    vars.armedAreaObjectives = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+    vars.areaCompletionQueue = new System.Collections.Generic.List<string>();
     vars.suppressed = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
     vars.pendingKey = "";
     vars.pendingName = "";

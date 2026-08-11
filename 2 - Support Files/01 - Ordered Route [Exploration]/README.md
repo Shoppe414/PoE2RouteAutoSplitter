@@ -41,7 +41,7 @@ G1_5
 
 If the player enters `G1_5` while the script is waiting for `G1_3`, Red Vale is ignored. The script continues waiting for Mud Burrow and later splits remain aligned.
 
-The Riverbank is the auto-start trigger and does not consume a route row.
+Campaign routes now include The Riverbank as the first timed segment. Entering Riverbank starts the timer; only entering the next configured route area completes that segment. Unexpected destinations, inventory/town detours, and revisits do not advance the route.
 
 ## Create a custom ordered route
 

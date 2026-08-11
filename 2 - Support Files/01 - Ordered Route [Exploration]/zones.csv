@@ -1,5 +1,5 @@
 Act,AreaId,AreaName,InCampaign100Route,InAnyPercentBaseline,SourceNote
-1,G1_1,The Riverbank,start-trigger,false,SavageOranges patch-0.5 table
+1,G1_1,The Riverbank,true,true,SavageOranges patch-0.5 table
 1,G1_town,Clearfell Encampment,true,true,SavageOranges patch-0.5 table
 1,G1_2,Clearfell,true,true,SavageOranges patch-0.5 table
 1,G1_3,Mud Burrow,true,false,SavageOranges patch-0.5 table

@@ -16,7 +16,7 @@ G1_4
 
 `@start=manual` disables automatic start. Every other line is an area objective. Objective order in the file does **not** impose run order.
 
-Load the `.lss` whose objective count matches the preset. On first completion of an unresolved objective, the current generic row is renamed to that area and split. Revisits are ignored. When the final unresolved objective is split, LiveSplit ends naturally because the layout has exactly one row per objective.
+Load the `.lss` that accompanies the preset. On first completion of an unresolved timed objective, the current generic row is renamed to that area and split. Revisits are ignored. When `@start=G1_1` and Riverbank is included in the checklist, Riverbank is counted as satisfied by the timer-start event and therefore does not require its own zero-time LiveSplit row. All remaining objectives have one row each.
 
 Included presets cover Campaign Any%, Campaign All Areas/Explorer, Act 1–4 Any% and All Areas, each Interlude, and all Interludes together.
 

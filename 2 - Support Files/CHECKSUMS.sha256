@@ -1,37 +1,39 @@
 6e54ee745565ada653d4a497bf0eb2794bf57cb6143bb476cb67165c2ef66de6  ./01 - Ordered Route [Exploration]/ENGINE_CHANGELOG.md
+ef575c702b8f2aa2991d2c767a9305a64d72b834907041d56eca13ab8b28e421  ./01 - Ordered Route [Exploration]/Path of Exile 2 - Ordered Campaign 100%.lss
+a48acd09e39e57c9b735633dad4e96efa249bec21931a445e0d501172990904c  ./01 - Ordered Route [Exploration]/PathOfExile2_RouteAutosplitter.asl
+fd17f509e2eec04950adbe4d7c6816045bdf8d520783c962fa6a1af9c5161540  ./01 - Ordered Route [Exploration]/README.md
 8a24a66a8651d3a1b139ce27d9e29007747f53c455943d99201e91127037b5ad  ./01 - Ordered Route [Exploration]/layouts/Path of Exile 2 - Act 1 Practice Ordered.lss
 bccffd69a9e1ad7295a14f9495bec72df38f07eacffa8d1dba5cf8bff9fa15c5  ./01 - Ordered Route [Exploration]/layouts/Path of Exile 2 - Act 2 Practice Ordered.lss
 b64396c9eefa26201c4d8666d9a804ed72e8120a01ae4727c56a2ae0ee6f726d  ./01 - Ordered Route [Exploration]/layouts/Path of Exile 2 - Act 3 Practice Ordered.lss
 9a06a96697e03c83766aaf8a90162556e3480de7b3d7ba798aa9b1e60819acd3  ./01 - Ordered Route [Exploration]/layouts/Path of Exile 2 - Act 4 Practice Ordered.lss
-4766279ca85f96345155bad96b29f26216fc888406a198b0843adefb9fc8265d  ./01 - Ordered Route [Exploration]/layouts/Path of Exile 2 - Campaign Any% Ordered.lss
-9e9b2c33ebbc0a11a16fdd7bba74e227341fa89ea62bf74446c49fae9c04b36c  ./01 - Ordered Route [Exploration]/Path of Exile 2 - Ordered Campaign 100%.lss
-5854b5889b1fd0a691cd911f1a5a99b5875f8a774db0ff3fc7bfcaafb0100e14  ./01 - Ordered Route [Exploration]/PathOfExile2_RouteAutosplitter.asl
-d8c99ea903467387b13f12d43ed6cf6ab3381267fcf406afa2db7dd0e2c5d9cf  ./01 - Ordered Route [Exploration]/poe2_route.txt
-a08127744d0fcfbc14d33771179ba19e214029c7378c148d83e5766e7989e707  ./01 - Ordered Route [Exploration]/README.md
+39155acca8da64b98ce3be0b1e70d5685e0bad57be0d861682ae785fa0186897  ./01 - Ordered Route [Exploration]/layouts/Path of Exile 2 - Campaign Any% Ordered.lss
+56b6c51c2760ac7943f57cc1b392eba75c4ae05a9e21a89dc7097680d013eaed  ./01 - Ordered Route [Exploration]/poe2_route.txt
 a947819d9030acf6be0491896433998d33df644848b14b5f63e387c8d09c88e7  ./01 - Ordered Route [Exploration]/routes/act1-practice.txt
 663a74b56f22f0ad173ee7d80e8e1d04c6f9ed9e41db8fd938b2515aaff20c61  ./01 - Ordered Route [Exploration]/routes/act2-practice.txt
 836262509208c37754f5160564c65f8c6492f3748800f8fd5826f1317fe16b82  ./01 - Ordered Route [Exploration]/routes/act3-practice.txt
 b693e3af2cd78492740c1d7cfd06de5d143e0f5ca8935ceb84ce1e5e724d6596  ./01 - Ordered Route [Exploration]/routes/act4-practice.txt
-d8c99ea903467387b13f12d43ed6cf6ab3381267fcf406afa2db7dd0e2c5d9cf  ./01 - Ordered Route [Exploration]/routes/campaign-100-percent.txt
-c3e69d3c9e56b8447902e1af32027ef5c79dddcf50c3ba75fe62c80941ffad57  ./01 - Ordered Route [Exploration]/routes/campaign-any-percent.txt
+56b6c51c2760ac7943f57cc1b392eba75c4ae05a9e21a89dc7097680d013eaed  ./01 - Ordered Route [Exploration]/routes/campaign-100-percent.txt
+5fab4c5c29a111b0f8a3635a5fbfffde442313ad5443271743a2d42fefae6847  ./01 - Ordered Route [Exploration]/routes/campaign-any-percent.txt
 4519aea5e0813e1c28d0a90df5a3df19c07d6b69d05ce18b19c96b0d67da13a9  ./01 - Ordered Route [Exploration]/tools/Generate-LiveSplitSplits.ps1
 388865e9a8fdb8721e56bd706b0f94163d4a4e34be679b3d17f6941822cb9363  ./01 - Ordered Route [Exploration]/tools/Summarize-Validation.ps1
 df15f6b16fe74e7dcadd78c07a3decb531af70a33e8c0da57d026d30c4a74117  ./01 - Ordered Route [Exploration]/tools/Test-ClientLog.ps1
-7d825b82bdf011d631ba9ff54b2807e1f9d0749738f1d8795f85d198b4a01faa  ./01 - Ordered Route [Exploration]/zones.csv
+dcf5006f3a5c08b12a5a8053131241442f49702940a2e4e70374cb87a560d578  ./01 - Ordered Route [Exploration]/zones.csv
 821d4b087c6ac20c8e0c09a448363124858e194f4c39457440bc725de3eafbf3  ./02 - Flexible Route [Exploration]/ENGINE_CHANGELOG.md
 630520fcb8cc0e1d5ba8bf75a17ebf826b9090938d84845daf0c05c838c4640b  ./02 - Flexible Route [Exploration]/Path of Exile 2 - Flexible Campaign.lss
-d3a699cf69e7199a20fe9f661416a052715098d4140cf12a7b62a7f636ee6972  ./02 - Flexible Route [Exploration]/PathOfExile2_FlexibleAreaAutosplitter.asl
-c600cd610161a266011fdb0d69ac4cd58478ed22bdffe81354b00f1e6cb1eafc  ./02 - Flexible Route [Exploration]/poe2_area_groups.txt
-93780393cc15cd3efdd4fd8b50e251477d839fa8ebd2cc5698a11f4003d8f55a  ./02 - Flexible Route [Exploration]/README.md
+adb79b9429e67ce407ae559e412d884903b7724696e2dfd28ce254b7ed6f4c32  ./02 - Flexible Route [Exploration]/PathOfExile2_FlexibleAreaAutosplitter.asl
+211a4898274e0f5c556f1a4e2832dd4f1502b00a17a8cbce2da6e756d756c70f  ./02 - Flexible Route [Exploration]/README.md
+d6292647c604e08033f05f09c331cb85a2d36f5c6bc8664b7c3b41e5cf50ab77  ./02 - Flexible Route [Exploration]/poe2_area_groups.txt
 e51d7a47261501a032e046b5e706390eb5d22b5956c5223d5c244e0e29a0134e  ./02 - Flexible Route [Exploration]/tools/Generate-FlexibleSplits.ps1
 9dfd79a509395c780986ca03d85c30b3ea3988df97bc8734386db65c960cfafa  ./02 - Flexible Route [Exploration]/tools/Summarize-Validation.ps1
 44eb2499d5adbe8144f92176ac5d3bccc21c7eaceb097010b123ab93da5e3ca0  ./02 - Flexible Route [Exploration]/tools/Test-ClientLog.ps1
 3e1102730c60ce7de42ea48606707b0f0bfd9723be3db1b7198aa712ef13f6c9  ./02 - Flexible Route [Exploration]/zones.csv
 c47342d6f5564c93bfe5609671236ded3b1a76eb5d3d0bb4a582cbba4e7749ec  ./03 - Level Race/Path of Exile 2 - Level 100 - Every 10 Levels.lss
 ee571584c98136cb09fbadd2e5072544459fdcbbdfe641628e5c89ff495bd113  ./03 - Level Race/PathOfExile2_LevelRaceAutosplitter.asl
-e9614ff3e99790bc4cc3264355436b7825f9eccb0a122a0edff3d18120677051  ./03 - Level Race/poe2_level_race.txt
 d8935fd9fd87e7728817d3a702a13a41b881709ee83e5543fc7bc18a65db3ca4  ./03 - Level Race/README.md
+e9614ff3e99790bc4cc3264355436b7825f9eccb0a122a0edff3d18120677051  ./03 - Level Race/poe2_level_race.txt
 74e0e54a84b6768aeda9624f6e8b10ce6cfb84f8ef2b9d095957dda1595b54e3  ./03 - Level Race/tools/Generate-Level-Race.ps1
+112cf09e06daf09cbb2e336a902ebbf243f54471943f739930764e62b330a904  ./04 - Area Checklist and Flexible Act Rush [Exploration]/PathOfExile2_AreaChecklistAutosplitter.asl
+8560d0c1f3cbd9aa7575f46d53a29dc319349e8017aeb0f9e4d03a1a47563424  ./04 - Area Checklist and Flexible Act Rush [Exploration]/README.md
 fdcf47d6234748af6b759bd362dda410393f030eace370b1a58b08205ac169e4  ./04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Act 1 All Areas Flexible.lss
 13b8de0c486231515acddbf104365eba25119dac3a150fb4c7aea374c0a4ebaf  ./04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Act 1 Any% Flexible.lss
 7cb5c9b5c0b67b4ff67a3ec04bb90ec4c3816b339119674fab602b528477b183  ./04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Act 2 All Areas Flexible.lss
@@ -46,10 +48,9 @@ bf184ac61c7fd3bdf5b918451029e5f8d09ea9092dfcd6bcb82f4f56780b17ea  ./04 - Area Ch
 af15b16d8911facb248ccd0fd6d0a09ca8f2cabb0928bb52a738f31d9aa794e2  ./04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Interlude 1 All Areas Flexible.lss
 1963aa7c81f026a56b1f7180aa5e017b2f2fc16afe222d8339592182d69364ca  ./04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Interlude 2 All Areas Flexible.lss
 763eaf84c48e57ebf2ac1bc5a2a37634f62652b995e8fd7d6af72f4e7cdcb222  ./04 - Area Checklist and Flexible Act Rush [Exploration]/layouts/Path of Exile 2 - Interlude 3 All Areas Flexible.lss
-6b41c4e90acdc2b8907813fe83f3aa2a6873d2086c008828bac19b7e69302569  ./04 - Area Checklist and Flexible Act Rush [Exploration]/PathOfExile2_AreaChecklistAutosplitter.asl
-21a943d9a70e8ce99baf20675be0a1fcb7e4d22c6e167b4b54f2e4be57f07d10  ./04 - Area Checklist and Flexible Act Rush [Exploration]/poe2_area_checklist.txt
-f0dc5a44eec5d781518b22a560cb914f6863d32a95bdb0e572ff0bf83329814f  ./04 - Area Checklist and Flexible Act Rush [Exploration]/presets/act1-all-areas.txt
-21a943d9a70e8ce99baf20675be0a1fcb7e4d22c6e167b4b54f2e4be57f07d10  ./04 - Area Checklist and Flexible Act Rush [Exploration]/presets/act1-any-percent.txt
+66e86dcd44ce4aa330be7edbd16b25e2d24fe46b6a73441bbf0a1aa44ce78ed2  ./04 - Area Checklist and Flexible Act Rush [Exploration]/poe2_area_checklist.txt
+942e33601b1637f8a6a101943bf465cf2f668dfd7ec4439275d16419efc1c51f  ./04 - Area Checklist and Flexible Act Rush [Exploration]/presets/act1-all-areas.txt
+66e86dcd44ce4aa330be7edbd16b25e2d24fe46b6a73441bbf0a1aa44ce78ed2  ./04 - Area Checklist and Flexible Act Rush [Exploration]/presets/act1-any-percent.txt
 052c343fcec83d3e67c0b56d87f64cb425869338e78c9adf62665d8580509963  ./04 - Area Checklist and Flexible Act Rush [Exploration]/presets/act2-all-areas.txt
 c669c03907fcc05acda888fc580d654bd1b91a31b7d7eea8bb80afd68ff9215a  ./04 - Area Checklist and Flexible Act Rush [Exploration]/presets/act2-any-percent.txt
 d0dd3bb90803678478ec031f306466ed0bb40c2f0bfe03fdafd519bf0c1147f1  ./04 - Area Checklist and Flexible Act Rush [Exploration]/presets/act3-all-areas.txt
@@ -57,13 +58,14 @@ d0dd3bb90803678478ec031f306466ed0bb40c2f0bfe03fdafd519bf0c1147f1  ./04 - Area Ch
 0ad3098ca69c39db22b9378b71fe2ccb9c49f9e4605e77b34ca5d34af8e1b499  ./04 - Area Checklist and Flexible Act Rush [Exploration]/presets/act4-all-areas.txt
 b85a3c0651712103b760457cc66d5ff90ff41ad7cd04dd37a1c0de4ae2f1c744  ./04 - Area Checklist and Flexible Act Rush [Exploration]/presets/act4-any-percent.txt
 ee23d025c3fe910ab2c8335bf469bbfe2fc000f6b8567a03e8ffaca1a9f46290  ./04 - Area Checklist and Flexible Act Rush [Exploration]/presets/all-interludes.txt
-6e0f91b209248fa9e63ce2a3e4cdc625d0859319ac307f2a3330c34455e6d915  ./04 - Area Checklist and Flexible Act Rush [Exploration]/presets/campaign-all-areas.txt
-a703b3f71d494a9fb83b4038fad8a3faad323a442dd95a9a7c97ac395752e8db  ./04 - Area Checklist and Flexible Act Rush [Exploration]/presets/campaign-any-percent.txt
+2b15c02d207f92846ffa0441b089a2b0f7ac7f646fb9aea899157914d63d9a07  ./04 - Area Checklist and Flexible Act Rush [Exploration]/presets/campaign-all-areas.txt
+698fd27f99cdadd6e37805b266927df32ba1d84d0610b6ede477294e38308516  ./04 - Area Checklist and Flexible Act Rush [Exploration]/presets/campaign-any-percent.txt
 d98f8653935d8efe91248b0b735a961c2fbb5305f7fb319e111f1ec3860713cc  ./04 - Area Checklist and Flexible Act Rush [Exploration]/presets/interlude-1-all-areas.txt
 c66838f54283e5d8c869b2a8da70d28c0753cee0c727c6bec5f422eb1ee5bf12  ./04 - Area Checklist and Flexible Act Rush [Exploration]/presets/interlude-2-all-areas.txt
 07658113fec3c5ec4005440392e14d6a559b7a19b61149c4d11be14b0305df72  ./04 - Area Checklist and Flexible Act Rush [Exploration]/presets/interlude-3-all-areas.txt
-5b3566d185e012b71658e9f7ba7464adde1fb91a50a3cfdedc840a12a4c78a79  ./04 - Area Checklist and Flexible Act Rush [Exploration]/README.md
 0f2c4e0a8033ddb64c25c253e22179711c446252625a81a3072725f93c76986b  ./04 - Area Checklist and Flexible Act Rush [Exploration]/tools/Generate-ChecklistLayout.ps1
+3359ddb0c73e1c76040ba3bf5e23c0895c68fee574559f349da75c788ecac8cc  ./05 - Ordered Segment and Act Practice [Exploration]/PathOfExile2_OrderedSegmentAutosplitter.asl
+14a39bf3ec51ecb8605f961ddb4515bb8ae9fa51107f73a75d970bcf9709d2ba  ./05 - Ordered Segment and Act Practice [Exploration]/README.md
 be23dc2f59a02e2952bcaa3df1acf8bfbe5836f0f4abeec856c397fa23a15694  ./05 - Ordered Segment and Act Practice [Exploration]/layouts/Path of Exile 2 - Act 1 All Areas Ordered Segment.lss
 49ed5a36507cc64d550aae815f58b22a34080551842171f3f3a48e32da047cfe  ./05 - Ordered Segment and Act Practice [Exploration]/layouts/Path of Exile 2 - Act 1 Any% Ordered Segment.lss
 66b79303d5cea69ffdbc3cbf7529aa0786c154d3191e0eccdc897e0c84fc108e  ./05 - Ordered Segment and Act Practice [Exploration]/layouts/Path of Exile 2 - Act 2 All Areas Ordered Segment.lss
@@ -75,7 +77,6 @@ be23dc2f59a02e2952bcaa3df1acf8bfbe5836f0f4abeec856c397fa23a15694  ./05 - Ordered
 648da99da1f95355d122ca6fac001e1a01d31bb91f584d7f1578a7d68763b86d  ./05 - Ordered Segment and Act Practice [Exploration]/layouts/Path of Exile 2 - Interlude 1 Ordered Segment.lss
 6ca1103bcb843b00790fa18966ee0f4652bbde69153f460183f125e80d79a09f  ./05 - Ordered Segment and Act Practice [Exploration]/layouts/Path of Exile 2 - Interlude 2 Ordered Segment.lss
 0b197f69d3d02609d2ad1ff030cc769f8794cc15e126ee522b6a45212c47ea70  ./05 - Ordered Segment and Act Practice [Exploration]/layouts/Path of Exile 2 - Interlude 3 Ordered Segment.lss
-3359ddb0c73e1c76040ba3bf5e23c0895c68fee574559f349da75c788ecac8cc  ./05 - Ordered Segment and Act Practice [Exploration]/PathOfExile2_OrderedSegmentAutosplitter.asl
 42f0040e2a8aa2ebbc90713accec3543792336068f272c726291e0c380758f42  ./05 - Ordered Segment and Act Practice [Exploration]/poe2_segment_route.txt
 cafa0760815aa886513cd6c4e2529c07e0c27c05ef5b862c3842c8ade60cee69  ./05 - Ordered Segment and Act Practice [Exploration]/presets/act1-all-areas.txt
 42f0040e2a8aa2ebbc90713accec3543792336068f272c726291e0c380758f42  ./05 - Ordered Segment and Act Practice [Exploration]/presets/act1-any-percent.txt
@@ -88,7 +89,6 @@ fffef466245e11819e63e6f87145e7ee158067cf42f23bae7936b3ba3addb770  ./05 - Ordered
 4c844865cafdff13b97494e60442152fa0a3d114e58f01c26c1c5da77095cc00  ./05 - Ordered Segment and Act Practice [Exploration]/presets/interlude-1.txt
 faf9b6eca189a008a813bc3f747d6d8b084c1f4814134a91883b505d153a50fa  ./05 - Ordered Segment and Act Practice [Exploration]/presets/interlude-2.txt
 81542856fa47fd34da04b34177f901b2e140331c9d1edfda86d1307e06c0040c  ./05 - Ordered Segment and Act Practice [Exploration]/presets/interlude-3.txt
-14a39bf3ec51ecb8605f961ddb4515bb8ae9fa51107f73a75d970bcf9709d2ba  ./05 - Ordered Segment and Act Practice [Exploration]/README.md
 910035033bae9a74008943dbebd8b990b1269934d93257da28d240906f45ad2c  ./05 - Ordered Segment and Act Practice [Exploration]/tools/Generate-OrderedSegmentLayout.ps1
 6b3f6ee3566bc5e8421c329e4b5c9aff84569c7a1aec914c2556954af7061f18  ./06 - Campaign 100 - Dynamic [Boss Rush]/Path of Exile 2 - BossRush - Campaign 100% - Dynamic.lss
 63fc277b78b59eef1226b954927155035d44f86e64bf6e8318f8d674a0088482  ./06 - Campaign 100 - Dynamic [Boss Rush]/PathOfExile2_BossRush_campaign100-dynamic_v0.2.0.asl
@@ -108,41 +108,42 @@ da234e4b08e8a1d6d88ab8e971671ecc33c13d1471fba1d794f88adf2f0493d4  ./10 - Pinnacl
 f25fe0ae3afed3eb4579f4df53dc6c1edf70ebb1410d71de8f464babe92bd77a  ./11 - Pinnacle v0.5 - Predefined [Boss Rush]/Path of Exile 2 - BossRush - Pinnacle v0.5 - Predefined.lss
 b2d6093c5ccd9a34f11217cf105737b0d93ee72f01067b18b5e55346e5405e8f  ./11 - Pinnacle v0.5 - Predefined [Boss Rush]/PathOfExile2_BossRush_pinnacle-v0.5-predefined_v0.2.0.asl
 4c6699bf5cbfa92e5c4c3b42440d20d937de2be0ff9a238a4acefef10e592570  ./11 - Pinnacle v0.5 - Predefined [Boss Rush]/README.txt
-c0bbaac68c655cbb09567f7c0e19082f22defbaccc8349aeac7b4d469520c20d  ./12 - Campaign 100 - Dynamic [Exploration + Boss Rush]/Path of Exile 2 - Mixed - Campaign 100% - Exploration + Boss Rush.lss
-31984a6e22d8341bb88ad2744c2de9db38c12ba6198766639a4cc134195bc499  ./12 - Campaign 100 - Dynamic [Exploration + Boss Rush]/PathOfExile2_MixedObjectiveAutosplitter.asl
-80a7ec42b42a12644f35cb2cde0baf4953407b1b36c8749594a5df90b5e612ac  ./12 - Campaign 100 - Dynamic [Exploration + Boss Rush]/poe2_mixed_route.txt
-34f35bdbc96ff2526706bce0c5df2e4ab079a83ec9159b3c3647c81543015d44  ./12 - Campaign 100 - Dynamic [Exploration + Boss Rush]/README.md
-09b76fd3711c79d334f1df293a95246b11568926d649777b9cbc3a00ccc59178  ./13 - Campaign Any v0.5 - Dynamic [Exploration + Boss Rush]/Path of Exile 2 - Mixed - Campaign Any% v0.5 - Exploration + Boss Rush.lss
-31984a6e22d8341bb88ad2744c2de9db38c12ba6198766639a4cc134195bc499  ./13 - Campaign Any v0.5 - Dynamic [Exploration + Boss Rush]/PathOfExile2_MixedObjectiveAutosplitter.asl
-9f75206c251da5c58b7baba675f74259be7c673509149af438e49875f0934549  ./13 - Campaign Any v0.5 - Dynamic [Exploration + Boss Rush]/poe2_mixed_route.txt
-97bd328a82c8769c760bee9e2415b4b320d3f8bcbadbce74cc010be47e1c20bd  ./13 - Campaign Any v0.5 - Dynamic [Exploration + Boss Rush]/README.md
+fb76826ef222463836d3f797795d6b6f6fda11210cb65b5a54a6164f05f100c6  ./12 - Campaign 100 - Dynamic [Exploration + Boss Rush]/Path of Exile 2 - Mixed - Campaign 100% - Exploration + Boss Rush.lss
+04f8a5aa51962b3c4e9c3440d4be7b95cac1979d3b78cbda889ad27d36e15979  ./12 - Campaign 100 - Dynamic [Exploration + Boss Rush]/PathOfExile2_MixedObjectiveAutosplitter.asl
+e72be38bb820724ff1182d36d4dd789ccca9539879c35d8d8a6b3d2ac80df3a0  ./12 - Campaign 100 - Dynamic [Exploration + Boss Rush]/README.md
+deed3fb71eca5f013f19a194a211b68106d9a1a719a086edd7dc1ff1fd092c26  ./12 - Campaign 100 - Dynamic [Exploration + Boss Rush]/poe2_mixed_route.txt
+8cf993d0b0c6c82b574d2c51e2798e4beefd330d71067dbcc01524067c5cfa36  ./13 - Campaign Any v0.5 - Dynamic [Exploration + Boss Rush]/Path of Exile 2 - Mixed - Campaign Any% v0.5 - Exploration + Boss Rush.lss
+04f8a5aa51962b3c4e9c3440d4be7b95cac1979d3b78cbda889ad27d36e15979  ./13 - Campaign Any v0.5 - Dynamic [Exploration + Boss Rush]/PathOfExile2_MixedObjectiveAutosplitter.asl
+3e3ae5a953d907eab90fda8d11a2dc530598ec084f0140b6ea1e5294c0e02ac1  ./13 - Campaign Any v0.5 - Dynamic [Exploration + Boss Rush]/README.md
+29a18c884aec70d482ee34d6b759e359c4f4718311f908578665f099993ffb2d  ./13 - Campaign Any v0.5 - Dynamic [Exploration + Boss Rush]/poe2_mixed_route.txt
 ae973135e3c04d4daba05caba1c072d4e4d2349c4301d10e61e0f59c03823cf7  ./14 - Custom Route [Exploration + Boss Rush]/Generate-MixedLayout.ps1
 30170ecd7b456050f5d8215b709fc079fff242088405bada3eb7472bdb96ca07  ./14 - Custom Route [Exploration + Boss Rush]/Path of Exile 2 - Custom Mixed Route Example.lss
-31984a6e22d8341bb88ad2744c2de9db38c12ba6198766639a4cc134195bc499  ./14 - Custom Route [Exploration + Boss Rush]/PathOfExile2_MixedObjectiveAutosplitter.asl
+04f8a5aa51962b3c4e9c3440d4be7b95cac1979d3b78cbda889ad27d36e15979  ./14 - Custom Route [Exploration + Boss Rush]/PathOfExile2_MixedObjectiveAutosplitter.asl
+23cdf63f71d91daa703b85d251ff222177ca96f6d6097a468189f532f983c773  ./14 - Custom Route [Exploration + Boss Rush]/README.md
 72584090834556020a2bce672803496d3f4b59523df372aae2d3d6cb454a653a  ./14 - Custom Route [Exploration + Boss Rush]/poe2_mixed_route.txt
-ca2d67041f6505534c82d977a22fc9826fea71b0789eaad09d316e16685323f1  ./14 - Custom Route [Exploration + Boss Rush]/README.md
-27316aab767eba97cb9d0cb3eefb96b7aa1d7ef1a373ced60c52e137a1d4b188  ./BossWatcher [Boss Rush Detection]/bosses.txt
+2dae0f363ba42ab2ea3fdd709c6ba8a312760a2ba3376bc26a3d2a85f12dcac6  ./BossWatcher [Boss Rush Detection]/BossLists/README.md
+68e07e6bf6e49f4c2139e988cc16a9d9bbf543a8fc8af1da556ef7271e12b849  ./BossWatcher [Boss Rush Detection]/BossLists/SOURCES.md
 b60a8835e5ac4b63ca4b86c12ed3c3ce325c857cfe4a5924186d48ef76b02d53  ./BossWatcher [Boss Rush Detection]/BossLists/campaign-100.txt
 7d88d0a6e48eadac5f3e760d5408081806ec66bf035a86458c9070bb16c9f06e  ./BossWatcher [Boss Rush Detection]/BossLists/campaign-any-v0.5.txt
 dbffa772f5524b19f2f6c4972e741a057935c3056d80358a91822760d5264e25  ./BossWatcher [Boss Rush Detection]/BossLists/excluded-unstable-minibosses.txt
 899a0cb2c4a4b544f78d2ab8bebf7169c8d13211927e1e7553bc430383e63036  ./BossWatcher [Boss Rush Detection]/BossLists/pinnacle-v0.5.txt
-2dae0f363ba42ab2ea3fdd709c6ba8a312760a2ba3376bc26a3d2a85f12dcac6  ./BossWatcher [Boss Rush Detection]/BossLists/README.md
-68e07e6bf6e49f4c2139e988cc16a9d9bbf543a8fc8af1da556ef7271e12b849  ./BossWatcher [Boss Rush Detection]/BossLists/SOURCES.md
 e59ca392436384e7ef78d31b6274fdf19fe99aefe0754ebae364380e412deb06  ./BossWatcher [Boss Rush Detection]/BossLists/support-only.txt
 7191b09c66061380657407a299ef829c9d35f7c6de0c355546343e728d55411b  ./BossWatcher [Boss Rush Detection]/Build.ps1
+3049940fa4775ffa129c0ee5b6d4dfe85f164e3e4b76a322297aea5bbf293cf6  ./BossWatcher [Boss Rush Detection]/CHANGELOG.md
+4883495ef54ef9886099cfdde67409653f4e8e4a1e8713aa6476a02522c75253  ./BossWatcher [Boss Rush Detection]/CHECKSUMS.sha256
+8ad400a03102b782654bb3365785ecb6993fda12c9a1171a0670f173ed539ac1  ./BossWatcher [Boss Rush Detection]/Calibration/README.txt
 7be13d66fb5ec9dccf018d543f266a87388719f6be0c8c4e1f311bb66eff3137  ./BossWatcher [Boss Rush Detection]/Calibration/dual_iktab_ekbab_left_broad.png
 0650d8984da3c7c2e3fdda18dff8e69981daec2beae71f5b237449ccc16d60bf  ./BossWatcher [Boss Rush Detection]/Calibration/dual_iktab_ekbab_left_gold.png
 b7d0fd076127ad9196af51fa8252efd78c73c8f8256eefdd5b5601530a5deab3  ./BossWatcher [Boss Rush Detection]/Calibration/dual_iktab_ekbab_ocr.png
 6ffcff2da1b3d54682149ae87fd8f526322a721de9aaa677b0be08e5dfd84065  ./BossWatcher [Boss Rush Detection]/Calibration/dual_iktab_ekbab_raw.png
 39e168aee67bc834e1586956da304f47879266d19eb1cc296054d7395bd3bba2  ./BossWatcher [Boss Rush Detection]/Calibration/dual_iktab_ekbab_right_broad.png
 7f9a8d43a70abf0623605ec452a9e3597b169c8fbdf7bd99265d130ccae33e6a  ./BossWatcher [Boss Rush Detection]/Calibration/dual_iktab_ekbab_right_gold.png
-8ad400a03102b782654bb3365785ecb6993fda12c9a1171a0670f173ed539ac1  ./BossWatcher [Boss Rush Detection]/Calibration/README.txt
-3049940fa4775ffa129c0ee5b6d4dfe85f164e3e4b76a322297aea5bbf293cf6  ./BossWatcher [Boss Rush Detection]/CHANGELOG.md
-4883495ef54ef9886099cfdde67409653f4e8e4a1e8713aa6476a02522c75253  ./BossWatcher [Boss Rush Detection]/CHECKSUMS.sha256
-90359ccc6e5d898679089f8ad9b77e9247b654155c9b8e4b11ef0b9f43cb227b  ./BossWatcher [Boss Rush Detection]/config.json
 693a0df9067ab28069b7fad07871608e14f16a2479febe61d4880157815ee01a  ./BossWatcher [Boss Rush Detection]/README.md
 03567b75bbd0c04d189f198ac23e624036f3abb94aed7f67480ce630119cbfb1  ./BossWatcher [Boss Rush Detection]/Run-Source.ps1
 1b3a1ad9eb263d52c6ed36dbecead7c6fee03b2fa5d3a193f2a2d593071d3704  ./BossWatcher [Boss Rush Detection]/Setup-OCR.ps1
+05060a69a2b50217783de37a84c6a4a2a4c4500cfc01f171e09d75d66d165b99  ./BossWatcher [Boss Rush Detection]/VALIDATION.txt
+27316aab767eba97cb9d0cb3eefb96b7aa1d7ef1a373ced60c52e137a1d4b188  ./BossWatcher [Boss Rush Detection]/bosses.txt
+90359ccc6e5d898679089f8ad9b77e9247b654155c9b8e4b11ef0b9f43cb227b  ./BossWatcher [Boss Rush Detection]/config.json
 055945a29bef789874777157076f236ff6b81e3f677bba183d4b751a2535c5ca  ./BossWatcher [Boss Rush Detection]/src/PoE2BossWatcher/AppConfig.cs
 4fe58ff6075497be80bc7b38523af374e01f445408e16433a3750329095de833  ./BossWatcher [Boss Rush Detection]/src/PoE2BossWatcher/BossBarMetrics.cs
 68b43d66cc7fecf579e8ff1603497e310ed10e0436105398626f9041de132dcb  ./BossWatcher [Boss Rush Detection]/src/PoE2BossWatcher/BossDefinitions.cs
@@ -162,22 +163,21 @@ d8f196c55432bb9427af5f323bece6264f84a493c48191939312d466fe14b4be  ./BossWatcher 
 7a5283e161243b792be751b31f14fc3bae242441cbdca1e0146369a803a046e9  ./BossWatcher [Boss Rush Detection]/src/PoE2BossWatcher/Program.cs
 070fa690fd72db916fecac855758be7e692a675b0e6911e4d03b3dcf5c458702  ./BossWatcher [Boss Rush Detection]/src/PoE2BossWatcher/ScreenCapture.cs
 469f419edf707dbbc4cbd8a82b3a47b964fe3ac4bc9e4f62b9785df55e03e30c  ./BossWatcher [Boss Rush Detection]/src/PoE2BossWatcher/TemporalRunCollapse.cs
-05060a69a2b50217783de37a84c6a4a2a4c4500cfc01f171e09d75d66d165b99  ./BossWatcher [Boss Rush Detection]/VALIDATION.txt
-bba0a65b088685f77b465b54238596247c9b99a9932f8fe3405db6ba29d0f4c0  ./Build-Release.ps1
+e9dca21adad2e0dace34d8562b5cc1b2299ae5233d8c5e307c3b53bb3a1e185f  ./Build-Release.ps1
 b7c0af75a3409afe54f9d9d7823f1a45749a601852ce75fa6c60610d4b9b78ec  ./Build-User-Tools.ps1
-fcbc2ccb29e5208d4fb03b2073e4e39eb042b424c446fdb219aaee62a45d950d  ./CHANGELOG.md
-b0a1ef39791eeabd49cfacff730022abafd69676d0f520f27f8607fa260dd83b  ./Installer [Windows]/PoE2RouteAutoSplitter.iss
-5776dfe117222609afd092285ed422b4eb1f09aa864dcc5c0c932e154d202dc1  ./Installer [Windows]/README.md
-646adaaf26d47dc7d3c6e65b2f31f0f84527eb56e22e759ca4a11049722da833  ./README.md
+1fca5700c2ca1076115e3579d83f8a6308a327f7c4097ee8a6b9a76c0f68c801  ./CHANGELOG.md
+e7e467fc78d5406ae0e1be03ea632bb2ff671f5deae10f7d103af56f67349054  ./Installer [Windows]/PoE2RouteAutoSplitter.iss
+6860e6cc242c925770517a893a64c774cba5260a8c07bd39155ca85a516c8409  ./Installer [Windows]/README.md
+63bf61b42825c9a997a2fb21b03807512502219214927ecb75776b93d4d0234e  ./README.md
+90f739c4aaad0b8bf1189a3c636bcf064a857f61e8aa683c3496ea98880e4d60  ./START HERE - Choose a Mode.txt
 6a0b19c084a186b012c457ca176c7f2c4b0069223663f1ded05bb55d039c9d3d  ./Setup UI [Configuration]/Build.ps1
-0db23e23fd8776e6357d32f0cb29a2ab3499157cdbd4133ed9e9d6e24d36d848  ./Setup UI [Configuration]/README.md
+bc15dbcdda9412aaa378aefd2b712fcd2131618057595713ae08be097d769509  ./Setup UI [Configuration]/README.md
 93311d62a9bd8497a131fb154a64f4fee2761e956ad590e96f59bf9179249c69  ./Setup UI [Configuration]/Run-Source.ps1
 9eefda655db602979541d6cf213674d95ed4150a55ef14c821348876e69aba46  ./Setup UI [Configuration]/src/PoE2RouteSetup/LiveSplitFiles.cs
 b54c57c34fdd8077ca07fc06ad038c97d49cc76868207aba4853b2e14f024bbc  ./Setup UI [Configuration]/src/PoE2RouteSetup/Models.cs
 7d3b01ca05240bb2e95f5e8f835ae2ed94b744dd31dc17318927dd8eaa225219  ./Setup UI [Configuration]/src/PoE2RouteSetup/PackageData.cs
-e2bddc905f386d1a0f61744db40e24214e048d998a67c3fb07a48996b6a2d7bc  ./Setup UI [Configuration]/src/PoE2RouteSetup/PoE2RouteSetup.csproj
+a0fed1e4a53470817932c61dff15f878d76261497daf873b0c9fe208110ccae4  ./Setup UI [Configuration]/src/PoE2RouteSetup/PoE2RouteSetup.csproj
 ab9fdc75af093c6147bb100e07601932fce78fd920baf0bf95f8909e46235809  ./Setup UI [Configuration]/src/PoE2RouteSetup/Program.cs
 2e7df66e44e22e0bbcc27465d95a2b9e61a4eef2bd934e2b14c59f6dc67bccb8  ./Setup UI [Configuration]/src/PoE2RouteSetup/SetupForm.cs
-baab4e5de993959cb8c5344aa418e3889ec7e4529219e14ec7058ef02e255357  ./Setup UI [Configuration]/ui-manifest.json
-1ef75baba898ae558264e2572bb4cbd25764dcfc884e87f27c79a88f4d9f7ed6  ./START HERE - Choose a Mode.txt
-4092756bbe5c188effb352d78273c8eee17f6fac61ffa39efac6cada235a6765  ./VALIDATION.txt
+25f2d8a72b17b7a2cc09eb245c260dbc5f0526690b6e0db9e4a6e49db0ea96b8  ./Setup UI [Configuration]/ui-manifest.json
+10a16dedcaafb60eed2672d7a955df3674f1e4a915df671de68a7bf88b28d53a  ./VALIDATION.txt

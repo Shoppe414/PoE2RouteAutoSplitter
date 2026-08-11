@@ -1,7 +1,7 @@
 # Path of Exile 2 Route AutoSplitter - v0.2.3
 # CAMPAIGN 100% TEST / REFERENCE ROUTE
 
-# The Riverbank (G1_1) is intentionally omitted because it is the default auto-start trigger.
+# The Riverbank is the first timed segment. Entering it starts the timer; entering the next configured route area completes it.
 # Ordering changes for v0.2: Freythorn immediately after Hunting Grounds; Azak Bog immediately after Matlan Waterways.
 # Current independently detectable Runes of Aldur story areas: Lost Catacombs, Skull of the Titan, Mystic Refuge.
 # Deserted Post is a Plunder's Point subarea and is intentionally not a split.
@@ -9,6 +9,7 @@
 # Act 4 island routing is not inherently linear. Treat this as the current 100% test/reference order, not a final optimized race route.
 
 # ---- Act 1 ----
+G1_1                                   # The Riverbank
 G1_town                                # Clearfell Encampment
 G1_2                                   # Clearfell
 G1_3                                   # Mud Burrow

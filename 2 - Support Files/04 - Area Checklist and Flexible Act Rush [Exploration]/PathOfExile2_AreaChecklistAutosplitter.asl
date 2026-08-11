@@ -1,4 +1,4 @@
-﻿/*
+/*
 Path of Exile 2 Area Checklist AutoSplitter for LiveSplit
 v1.1.0 validation build
 
@@ -207,8 +207,10 @@ init
             vars.baseSegmentNames.Add(segment.Name);
             runCount++;
         }
-        if (runCount != vars.objectiveIds.Count)
-            throw new System.Exception("LiveSplit segment count (" + runCount + ") must equal objective count (" + vars.objectiveIds.Count + ")");
+        int implicitStartObjectives = (vars.startAreaId != "" && vars.objectiveIds.Contains(vars.startAreaId)) ? 1 : 0;
+        int expectedRunCount = vars.objectiveIds.Count - implicitStartObjectives;
+        if (runCount != expectedRunCount)
+            throw new System.Exception("LiveSplit segment count (" + runCount + ") must equal timed objective count (" + expectedRunCount + "). The auto-start area is counted as completed at timer start and does not require a zero-time split.");
 
         string gameDir = System.IO.Path.GetDirectoryName(modules.First().FileName);
         vars.clientLogPath = System.IO.Path.Combine(gameDir, "logs", "Client.txt");
@@ -271,11 +273,21 @@ update
         vars.lastAreaId = areaId;
         string areaName = vars.areaNames[areaId];
 
-        if (vars.startAreaId != "" && System.String.Equals(areaId, vars.startAreaId, System.StringComparison.OrdinalIgnoreCase))
+        if (vars.startAreaId != ""
+            && System.String.Equals(areaId, vars.startAreaId, System.StringComparison.OrdinalIgnoreCase)
+            && timer.CurrentPhase == LiveSplit.Model.TimerPhase.NotRunning)
         {
+            // The configured start area is a real exploration objective. Because the timer
+            // begins on this same entry event, count it as satisfied without creating a
+            // separate zero-time LiveSplit split.
+            if (vars.objectiveIds.Contains(areaId) && !vars.completedIds.Contains(areaId))
+                vars.completedIds.Add(areaId);
+
             vars.startTrigger = true;
             if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
-                System.DateTime.Now.ToString("s") + " START_TRIGGER " + areaId + " " + areaName + " | source=" + source + System.Environment.NewLine);
+                System.DateTime.Now.ToString("s") + " START_TRIGGER " + areaId + " " + areaName
+                + " | implicitObjective=" + (vars.objectiveIds.Contains(areaId) ? "true" : "false")
+                + " | source=" + source + System.Environment.NewLine);
             break;
         }
 

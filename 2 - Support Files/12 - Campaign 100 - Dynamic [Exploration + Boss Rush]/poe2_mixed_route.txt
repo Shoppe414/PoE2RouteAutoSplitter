@@ -1,8 +1,10 @@
 # Mixed - Campaign 100% - Exploration + Boss Rush
 @start=G1_1
 @order=unordered
+@areaCompletion=successor
 
 # Exploration objectives
+area|G1_1                                # The Riverbank
 area|G1_town                             # Clearfell Encampment
 area|G1_2                                # Clearfell
 area|G1_3                                # Mud Burrow

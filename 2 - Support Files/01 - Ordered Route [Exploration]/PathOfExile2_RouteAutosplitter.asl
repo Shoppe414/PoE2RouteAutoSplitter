@@ -1,6 +1,6 @@
-﻿/*
+/*
 Path of Exile 2 Route AutoSplitter for LiveSplit
-v0.2.15 validation build
+v0.2.16 successor-trigger build
 
 Core behavior:
 - Reads Path of Exile 2 logs/Client.txt directly (no custom DLL).
@@ -19,7 +19,7 @@ Core behavior:
 Route file:
   <LiveSplit folder>\poe2_route.txt
 
-The Riverbank (G1_1) normally stays out of the route because entering it starts the timer.
+When G1_1 is the first route entry, route segments use successor-entry completion: entering G1_1 starts the timer, and entering the next configured route area completes The Riverbank. Detours/revisits do not complete a segment.
 */
 
 state("PathOfExileSteam") {}
@@ -54,6 +54,7 @@ startup
     vars.routeIndex = 0;
     vars.lastLiveSplitIndex = -1;
     vars.routeValid = false;
+    vars.successorCompletion = false;
     vars.currentAreaId = "";
     vars.currentAreaLevel = 0;
     vars.lastAreaId = "";
@@ -218,6 +219,7 @@ init
     vars.routeIndex = 0;
     vars.lastLiveSplitIndex = -1;
     vars.routeValid = false;
+    vars.successorCompletion = false;
     vars.currentAreaId = "";
     vars.currentAreaLevel = 0;
     vars.lastAreaId = "";
@@ -295,6 +297,14 @@ init
             return;
         }
 
+        // Campaign routes that explicitly include Riverbank use successor-entry
+        // completion. The active segment is route[routeIndex], and only entry into
+        // route[routeIndex + 1] completes it. This prevents town/hideout detours or
+        // revisits from being mistaken for area completion. Legacy practice routes
+        // that do not start with G1_1 retain entry-based split behavior.
+        vars.successorCompletion = vars.route.Count > 1
+            && System.String.Equals(vars.route[0], "G1_1", System.StringComparison.OrdinalIgnoreCase);
+
         vars.routeValid = true;
     }
     catch (System.Exception ex)
@@ -326,9 +336,10 @@ init
         // validation results from an older pass cannot be mistaken for this one.
         System.IO.File.WriteAllText(vars.unknownPath, "");
 
-        string ready = "READY | v0.2.15 | Process=" + game.ProcessName
+        string ready = "READY | v0.2.16 | Process=" + game.ProcessName
             + " | Client.txt=" + vars.clientLogPath
-            + " | Route entries=" + vars.route.Count;
+            + " | Route entries=" + vars.route.Count
+            + " | Completion=" + (vars.successorCompletion ? "SUCCESSOR_ENTRY" : "ENTRY");
         System.IO.File.WriteAllText(vars.statusPath, ready + System.Environment.NewLine);
         if (settings["debugLog"])
             System.IO.File.AppendAllText(vars.debugPath, System.DateTime.Now.ToString("s") + " " + ready + System.Environment.NewLine);
@@ -367,7 +378,9 @@ update
             string action = liveIndex > oldIndex ? "LIVESPLIT_ADVANCE" : "LIVESPLIT_UNDO";
             vars.lastAction = action;
 
-            string nextId = vars.routeIndex < vars.route.Count ? vars.route[vars.routeIndex] : "<route complete>";
+            string nextId = vars.routeIndex < vars.route.Count
+                ? (vars.successorCompletion && vars.routeIndex + 1 < vars.route.Count ? vars.route[vars.routeIndex + 1] : vars.route[vars.routeIndex])
+                : "<route complete>";
             string nextName = vars.areaNames.ContainsKey(nextId) ? vars.areaNames[nextId] : nextId;
 
             string syncStatus = "Status: RUNNING" + System.Environment.NewLine
@@ -591,7 +604,10 @@ update
 
         bool known = vars.areaNames.ContainsKey(areaId);
         string detectedName = known ? vars.areaNames[areaId] : "UNKNOWN AREA";
-        string expectedId = vars.routeIndex < vars.route.Count ? vars.route[vars.routeIndex] : "<route complete>";
+        string activeSegmentId = vars.routeIndex < vars.route.Count ? vars.route[vars.routeIndex] : "<route complete>";
+        string expectedId = vars.routeIndex < vars.route.Count
+            ? (vars.successorCompletion && vars.routeIndex + 1 < vars.route.Count ? vars.route[vars.routeIndex + 1] : vars.route[vars.routeIndex])
+            : "<route complete>";
         string expectedName = vars.areaNames.ContainsKey(expectedId) ? vars.areaNames[expectedId] : expectedId;
         bool inRoute = vars.routeSet.Contains(areaId);
 
@@ -635,56 +651,58 @@ update
                 + " | expected=" + expectedId + " " + expectedName + System.Environment.NewLine);
 
         // Dedicated final-sequence state machine.
-        // Normal route behavior deliberately does NOT split when Cuachic is entered.
-        // Entering Ziggurat starts two native ASL split actions on consecutive ticks:
-        //   1) stamp/complete The Cuachic Vault and advance to The Ziggurat Refuge
-        //   2) stamp/complete The Ziggurat Refuge and end the LiveSplit run
-        // The second split normally places LiveSplit in Ended state. If a custom .lss
-        // contains extra segments and LiveSplit is still Running, onSplit{} pauses it.
+        // In successor-entry campaign mode, entering Ziggurat is the exact trigger
+        // for the active Cuachic segment. The same event also satisfies the terminal
+        // Ziggurat row, so the existing two-stage final commit stamps both rows at
+        // the same captured entry time. No arbitrary area departure can arm this.
         bool routeEndsAtZigguratUpdate = vars.route.Count >= 2
             && System.String.Equals(vars.route[vars.route.Count - 1], "G_Endgame_Town", System.StringComparison.OrdinalIgnoreCase);
 
-        if (routeEndsAtZigguratUpdate
+        if (vars.successorCompletion
+            && routeEndsAtZigguratUpdate
             && vars.routeIndex == vars.route.Count - 2
-            && System.String.Equals(areaId, "P3_7", System.StringComparison.OrdinalIgnoreCase))
-        {
-            vars.finishArmed = true;
-            vars.finishStage = 1;
-            vars.lastAction = "FINISH ARMED / WAITING FOR ZIGGURAT";
-
-            if (settings["debugLog"])
-                System.IO.File.AppendAllText(vars.debugPath,
-                    System.DateTime.Now.ToString("s") + " FINISH_ARMED"
-                    + " | area=P3_7 The Cuachic Vault"
-                    + " | liveSplitIndex=" + timer.CurrentSplitIndex
-                    + " | routeIndex=" + vars.routeIndex
-                    + " | waitingFor=G_Endgame_Town The Ziggurat Refuge"
-                    + System.Environment.NewLine);
-        }
-
-        if (routeEndsAtZigguratUpdate
-            && vars.finishArmed
-            && !vars.finishComplete
-            && vars.finishStage == 1
             && System.String.Equals(areaId, "G_Endgame_Town", System.StringComparison.OrdinalIgnoreCase))
         {
-            // Do not mutate LiveSplit directly from update{}. Queue split #1 and let
-            // the normal ASL split action perform it in this same update cycle.
-            // Capture the actual rules-defined finish instant before any delayed final bookkeeping.
-            // Both Cuachic exit and Ziggurat completion occur on this same zone transition.
             var exactFinishTime = timer.CurrentTime;
             vars.finishRealTime = exactFinishTime.RealTime;
             vars.finishGameTime = exactFinishTime.GameTime;
+            vars.finishArmed = true;
             vars.finishStage = 2;
-            vars.lastAction = "FINAL SEQUENCE / SPLIT 1 QUEUED";
+            vars.lastAction = "FINAL SEQUENCE / CUACHIC + ZIGGURAT QUEUED";
 
             if (settings["debugLog"])
                 System.IO.File.AppendAllText(vars.debugPath,
                     System.DateTime.Now.ToString("s") + " FINISH_TRIGGER"
                     + " | entered=G_Endgame_Town The Ziggurat Refuge"
+                    + " | activeSegment=P3_7 The Cuachic Vault"
+                    + " | completion=SUCCESSOR_ENTRY"
                     + " | liveSplitIndex=" + timer.CurrentSplitIndex
-                    + " | queue=CUACHIC_SPLIT_THEN_ZIGGURAT_SPLIT"
                     + System.Environment.NewLine);
+        }
+        else if (!vars.successorCompletion)
+        {
+            // Legacy entry-based behavior retained for older/custom route files.
+            if (routeEndsAtZigguratUpdate
+                && vars.routeIndex == vars.route.Count - 2
+                && System.String.Equals(areaId, "P3_7", System.StringComparison.OrdinalIgnoreCase))
+            {
+                vars.finishArmed = true;
+                vars.finishStage = 1;
+                vars.lastAction = "FINISH ARMED / WAITING FOR ZIGGURAT";
+            }
+
+            if (routeEndsAtZigguratUpdate
+                && vars.finishArmed
+                && !vars.finishComplete
+                && vars.finishStage == 1
+                && System.String.Equals(areaId, "G_Endgame_Town", System.StringComparison.OrdinalIgnoreCase))
+            {
+                var exactFinishTime = timer.CurrentTime;
+                vars.finishRealTime = exactFinishTime.RealTime;
+                vars.finishGameTime = exactFinishTime.GameTime;
+                vars.finishStage = 2;
+                vars.lastAction = "FINAL SEQUENCE / SPLIT 1 QUEUED";
+            }
         }
     }
 
@@ -730,7 +748,10 @@ split
     if (vars.routeIndex >= vars.route.Count)
         return false;
 
-    string expectedId = vars.route[vars.routeIndex];
+    string segmentId = vars.route[vars.routeIndex];
+    string expectedId = vars.successorCompletion
+        ? (vars.routeIndex + 1 < vars.route.Count ? vars.route[vars.routeIndex + 1] : segmentId)
+        : segmentId;
     bool routeEndsAtZiggurat = vars.route.Count >= 2
         && System.String.Equals(vars.route[vars.route.Count - 1], "G_Endgame_Town", System.StringComparison.OrdinalIgnoreCase);
     bool atPenultimateRouteEntry = routeEndsAtZiggurat && vars.routeIndex == vars.route.Count - 2;
@@ -738,7 +759,8 @@ split
     // Edge-case finish semantics: entering Cuachic arms the ending but does not
     // stamp it. Its timestamp is intentionally taken when the player exits Cuachic
     // by entering Ziggurat. The Ziggurat event then drives the two forced splits above.
-    if (atPenultimateRouteEntry
+    if (!vars.successorCompletion
+        && atPenultimateRouteEntry
         && System.String.Equals(vars.currentAreaId, "P3_7", System.StringComparison.OrdinalIgnoreCase))
     {
         vars.finishArmed = true;
@@ -757,7 +779,8 @@ split
 
     if (System.String.Equals(vars.currentAreaId, expectedId, System.StringComparison.OrdinalIgnoreCase))
     {
-        string name = vars.areaNames.ContainsKey(expectedId) ? vars.areaNames[expectedId] : expectedId;
+        string name = vars.areaNames.ContainsKey(segmentId) ? vars.areaNames[segmentId] : segmentId;
+        string triggerName = vars.areaNames.ContainsKey(expectedId) ? vars.areaNames[expectedId] : expectedId;
         int completedIndex = vars.routeIndex;
 
         vars.routeIndex++;
@@ -777,7 +800,8 @@ split
 
         if (settings["debugLog"])
             System.IO.File.AppendAllText(vars.debugPath,
-                System.DateTime.Now.ToString("s") + " SPLIT " + expectedId + " " + name
+                System.DateTime.Now.ToString("s") + " SPLIT " + segmentId + " " + name
+                + " | trigger=" + expectedId + " " + triggerName
                 + " | routeIndex=" + completedIndex + System.Environment.NewLine);
 
         return true;

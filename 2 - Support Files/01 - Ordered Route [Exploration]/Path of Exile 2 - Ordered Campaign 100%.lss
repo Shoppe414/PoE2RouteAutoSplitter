@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <Run version="1.7.0">
   <GameIcon />
   <GameName>Path of Exile 2</GameName>
@@ -12,6 +12,15 @@
   <Offset>00:00:00</Offset>
   <AttemptCount>0</AttemptCount>
   <Segments>
+    <Segment>
+      <Name>The Riverbank</Name>
+      <Icon />
+      <SplitTimes>
+        <SplitTime name="Personal Best" />
+      </SplitTimes>
+      <BestSegmentTime />
+      <SegmentHistory />
+    </Segment>
     <Segment>
       <Name>Clearfell Encampment</Name>
       <Icon />

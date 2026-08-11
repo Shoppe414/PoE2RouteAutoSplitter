@@ -1,5 +1,16 @@
 # Changelog
 
+## v2.0.1
+
+### Riverbank exploration correction
+- Added The Riverbank (`G1_1`) to Campaign 100% and Campaign Any% exploration accounting.
+- Ordered campaign routes now use **successor-entry completion** when the route begins with Riverbank: entering Riverbank starts the timer, and only entering the next configured route area completes the active segment.
+- Returning to town, visiting a hideout, or revisiting an earlier area does not complete the current ordered segment unless that destination is the exact configured successor.
+- Campaign 100% ordered splits now contain 99 area rows; Campaign Any% ordered contains 78.
+- Flexible/checklist exploration modes count Riverbank as implicitly completed by the auto-start event without adding a zero-time LiveSplit split.
+- Combined Campaign 100% and Any% modes use successor-entry completion for their exploration objectives while boss objectives remain dynamic. Their totals are now 166 and 118 objectives respectively.
+- Custom mixed routes retain entry-based area objectives unless `@areaCompletion=successor` is explicitly present.
+
 ## v2.0.0
 
 ### Installer and release distribution
@@ -15,6 +26,7 @@
 ### Git/GitHub release pipeline
 - Added repository `.gitignore` rules for compiled executables, `bin`/`obj`/`publish`, downloaded OCR data, release staging, and installer output.
 - Added `Build-Release.ps1` to build both applications, assemble a runtime-only package, create the portable ZIP, compile the installer, and generate SHA-256 release checksums.
+- Fixed Inno Setup discovery so local release builds recognize both machine-wide installs and WinGet/current-user installs under `%LOCALAPPDATA%\Programs\Inno Setup 6`, with registry-based fallback for custom install locations.
 - Local release builds copy the installer into `1 - User Setup` for developer convenience while keeping it ignored by Git.
 - Added `.github/workflows/build-release.yml`. Version tags such as `v2.0.0` build the Windows release and publish the installer, portable ZIP, and checksum file as GitHub Release assets.
 - Manual workflow dispatch can build the same artifacts without creating a tagged release.

@@ -1,0 +1,39 @@
+PoE2 Route AutoSplitter v2.0.1 - Validation Summary
+
+Riverbank correction
+- Campaign 100% ordered exploration route: 99 route rows / 99 LiveSplit segments.
+- Campaign Any% ordered exploration route: 78 route rows / 78 LiveSplit segments.
+- Both ordered campaign routes begin with G1_1 | The Riverbank.
+- Ordered campaign ASL uses successor-entry completion when the first route row is G1_1.
+- The active segment completes only when the next configured route area is entered; arbitrary departures are not completion events.
+- Final Cuachic Vault + Ziggurat Refuge handling remains the dedicated two-stage Ziggurat entry sequence.
+
+Flexible/checklist behavior
+- Riverbank is included in the Act 1 / Campaign All Areas / Campaign Any% checklist data.
+- When G1_1 is also @start, its visit is counted implicitly at timer start without a zero-time LiveSplit split.
+- Existing timed checklist .lss row counts therefore remain valid.
+
+Merged Exploration + Boss Rush
+- Campaign 100%: 99 exploration + 67 bosses = 166 objectives / LiveSplit rows.
+- Campaign Any% v0.5: 78 exploration + 40 required bosses = 118 objectives / LiveSplit rows.
+- Premade mixed campaign routes opt into @areaCompletion=successor.
+- Mixed area objectives are armed on entry and complete only on their configured successor entry.
+- A queued-area mechanism supports the final Cuachic Vault + Ziggurat Refuge objectives on the same transition.
+- Custom mixed routes remain entry-based unless @areaCompletion=successor is explicitly added.
+
+Regression/static validation performed
+- 41 Setup UI premade entries resolve to existing .lss/.asl/runtime files.
+- JSON and all .lss XML files parse successfully.
+- C#/ASL delimiter and lexical-state scan completed without errors.
+- Ordered route/LSS count alignment verified.
+- Checklist timed-row vs implicit-start-objective alignment verified.
+- Mixed objective counts and Riverbank inclusion verified.
+- Successor logic contains no departedAreaId / generic departure-completion implementation.
+- Detour simulation verified: Riverbank -> hideout/revisit does not split; entering Clearfell Encampment completes Riverbank; revisiting Riverbank while Clearfell Encampment is active does not split; entering Clearfell completes Clearfell Encampment.
+- BossWatcher and all Boss-Rush-only mode files were verified byte-for-byte unchanged from v2.0.0.
+- 234 structural/regression checks passed in the final route validation pass.
+- 81 JSON/XML/C#/ASL structural checks passed in the syntax/parse pass.
+
+Environment limitation
+- No .NET SDK, PowerShell, LiveSplit, or Path of Exile 2 runtime is available in this container.
+- Windows compilation and in-game LiveSplit behavior must still be runtime-tested on the target machine.

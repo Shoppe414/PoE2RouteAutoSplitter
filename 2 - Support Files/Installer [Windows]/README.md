@@ -1,4 +1,4 @@
-# Windows Installer — v2.0.0
+# Windows Installer — v2.0.1
 
 `PoE2RouteAutoSplitter.iss` is the Inno Setup 6 definition used by `..\Build-Release.ps1` and the GitHub Actions release workflow.
 
@@ -32,7 +32,7 @@ This protects the user's currently generated LiveSplit setup.
 From `2 - Support Files`:
 
 ```powershell
-.\Build-Release.ps1 -Version 2.0.0
+.\Build-Release.ps1 -Version 2.0.1
 ```
 
 The script locates `ISCC.exe`, assembles a runtime staging package, and compiles the installer. The GitHub Actions workflow uses the Inno Setup compiler already provided on the Windows 2025 hosted runner.

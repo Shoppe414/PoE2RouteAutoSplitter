@@ -13,6 +13,15 @@
   <AttemptCount>0</AttemptCount>
   <Segments>
     <Segment>
+      <Name>The Riverbank</Name>
+      <Icon />
+      <SplitTimes>
+        <SplitTime name="Personal Best" />
+      </SplitTimes>
+      <BestSegmentTime />
+      <SegmentHistory />
+    </Segment>
+    <Segment>
       <Name>Clearfell Encampment</Name>
       <Icon />
       <SplitTimes>

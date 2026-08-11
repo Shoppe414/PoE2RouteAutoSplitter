@@ -1,10 +1,10 @@
-# PoE2 Route AutoSplitter Setup UI — v2.0.0
+# PoE2 Route AutoSplitter Setup UI — v2.0.1
 
 This is the Windows configuration tool for the Route AutoSplitter package.
 
 ## Normal users
 
-Normal users should not build this project. Install the ready-to-run `PoE2RouteAutoSplitter-v2.0.0-Setup.exe` GitHub Release asset instead.
+Normal users should not build this project. Install the ready-to-run `PoE2RouteAutoSplitter-v2.0.1-Setup.exe` GitHub Release asset instead.
 
 The installed launcher is:
 
@@ -70,5 +70,5 @@ To build both tools without an installer, run from `2 - Support Files`:
 To create the actual distributable installer and portable ZIP, use:
 
 ```powershell
-.\Build-Release.ps1 -Version 2.0.0
+.\Build-Release.ps1 -Version 2.0.1
 ```

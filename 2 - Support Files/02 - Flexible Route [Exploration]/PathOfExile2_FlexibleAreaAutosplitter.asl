@@ -1,4 +1,4 @@
-﻿/*
+/*
 Path of Exile 2 Flexible Area AutoSplitter for LiveSplit
 v0.3.0
 
@@ -23,12 +23,12 @@ v0.3 architecture:
   into The Ziggurat Refuge, preserving the working v0.2.15 finish behavior.
 
 Default 100% layout:
-- 97 unordered area slots
+- 97 timed unordered area slots
 - 1 final The Ziggurat Refuge slot
-- The Riverbank is the auto-start trigger and is not one of the 97 slots.
+- The Riverbank is also counted as an Act 1 objective, but its auto-start entry is satisfied implicitly and does not create a zero-time LiveSplit split.
 
 Important:
-The supplied 100% Flexible .lss assumes all 97 area checkboxes are enabled.
+The supplied 100% Flexible .lss has 98 timed rows. Riverbank is counted separately by the auto-start event, so the default enabled objective total is 99 areas.
 If areas are disabled, the script still runs, but unused LiveSplit rows may
 remain before the fixed final Ziggurat row. A category-aware layout generator
 is a later v0.3 goal.
@@ -55,6 +55,7 @@ startup
     settings.SetToolTip("areaSplits", "All enabled areas are first-visit splits. v0.3.0 does not enforce a route order.");
     settings.Add("act1", true, "Act 1", "areaSplits");
     settings.SetToolTip("act1", "Enabled areas in Act 1 are independent first-visit splits; no order is enforced.");
+    settings.Add("area_G1_1", true, "The Riverbank", "act1");
     settings.Add("area_G1_town", true, "Clearfell Encampment", "act1");
     settings.Add("area_G1_2", true, "Clearfell", "act1");
     settings.Add("area_G1_3", true, "Mud Burrow", "act1");
@@ -328,6 +329,7 @@ startup
     vars.areaNames["G4_11_1a"] = "Ngakanu (pre-progression state)";
 
     vars.areaSubgroup = new System.Collections.Generic.Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase);
+    vars.areaSubgroup["G1_1"] = "act1";
     vars.areaSubgroup["G1_town"] = "act1";
     vars.areaSubgroup["G1_2"] = "act1";
     vars.areaSubgroup["G1_3"] = "act1";
@@ -776,8 +778,17 @@ update
                 + " | source=" + detectionSource
                 + System.Environment.NewLine);
 
-        if (System.String.Equals(areaId, "G1_1", System.StringComparison.OrdinalIgnoreCase))
+        if (System.String.Equals(areaId, "G1_1", System.StringComparison.OrdinalIgnoreCase)
+            && timer.CurrentPhase == LiveSplit.Model.TimerPhase.NotRunning)
         {
+            // Riverbank is a real campaign area. Count its first entry as completed at
+            // the same instant it starts the timer, but do not create a zero-time split.
+            if (enabled && !vars.completedAreaIds.Contains(areaId))
+            {
+                vars.completedAreaIds.Add(areaId);
+                if (subgroupId != "")
+                    vars.subgroupCompleted[subgroupId] = vars.subgroupCompleted[subgroupId] + 1;
+            }
             vars.startTrigger = true;
             break;
         }

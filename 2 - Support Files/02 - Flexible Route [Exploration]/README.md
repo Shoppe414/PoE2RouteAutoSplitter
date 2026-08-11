@@ -96,7 +96,7 @@ The Cuachic Vault receives special handling when it is the final unresolved area
 
 ## Notes
 
-- The Riverbank remains the normal auto-start trigger.
+- The Riverbank remains the normal auto-start trigger and is counted as an Act 1 exploration objective at timer start without creating a separate zero-time split.
 - Deserted Post is not an independent area split.
 - No `poe2_route.txt` file is required.
 

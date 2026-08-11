@@ -1065,5 +1065,14 @@
       <BestSegmentTime />
       <SegmentHistory />
     </Segment>
+    <Segment>
+      <Name>Objective 118</Name>
+      <Icon />
+      <SplitTimes>
+        <SplitTime name="Personal Best" />
+      </SplitTimes>
+      <BestSegmentTime />
+      <SegmentHistory />
+    </Segment>
   </Segments>
 </Run>

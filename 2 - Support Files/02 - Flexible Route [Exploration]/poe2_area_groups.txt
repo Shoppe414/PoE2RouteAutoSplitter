@@ -3,6 +3,7 @@
 # Areas inside a pool have no required completion order.
 
 [Act 1]
+G1_1                                   # The Riverbank (implicitly completed by auto-start; no separate zero-time split)
 G1_town                                # Clearfell Encampment
 G1_2                                   # Clearfell
 G1_3                                   # Mud Burrow
@@ -112,4 +113,4 @@ P3_7                                   # The Cuachic Vault
 [Finish]
 G_Endgame_Town                         # The Ziggurat Refuge
 
-# Auto-start trigger (not a split): G1_1 | The Riverbank
+# G1_1 is both the auto-start trigger and an implicitly completed Act 1 objective.

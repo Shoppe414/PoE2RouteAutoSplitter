@@ -5,6 +5,7 @@
 # The four Runes of Aldur side-story areas are omitted because this file is not a 100% route.
 
 # ---- Act 1 ----
+G1_1                                   # The Riverbank
 G1_town                                # Clearfell Encampment
 G1_2                                   # Clearfell
 G1_4                                   # The Grelwood
