@@ -1,6 +1,24 @@
 # Changelog
 
+## v2.0.2
+
+### Campaign Boss Rush Riverbank auto-start
+- Campaign Boss Rush-only modes now auto-start LiveSplit when `Client.txt` reports entry into `G1_1` / The Riverbank.
+- Applied to Campaign 100% Dynamic, Campaign 100% Predefined, Campaign Any% Dynamic, and Campaign Required Bosses Only Predefined.
+- The start detector uses the same Riverbank area-entry signal used by campaign exploration; it does **not** use area departure as a completion/start signal.
+- BossWatcher remains responsible only for boss encounter/defeat events and is not used to start the timer.
+- The `autoStart` ASL setting defaults to enabled and can be disabled for manual start.
+- If `Client.txt` cannot be opened, Boss Rush remains usable with manual timer start and the problem is written to the bridge debug log.
+- Pinnacle Boss Rush Dynamic and Predefined intentionally remain manual-start.
+- No boss whitelist, boss split, OCR, firstMissing backdating, exploration route, or combined-mode behavior changed.
+
 ## v2.0.1
+
+### Release build path-length hotfix
+- Fixed `Build-Release.ps1` failing during cleanup when deeply nested staged runtime paths exceeded the classic Windows 260-character `MAX_PATH` boundary.
+- Expanded portable-runtime staging now uses a short system temporary path instead of nesting the full runtime beneath the repository checkout path.
+- Added long-path-safe fallback cleanup for stale `artifacts` directories left by an interrupted/failed build.
+- The final installer, portable ZIP, and SHA-256 files are still written to the repository `artifacts` directory as before.
 
 ### Riverbank exploration correction
 - Added The Riverbank (`G1_1`) to Campaign 100% and Campaign Any% exploration accounting.

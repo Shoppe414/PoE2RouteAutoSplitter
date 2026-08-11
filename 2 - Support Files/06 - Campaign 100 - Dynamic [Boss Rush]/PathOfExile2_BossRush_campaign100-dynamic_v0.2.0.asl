@@ -11,10 +11,11 @@ Detector/bridge baseline preserved from v0.1.14:
 - Reuses the exact same stored Real Time for queued GONE events with an identical firstMissing timestamp.
 - Retained: unread GONE lines are preserved when one split is pending, allowing two queued dual-boss deaths to split on consecutive updates.
 - This bridge expects LiveSplit Timing Method = Real Time; Game Time is not initialized yet.
+- Campaign-only addition: Riverbank auto-start is detected directly from Client.txt; BossWatcher is still used only for boss events.
 
 Reads <LiveSplit folder>\poe2_boss_events.log written by PoE2BossWatcher.
 Every first-time GONE event whose boss ID is allowed by this mode can cause one LiveSplit split while the timer is running.
-Manual timer start is intentional in BossRush v0.2.0.
+Campaign timer auto-starts when Client.txt reports entry into G1_1 (The Riverbank). Manual start remains available, and the auto-start setting can be disabled.
 */
 
 state("PathOfExileSteam") {}
@@ -25,6 +26,7 @@ state("PathOfExile_x64") {}
 startup
 {
     refreshRate = 30;
+    settings.Add("autoStart", true, "Auto-start when entering The Riverbank");
     settings.Add("dynamicSegmentNames", true, "Rename the current split row to the detected boss");
     settings.Add("debugLog", true, "Write poe2_boss_bridge_debug.log");
 
@@ -33,6 +35,9 @@ startup
     vars.eventPath = System.IO.Path.Combine(vars.liveSplitDir, "poe2_boss_events.log");
     vars.debugPath = System.IO.Path.Combine(vars.liveSplitDir, "poe2_boss_bridge_debug.log");
     vars.statusPath = System.IO.Path.Combine(vars.liveSplitDir, "poe2_boss_bridge_status.txt");
+    vars.clientLogPath = "";
+    vars.clientReader = null;
+    vars.startTrigger = false;
 
     vars.pendingBossId = "";
     vars.pendingBossName = "";
@@ -141,6 +146,7 @@ init
     vars.lastObservedIndex = timer.CurrentSplitIndex;
     vars.nextPollUtc = System.DateTime.MinValue;
     vars.ready = false;
+    vars.startTrigger = false;
 
     try
     {
@@ -172,10 +178,74 @@ init
         System.IO.File.WriteAllText(vars.statusPath, "ERROR | " + ex.ToString() + System.Environment.NewLine);
         print("[PoE2 Boss Bridge] ERROR: " + ex.Message);
     }
+
+    // Campaign Boss Rush uses the same game-log start signal as campaign exploration:
+    // entry into G1_1 (The Riverbank). Seek to EOF so attaching the ASL never
+    // replays an old Riverbank entry from a previous run.
+    try
+    {
+        try { if (vars.clientReader != null) vars.clientReader.Dispose(); } catch { }
+
+        string gameDir = System.IO.Path.GetDirectoryName(modules.First().FileName);
+        vars.clientLogPath = System.IO.Path.Combine(gameDir, "logs", "Client.txt");
+        var clientFs = new System.IO.FileStream(
+            vars.clientLogPath,
+            System.IO.FileMode.Open,
+            System.IO.FileAccess.Read,
+            System.IO.FileShare.ReadWrite
+        );
+        clientFs.Seek(0, System.IO.SeekOrigin.End);
+        vars.clientReader = new System.IO.StreamReader(clientFs);
+
+        if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+            System.DateTime.Now.ToString("s") + " AUTOSTART_READY | Client.txt=" + vars.clientLogPath
+            + " | trigger=G1_1 The Riverbank" + System.Environment.NewLine);
+    }
+    catch (System.Exception startEx)
+    {
+        vars.clientReader = null;
+        if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+            System.DateTime.Now.ToString("s") + " AUTOSTART_UNAVAILABLE | " + startEx.Message
+            + " | manual timer start remains available" + System.Environment.NewLine);
+        print("[PoE2 Boss Bridge] Riverbank auto-start unavailable: " + startEx.Message);
+    }
 }
 
 update
 {
+    vars.startTrigger = false;
+
+    // Keep the Client.txt reader caught up even while the timer is already running.
+    // The trigger is deliberately an AREA-ENTRY signal, not an area-departure signal.
+    if (vars.clientReader != null)
+    {
+        try
+        {
+            string clientLine;
+            while ((clientLine = vars.clientReader.ReadLine()) != null)
+            {
+                bool riverbankInternal = clientLine.IndexOf("area \"G1_1\"", System.StringComparison.OrdinalIgnoreCase) >= 0
+                    && clientLine.IndexOf("Generating level", System.StringComparison.OrdinalIgnoreCase) >= 0;
+                bool riverbankEntered = clientLine.IndexOf("You have entered The Riverbank.", System.StringComparison.OrdinalIgnoreCase) >= 0;
+
+                if (riverbankInternal || riverbankEntered)
+                {
+                    vars.startTrigger = true;
+                    if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                        System.DateTime.Now.ToString("s") + " RIVERBANK_ENTRY | source="
+                        + (riverbankInternal ? "GeneratingLevel" : "EnteredName")
+                        + " | phase=" + timer.CurrentPhase.ToString() + System.Environment.NewLine);
+                }
+            }
+        }
+        catch (System.Exception startReadEx)
+        {
+            if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                System.DateTime.Now.ToString("s") + " AUTOSTART_READ_ERROR | " + startReadEx.Message
+                + System.Environment.NewLine);
+        }
+    }
+
     if (!vars.ready) return false;
 
     int idx = timer.CurrentSplitIndex;
@@ -348,6 +418,16 @@ update
     return true;
 }
 
+start
+{
+    if (settings["autoStart"] && vars.startTrigger)
+    {
+        if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+            System.DateTime.Now.ToString("s") + " START G1_1 The Riverbank" + System.Environment.NewLine);
+        return true;
+    }
+}
+
 split
 {
     return vars.pendingBossId != "";
@@ -509,6 +589,7 @@ onSplit
 
 onReset
 {
+    vars.startTrigger = false;
     vars.pendingBossId = "";
     vars.pendingBossName = "";
     vars.pendingHasFirstMissing = false;

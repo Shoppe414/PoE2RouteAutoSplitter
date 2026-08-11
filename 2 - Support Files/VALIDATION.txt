@@ -1,4 +1,4 @@
-PoE2 Route AutoSplitter v2.0.1 - Validation Summary
+PoE2 Route AutoSplitter v2.0.2 - Validation Summary
 
 Riverbank correction
 - Campaign 100% ordered exploration route: 99 route rows / 99 LiveSplit segments.
@@ -21,6 +21,14 @@ Merged Exploration + Boss Rush
 - A queued-area mechanism supports the final Cuachic Vault + Ziggurat Refuge objectives on the same transition.
 - Custom mixed routes remain entry-based unless @areaCompletion=successor is explicitly added.
 
+Campaign Boss Rush auto-start
+- Modes 06, 07, 08, and 09 contain an enabled-by-default autoStart setting.
+- Those four ASLs seek Path of Exile 2 logs/Client.txt to EOF on attach and watch only newly appended lines.
+- G1_1 / The Riverbank is recognized from the internal Generating level line or the `You have entered The Riverbank.` fallback.
+- Riverbank start detection is entry-based only; no departure-based logic was added.
+- Boss events continue to come exclusively from poe2_boss_events.log.
+- Modes 10 and 11 (Pinnacle) retain manual start and contain no Riverbank auto-start setting.
+
 Regression/static validation performed
 - 41 Setup UI premade entries resolve to existing .lss/.asl/runtime files.
 - JSON and all .lss XML files parse successfully.
@@ -30,7 +38,8 @@ Regression/static validation performed
 - Mixed objective counts and Riverbank inclusion verified.
 - Successor logic contains no departedAreaId / generic departure-completion implementation.
 - Detour simulation verified: Riverbank -> hideout/revisit does not split; entering Clearfell Encampment completes Riverbank; revisiting Riverbank while Clearfell Encampment is active does not split; entering Clearfell completes Clearfell Encampment.
-- BossWatcher and all Boss-Rush-only mode files were verified byte-for-byte unchanged from v2.0.0.
+- BossWatcher and both Pinnacle Boss Rush modes were verified byte-for-byte unchanged from v2.0.1; only the four campaign Boss Rush bridge ASLs/READMEs changed for auto-start.
+- 147/147 v2.0.2 campaign auto-start/regression checks passed.
 - 234 structural/regression checks passed in the final route validation pass.
 - 81 JSON/XML/C#/ASL structural checks passed in the syntax/parse pass.
 

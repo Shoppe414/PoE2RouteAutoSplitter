@@ -1,5 +1,5 @@
 #ifndef MyAppVersion
-  #define MyAppVersion "2.0.1"
+  #define MyAppVersion "2.0.2"
 #endif
 #ifndef StageRoot
   #error StageRoot must point to the assembled portable package root.

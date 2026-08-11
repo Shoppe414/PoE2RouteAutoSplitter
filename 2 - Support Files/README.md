@@ -1,12 +1,12 @@
-# Path of Exile 2 Route AutoSplitter for LiveSplit — v2.0.1
+# Path of Exile 2 Route AutoSplitter for LiveSplit — v2.0.2
 
-v2.0.1 changes distribution from a source-first package into an installer/release workflow. Normal users no longer need PowerShell, the .NET SDK, OCR setup, or compilation.
+v2.0.2 retains the installer/release workflow introduced in v2.0.0 and adds Riverbank auto-start to campaign Boss Rush-only modes. Normal users do not need PowerShell, the .NET SDK, OCR setup, or compilation.
 
 ## Normal user installation
 
 Download the Windows installer from the GitHub Release:
 
-`PoE2RouteAutoSplitter-v2.0.1-Setup.exe`
+`PoE2RouteAutoSplitter-v2.0.2-Setup.exe`
 
 Run it and launch **PoE2 Route AutoSplitter** from the Start Menu, optional desktop shortcut, or the installed `1 - User Setup\PoE2RouteSetup.exe`.
 
@@ -53,13 +53,13 @@ Compiled executables are intentionally not committed to Git. `.gitignore` exclud
 
 The source repository contains the build definitions. GitHub Releases contain the ready-to-run files:
 
-- `PoE2RouteAutoSplitter-v2.0.1-Setup.exe` — recommended Windows installer.
-- `PoE2RouteAutoSplitter-v2.0.1.zip` — portable self-contained runtime.
+- `PoE2RouteAutoSplitter-v2.0.2-Setup.exe` — recommended Windows installer.
+- `PoE2RouteAutoSplitter-v2.0.2.zip` — portable self-contained runtime.
 - `SHA256SUMS.txt` — release asset checksums.
 
 ## Automated GitHub release
 
-`.github\workflows\build-release.yml` runs for version tags such as `v2.0.1` and can also be started manually.
+`.github\workflows\build-release.yml` runs for version tags such as `v2.0.2` and can also be started manually.
 
 The workflow:
 
@@ -89,7 +89,7 @@ Requirements:
 From `2 - Support Files`:
 
 ```powershell
-.\Build-Release.ps1 -Version 2.0.1
+.\Build-Release.ps1 -Version 2.0.2
 ```
 
 Generated release files are written to the repository-level `artifacts` directory. The installer is also copied to `1 - User Setup` for convenient local testing, but is ignored by Git.
@@ -128,3 +128,5 @@ Normal BossWatcher output is event-focused: timestamped boss encounters, boss de
 14. `14 - Custom Route [Exploration + Boss Rush]`
 
 Campaign 100% retains 67 boss targets. The required-boss v0.5 baseline retains 40 bosses. The merged Campaign 100% route contains 166 objectives (99 exploration + 67 bosses), and merged Campaign Any% v0.5 contains 118 objectives (78 exploration + 40 required bosses).
+
+Campaign Boss Rush-only modes (06-09) auto-start when The Riverbank is entered. Pinnacle Boss Rush modes (10-11) intentionally use manual timer start.

@@ -1,5 +1,5 @@
 param(
-    [string]$Version = '2.0.1',
+    [string]$Version = '2.0.2',
     [switch]$SkipInstaller,
     [switch]$SkipPortableZip
 )
@@ -8,7 +8,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 if ($Version -notmatch '^\d+\.\d+\.\d+$') {
-    throw "Version must look like 2.0.1. Received: $Version"
+    throw "Version must look like 2.0.2. Received: $Version"
 }
 
 $supportRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
