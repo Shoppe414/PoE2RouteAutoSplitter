@@ -1,4 +1,0 @@
-# BossRush support-only OCR identities
-# These definitions are available to BossWatcher for encounter reconciliation but never split in the bundled modes.
-
-plagueling|The Plagueling|Needed to reconcile the Scourge of the Skies SINGLE->DUAL->SINGLE encounter. It can be summoned/resummoned, so it is not a stable independent split target.
