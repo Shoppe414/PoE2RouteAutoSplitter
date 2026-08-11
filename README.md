@@ -311,6 +311,15 @@ Close BossWatcher and start it again using the **Start BossWatcher** button in P
 If the problem continues, include the displayed error when reporting the issue.
 
 ---
+## BossWatcher prematurely split or split on death
+
+BossWatcher only records when the boss health bar leaves the screen. This can happen for any number of
+reasons. It is up to the user to determine if the reason for the split is accurate or not. The assumption
+is the boss died and the split happens. If the split happens without the boss being completed, undoing the split
+reverts it to the prior state and you can reattempt the boss from the current time. Split undo hotkey can be found
+in LiveSplit settings.
+
+---
 
 # Files Generated for LiveSplit
 
