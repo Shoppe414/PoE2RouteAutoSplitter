@@ -27,9 +27,11 @@ Go to the **Releases** section of this GitHub repository and download the latest
 
 **`PoE2RouteAutoSplitter-vX.X.X-Setup.exe`**
 
-For most users, the installer is the recommended version.
+For most users, the installer is the recommended method.
 
 A portable ZIP may also be available for users who prefer not to use the installer.
+This will require using powershell to run the \Setup-UI[Configuration]\Build.ps1 file
+to generate the RouteSetup.exe
 
 ---
 
