@@ -19,7 +19,7 @@ The included **PoE2RouteSetup** application handles most of the setup for you.
 
 # Download
 
-The downloader can be found [Here](https://github.com/ScottHoppe414/PoE2RouteAutoSplitter/releases/tag/V2.0.0)
+The downloader can be found [Here](https://github.com/ScottHoppe414/PoE2RouteAutoSplitter/tags)
 
 OR
 
