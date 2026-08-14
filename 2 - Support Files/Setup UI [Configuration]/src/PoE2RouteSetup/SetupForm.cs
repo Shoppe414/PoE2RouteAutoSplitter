@@ -22,8 +22,13 @@ public sealed class SetupForm : Form
     private readonly ListBox _bossList = new();
     private readonly ListBox _routeList = new();
     private readonly CheckBox _orderedCheck = new();
-    private readonly ComboBox _startAreaCombo = new();
+    private readonly RadioButton _manualStartRadio = new();
+    private readonly RadioButton _riverbankStartRadio = new();
+    private readonly RadioButton _zoneStartRadio = new();
+    private readonly ComboBox _startZoneCombo = new();
+    private readonly CheckBox _excludeManualPauseCheck = new();
     private readonly CheckBox _devConsoleCheck = new();
+    private readonly Button _gameTimeWatcherButton = new();
     private readonly Label _status = new();
 
     public SetupForm()
@@ -37,20 +42,24 @@ public sealed class SetupForm : Form
 
         Text = $"PoE2 Route AutoSplitter Setup — v{_manifest.Version}";
         Width = 1120;
-        Height = 800;
-        MinimumSize = new Size(920, 680);
+        Height = 860;
+        MinimumSize = new Size(920, 720);
         StartPosition = FormStartPosition.CenterScreen;
 
         BuildUi();
         PopulatePresets();
         PopulateCustomCatalogs();
+        PopulateStartZones();
+        _riverbankStartRadio.Checked = true;
+        UpdateStartZoneEnabled();
         _targetText.Text = Path.Combine(_userRoot, "LiveSplit Target");
         _targetText.ReadOnly = true;
     }
 
     private void BuildUi()
     {
-        var root = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 4, ColumnCount = 1, Padding = new Padding(12) };
+        var root = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 5, ColumnCount = 1, Padding = new Padding(12) };
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -58,12 +67,13 @@ public sealed class SetupForm : Form
         Controls.Add(root);
 
         root.Controls.Add(BuildTargetPanel(), 0, 0);
-        root.Controls.Add(BuildModeTabs(), 0, 1);
-        root.Controls.Add(BuildActionPanel(), 0, 2);
+        root.Controls.Add(BuildLiveSplitReminderPanel(), 0, 1);
+        root.Controls.Add(BuildModeTabs(), 0, 2);
+        root.Controls.Add(BuildActionPanel(), 0, 3);
         _status.AutoSize = true;
         _status.Padding = new Padding(4, 8, 4, 0);
         _status.Text = "Choose a premade setup or build a custom route, then deploy it to the target directory.";
-        root.Controls.Add(_status, 0, 3);
+        root.Controls.Add(_status, 0, 4);
     }
 
     private Control BuildTargetPanel()
@@ -81,9 +91,28 @@ public sealed class SetupForm : Form
         return group;
     }
 
+    private Control BuildLiveSplitReminderPanel()
+    {
+        var box = new Label
+        {
+            AutoSize = true,
+            Dock = DockStyle.Top,
+            BorderStyle = BorderStyle.FixedSingle,
+            Padding = new Padding(10, 8, 10, 8),
+            Margin = new Padding(0, 8, 0, 4),
+            MaximumSize = new Size(1060, 0),
+            Text =
+                "LiveSplit reminders:\r\n" +
+                "• After Generate, open the generated .lss and attach the generated .asl to a Scriptable Auto Splitter component. LiveSplit does not attach the .asl automatically.\r\n" +
+                "• To exclude loading screens and, when enabled, manual-pause time from the displayed run time, set LiveSplit to Game Time. Real Time will continue counting those periods."
+        };
+        return box;
+    }
+
     private Control BuildModeTabs()
     {
         _modeTabs.Dock = DockStyle.Fill;
+        _modeTabs.SelectedIndexChanged += (_, _) => UpdateStartZoneEnabled();
         var premade = new TabPage("Premade setups");
         premade.Controls.Add(BuildPremadePanel());
         var custom = new TabPage("Custom route");
@@ -181,14 +210,14 @@ public sealed class SetupForm : Form
         _orderedCheck.AutoSize = true;
         panel.Controls.Add(_orderedCheck, 0, 0);
 
-        var startPanel = new TableLayoutPanel { Dock = DockStyle.Fill, AutoSize = true, ColumnCount = 2 };
-        startPanel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        startPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        startPanel.Controls.Add(new Label { Text = "Timer start:", AutoSize = true, Anchor = AnchorStyles.Left, Padding = new Padding(0, 6, 6, 0) }, 0, 0);
-        _startAreaCombo.DropDownStyle = ComboBoxStyle.DropDownList;
-        _startAreaCombo.Dock = DockStyle.Fill;
-        startPanel.Controls.Add(_startAreaCombo, 1, 0);
-        panel.Controls.Add(startPanel, 0, 1);
+        var startNote = new Label
+        {
+            Text = "Timer start is selected below. Riverbank uses the fresh-character Wounded Man gate; Zone Entry starts when the selected non-Riverbank zone is entered; Manual requires you to start LiveSplit yourself.",
+            AutoSize = true,
+            MaximumSize = new Size(430, 0),
+            Padding = new Padding(0, 4, 0, 4)
+        };
+        panel.Controls.Add(startNote, 0, 1);
 
         _routeList.Dock = DockStyle.Fill;
         panel.Controls.Add(_routeList, 0, 2);
@@ -205,7 +234,7 @@ public sealed class SetupForm : Form
 
     private Control BuildActionPanel()
     {
-        var panel = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, ColumnCount = 4, Padding = new Padding(0, 8, 0, 0) };
+        var panel = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, RowCount = 3, ColumnCount = 4, Padding = new Padding(0, 8, 0, 0) };
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -220,10 +249,67 @@ public sealed class SetupForm : Form
         _devConsoleCheck.Anchor = AnchorStyles.Right;
         panel.Controls.Add(_devConsoleCheck, 2, 0);
 
-        var watcher = new Button { Text = "Start BossWatcher", AutoSize = true, Height = 38, Padding = new Padding(12, 2, 12, 2) };
-        watcher.Click += (_, _) => StartBossWatcher();
-        panel.Controls.Add(watcher, 3, 0);
+        var bossWatcher = new Button { Text = "Start BossWatcher", AutoSize = true, Height = 38, Padding = new Padding(12, 2, 12, 2) };
+        bossWatcher.Click += (_, _) => StartBossWatcher();
+        panel.Controls.Add(bossWatcher, 3, 0);
+
+        var startPolicy = BuildStartPolicyPanel();
+        panel.Controls.Add(startPolicy, 0, 1);
+        panel.SetColumnSpan(startPolicy, 4);
+
+        _excludeManualPauseCheck.Text = "Pause LiveSplit Game Time while PoE2 is manually paused (optional; requires GameTimeWatcher)";
+        _excludeManualPauseCheck.AutoSize = true;
+        _excludeManualPauseCheck.Anchor = AnchorStyles.Left;
+        _excludeManualPauseCheck.CheckedChanged += (_, _) => _gameTimeWatcherButton.Enabled = _excludeManualPauseCheck.Checked;
+        panel.Controls.Add(_excludeManualPauseCheck, 0, 2);
+        panel.SetColumnSpan(_excludeManualPauseCheck, 3);
+
+        _gameTimeWatcherButton.Text = "Start GameTimeWatcher";
+        _gameTimeWatcherButton.AutoSize = true;
+        _gameTimeWatcherButton.Height = 34;
+        _gameTimeWatcherButton.Padding = new Padding(10, 1, 10, 1);
+        _gameTimeWatcherButton.Enabled = false;
+        _gameTimeWatcherButton.Click += (_, _) => StartGameTimeWatcher();
+        panel.Controls.Add(_gameTimeWatcherButton, 3, 2);
+
         return panel;
+    }
+
+    private Control BuildStartPolicyPanel()
+    {
+        var group = new GroupBox
+        {
+            Text = "Timer Start (required — select exactly one)",
+            Dock = DockStyle.Top,
+            AutoSize = true,
+            Padding = new Padding(10, 6, 10, 8)
+        };
+        var panel = new TableLayoutPanel { Dock = DockStyle.Fill, AutoSize = true, RowCount = 3, ColumnCount = 2 };
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+
+        _manualStartRadio.Text = "1. Manual Start — start LiveSplit yourself";
+        _manualStartRadio.AutoSize = true;
+        panel.Controls.Add(_manualStartRadio, 0, 0);
+        panel.SetColumnSpan(_manualStartRadio, 2);
+
+        _riverbankStartRadio.Text = "2. Riverbank Start — fresh character; auto-start after the Wounded Man's final opening line (default)";
+        _riverbankStartRadio.AutoSize = true;
+        panel.Controls.Add(_riverbankStartRadio, 0, 1);
+        panel.SetColumnSpan(_riverbankStartRadio, 2);
+
+        _zoneStartRadio.Text = "3. First Split Zone Entry Auto Start — start when this zone is entered:";
+        _zoneStartRadio.AutoSize = true;
+        _zoneStartRadio.CheckedChanged += (_, _) => UpdateStartZoneEnabled();
+        panel.Controls.Add(_zoneStartRadio, 0, 2);
+
+        _startZoneCombo.DropDownStyle = ComboBoxStyle.DropDownList;
+        _startZoneCombo.Width = 430;
+        _startZoneCombo.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+        panel.Controls.Add(_startZoneCombo, 1, 2);
+
+        group.Controls.Add(panel);
+        return group;
     }
 
     private static Button MakeButton(string text, Action action)
@@ -249,10 +335,19 @@ public sealed class SetupForm : Form
     {
         RefreshAvailableList(_areaList, _areas, "");
         RefreshAvailableList(_bossList, _bosses, "");
-        _startAreaCombo.Items.Add(new StartAreaOption());
-        foreach (var area in _areas)
-            _startAreaCombo.Items.Add(new StartAreaOption { Id = area.Id, Name = area.Name });
-        _startAreaCombo.SelectedIndex = 0;
+    }
+
+    private void PopulateStartZones()
+    {
+        _startZoneCombo.BeginUpdate();
+        _startZoneCombo.Items.Clear();
+        foreach (var area in _areas
+                     .Where(x => !x.Id.Equals("G1_1", StringComparison.OrdinalIgnoreCase))
+                     .OrderBy(x => x.Group)
+                     .ThenBy(x => x.Name))
+            _startZoneCombo.Items.Add(area);
+        _startZoneCombo.EndUpdate();
+        if (_startZoneCombo.Items.Count > 0) _startZoneCombo.SelectedIndex = 0;
     }
 
     private static void RefreshAvailableList(ListBox list, List<RouteEntry> source, string filter)
@@ -276,7 +371,43 @@ public sealed class SetupForm : Form
         _presetDescription.Text = preset is null
             ? "Select a setup."
             : $"{preset.Description}  BossWatcher: {(preset.RequiresBossWatcher ? "required" : "not required")}.";
+        UpdateStartZoneEnabled();
     }
+
+    private void UpdateStartZoneEnabled()
+    {
+        _startZoneCombo.Enabled = _zoneStartRadio.Checked;
+    }
+
+    private StartPolicy GetRequiredStartPolicy()
+    {
+        var selectedCount = (_manualStartRadio.Checked ? 1 : 0)
+            + (_riverbankStartRadio.Checked ? 1 : 0)
+            + (_zoneStartRadio.Checked ? 1 : 0);
+        if (selectedCount != 1)
+            throw new InvalidOperationException("Select exactly one Timer Start option before generating the setup.");
+
+        if (_manualStartRadio.Checked)
+            return new StartPolicy { Mode = StartMode.Manual };
+
+        if (_riverbankStartRadio.Checked)
+            return new StartPolicy { Mode = StartMode.Riverbank, AreaId = "G1_1", AreaName = "The Riverbank" };
+
+        if (_startZoneCombo.SelectedItem is not RouteEntry zone)
+            throw new InvalidOperationException("Select a start zone for First Split Zone Entry Auto Start.");
+        if (zone.Id.Equals("G1_1", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("The Riverbank is reserved for the Riverbank Start option. Choose a different zone.");
+
+        return new StartPolicy { Mode = StartMode.ZoneEntry, AreaId = zone.Id, AreaName = zone.Name };
+    }
+
+    private static string DescribeStartPolicy(StartPolicy policy) => policy.Mode switch
+    {
+        StartMode.Manual => "MANUAL START — start LiveSplit yourself.",
+        StartMode.Riverbank => "RIVERBANK START — fresh character; LiveSplit auto-starts on the Wounded Man's final opening line.",
+        StartMode.ZoneEntry => $"ZONE ENTRY AUTO START — LiveSplit auto-starts when {policy.AreaName} [{policy.AreaId}] is entered.",
+        _ => throw new InvalidOperationException("Unknown start policy.")
+    };
 
     private PresetDefinition? SelectedPreset() => _presetList.SelectedItems.Count == 0 ? null : _presetList.SelectedItems[0].Tag as PresetDefinition;
 
@@ -348,22 +479,18 @@ public sealed class SetupForm : Form
                 preset = SelectedPreset() ?? throw new InvalidOperationException("Select a premade setup first.");
             else if (_customRoute.Count == 0)
                 throw new InvalidOperationException("Add at least one area or boss to the custom route.");
-            else
-            {
-                var start = _startAreaCombo.SelectedItem as StartAreaOption;
-                if (start is not null && !string.IsNullOrEmpty(start.Id) &&
-                    _customRoute.Any(x => x.Type.Equals("area", StringComparison.OrdinalIgnoreCase) && x.Id.Equals(start.Id, StringComparison.OrdinalIgnoreCase)))
-                    throw new InvalidOperationException("The timer start area cannot also be a split objective. Choose Manual start, choose a different start area, or remove that area from the route.");
-            }
 
+            // Timer Start is a required setup field. Radio buttons make the choices
+            // mutually exclusive; this validation also protects programmatic/invalid UI state.
+            var startPolicy = GetRequiredStartPolicy();
             var target = ValidateTargetPath();
             stage = Path.Combine(Path.GetTempPath(), "PoE2RouteSetup", Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(stage);
 
             if (preset is not null)
-                DeployPreset(preset, stage, target);
+                DeployPreset(preset, stage, target, startPolicy);
             else
-                DeployCustom(stage, target);
+                DeployCustom(stage, target, startPolicy);
 
             if (!CommitStage(stage, target)) return;
 
@@ -372,13 +499,9 @@ public sealed class SetupForm : Form
             else
                 SetStatus($"Deployed custom route with {_customRoute.Count} objective(s).");
 
-            MessageBox.Show(this,
-                "Setup generated successfully.\n\n" +
-                "1. Open the generated .lss splits file in LiveSplit.\n" +
-                "2. Keep your own LiveSplit layout.\n" +
-                "3. Add/edit the Scriptable Auto Splitter component and browse to the generated .asl file in the LiveSplit Target directory.\n\n" +
-                "No .lsl file is generated by this tool.",
-                "PoE2 AutoSplitter Setup", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // The persistent LiveSplit reminder panel contains the required post-generation
+            // instructions. Do not show a second success dialog after the target-clear
+            // confirmation; it was redundant and interrupted the setup flow.
         }
         catch (Exception ex)
         {
@@ -393,40 +516,63 @@ public sealed class SetupForm : Form
         }
     }
 
-    private void DeployPreset(PresetDefinition preset, string stage, string target)
+    private void DeployPreset(PresetDefinition preset, string stage, string target, StartPolicy startPolicy)
     {
         var sourceLss = Resolve(preset.LssSource);
         var sourceAsl = Resolve(preset.AslSource);
         if (!File.Exists(sourceLss)) throw new FileNotFoundException("Preset splits file was not found.", sourceLss);
         if (!File.Exists(sourceAsl)) throw new FileNotFoundException("Preset autosplitter file was not found.", sourceAsl);
 
+        var sourceAslText = File.ReadAllText(sourceAsl);
+        var runtimeStartSupported = LiveSplitFiles.SupportsRuntimeStartPolicy(sourceAslText);
         var stagedLss = Path.Combine(stage, Path.GetFileName(sourceLss));
         var stagedAsl = Path.Combine(stage, Path.GetFileName(sourceAsl));
         var targetAsl = Path.Combine(target, Path.GetFileName(sourceAsl));
-        File.Copy(sourceLss, stagedLss, true);
+        string? areaChecklistRuntimeText = null;
 
         foreach (var runtime in preset.RuntimeFiles)
         {
             var runtimeSource = Resolve(runtime.Source);
             if (!File.Exists(runtimeSource)) throw new FileNotFoundException("Preset runtime file was not found.", runtimeSource);
-            File.Copy(runtimeSource, Path.Combine(stage, runtime.Target), true);
+
+            var runtimeTarget = Path.Combine(stage, runtime.Target);
+            var runtimeText = File.ReadAllText(runtimeSource);
+            if (startPolicy.Mode == StartMode.Riverbank && preset.PrependRiverbankObjective)
+                runtimeText = LiveSplitFiles.PrependRiverbankRouteEntry(runtimeText);
+            runtimeText = LiveSplitFiles.ApplyRouteStartPolicy(runtimeText, startPolicy);
+            File.WriteAllText(runtimeTarget, runtimeText, new UTF8Encoding(false));
+
+            if (Path.GetFileName(sourceAsl).Contains("AreaChecklistAutosplitter", StringComparison.OrdinalIgnoreCase))
+                areaChecklistRuntimeText = runtimeText;
         }
 
-        var patchedAsl = LiveSplitFiles.RewriteRuntimePaths(File.ReadAllText(sourceAsl), target);
+        LiveSplitFiles.WritePresetSplits(
+            sourceLss,
+            stagedLss,
+            startPolicy.Mode == StartMode.Riverbank && preset.PrependRiverbankObjective);
+        if (areaChecklistRuntimeText is not null)
+            LiveSplitFiles.AdjustAreaChecklistSplits(stagedLss, areaChecklistRuntimeText);
+
+        var patchedAsl = LiveSplitFiles.RewriteRuntimePaths(sourceAslText, target);
+        patchedAsl = runtimeStartSupported
+            ? LiveSplitFiles.ApplyAutoStartOption(patchedAsl, startPolicy.IsAutomatic)
+            : LiveSplitFiles.ApplyGeneratedZoneStartPolicy(patchedAsl, startPolicy);
+        patchedAsl = LiveSplitFiles.ApplyGameTimeOptions(patchedAsl, _excludeManualPauseCheck.Checked);
         File.WriteAllText(stagedAsl, patchedAsl, new UTF8Encoding(false));
 
         if (preset.RequiresBossWatcher) EnsureBossEventFile(stage);
+        if (_excludeManualPauseCheck.Checked) EnsureManualPauseStateFile(stage);
 
-        WriteSetupSummary(stage, preset.Group, preset.DisplayName, stagedLss, stagedAsl, targetAsl, preset.RequiresBossWatcher);
+        WriteSetupSummary(stage, preset.Group, preset.DisplayName, stagedLss, stagedAsl, targetAsl,
+            preset.RequiresBossWatcher, _excludeManualPauseCheck.Checked, startPolicy);
     }
 
-    private void DeployCustom(string stage, string target)
+    private void DeployCustom(string stage, string target, StartPolicy startPolicy)
     {
-        var start = _startAreaCombo.SelectedItem as StartAreaOption ?? new StartAreaOption();
         var routePath = Path.Combine(stage, "poe2_mixed_route.txt");
         var route = new StringBuilder();
         route.AppendLine("# Generated by PoE2 Route AutoSplitter Setup UI");
-        route.AppendLine($"@start={(string.IsNullOrEmpty(start.Id) ? "manual" : start.Id)}");
+        route.AppendLine($"@start={startPolicy.RouteDirectiveValue}");
         route.AppendLine($"@order={(_orderedCheck.Checked ? "ordered" : "unordered")}");
         route.AppendLine();
         foreach (var entry in _customRoute)
@@ -434,17 +580,22 @@ public sealed class SetupForm : Form
         File.WriteAllText(routePath, route.ToString(), new UTF8Encoding(false));
 
         var sourceAsl = Resolve(_manifest.CustomAslSource);
-        var stagedAsl = Path.Combine(stage, "PathOfExile2_CustomRouteAutosplitter.asl");
-        var targetAsl = Path.Combine(target, "PathOfExile2_CustomRouteAutosplitter.asl");
-        var patchedAsl = LiveSplitFiles.RewriteRuntimePaths(File.ReadAllText(sourceAsl), target);
+        var stagedAsl = Path.Combine(stage, "PoE2-Custom.asl");
+        var targetAsl = Path.Combine(target, "PoE2-Custom.asl");
+        var sourceAslText = File.ReadAllText(sourceAsl);
+        var patchedAsl = LiveSplitFiles.RewriteRuntimePaths(sourceAslText, target);
+        patchedAsl = LiveSplitFiles.ApplyAutoStartOption(patchedAsl, startPolicy.IsAutomatic);
+        patchedAsl = LiveSplitFiles.ApplyGameTimeOptions(patchedAsl, _excludeManualPauseCheck.Checked);
         File.WriteAllText(stagedAsl, patchedAsl, new UTF8Encoding(false));
 
-        var stagedLss = Path.Combine(stage, "Path of Exile 2 - Custom Route.lss");
+        var stagedLss = Path.Combine(stage, "Custom-Route.lss");
         LiveSplitFiles.WriteCustomSplits(stagedLss, _customRoute);
 
         var needsWatcher = _customRoute.Any(x => x.Type.Equals("boss", StringComparison.OrdinalIgnoreCase));
         if (needsWatcher) EnsureBossEventFile(stage);
-        WriteSetupSummary(stage, "Custom Route", $"{_customRoute.Count} objectives; {(_orderedCheck.Checked ? "ordered" : "unordered")}", stagedLss, stagedAsl, targetAsl, needsWatcher);
+        if (_excludeManualPauseCheck.Checked) EnsureManualPauseStateFile(stage);
+        WriteSetupSummary(stage, "Custom Route", $"{_customRoute.Count} objectives; {(_orderedCheck.Checked ? "ordered" : "unordered")}",
+            stagedLss, stagedAsl, targetAsl, needsWatcher, _excludeManualPauseCheck.Checked, startPolicy);
         WriteCustomObjectiveSummary(stage);
     }
 
@@ -557,7 +708,7 @@ public sealed class SetupForm : Form
             };
             var exe = candidates.FirstOrDefault(File.Exists);
             if (exe is null)
-                throw new FileNotFoundException("PoE2BossWatcher.exe was not found. In 2 - Support Files\\BossWatcher [Boss Rush Detection], run Setup-OCR.ps1 and then Build.ps1.");
+                throw new FileNotFoundException("PoE2BossWatcher.exe was not found. In 2 - Support Files\\BossWatcher, run Setup-OCR.ps1 and then Build.ps1.");
 
             var eventPath = Path.Combine(target, "poe2_boss_events.log");
             EnsureBossEventFile(target);
@@ -574,28 +725,129 @@ public sealed class SetupForm : Form
         catch (Exception ex) { ShowError(ex.Message); }
     }
 
+    private void StartGameTimeWatcher()
+    {
+        try
+        {
+            if (!_excludeManualPauseCheck.Checked)
+                throw new InvalidOperationException("Enable the manual-pause Game Time option and deploy the setup before starting GameTimeWatcher.");
+
+            var target = Path.GetFullPath(_targetText.Text.Trim());
+            if (!Directory.Exists(target) || !File.Exists(Path.Combine(target, "SETUP_INFO.txt")))
+                throw new InvalidOperationException("Deploy a setup first so the target directory contains an active generated setup.");
+
+            var existingWatchers = Process.GetProcessesByName("PoE2GameTimeWatcher");
+            try
+            {
+                if (existingWatchers.Any(p => !p.HasExited))
+                {
+                    MessageBox.Show(this, "GameTimeWatcher is already running. Close the existing GameTimeWatcher before starting another instance.",
+                        "PoE2 AutoSplitter Setup", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+            }
+            finally
+            {
+                foreach (var process in existingWatchers) process.Dispose();
+            }
+
+            var watcherRoot = Resolve(_manifest.GameTimeWatcherDirectory);
+            var candidates = new[]
+            {
+                Path.Combine(watcherRoot, "publish", "PoE2GameTimeWatcher.exe"),
+                Path.Combine(watcherRoot, "PoE2GameTimeWatcher.exe")
+            };
+            var exe = candidates.FirstOrDefault(File.Exists);
+            if (exe is null)
+                throw new FileNotFoundException("PoE2GameTimeWatcher.exe was not found. In 2 - Support Files\\GameTimeWatcher, run Build.ps1.");
+
+            var statePath = Path.Combine(target, "poe2_manual_pause_state.txt");
+            EnsureManualPauseStateFile(target);
+
+            if (_devConsoleCheck.Checked)
+            {
+                var diagnosticScript = Path.Combine(watcherRoot, "Run-Diagnostic.ps1");
+                if (!File.Exists(diagnosticScript))
+                    throw new FileNotFoundException("Run-Diagnostic.ps1 was not found in the GameTimeWatcher support folder.");
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "powershell.exe",
+                    Arguments = $"-NoExit -NoProfile -ExecutionPolicy Bypass -File {QuoteArgument(diagnosticScript)} -StateFile {QuoteArgument(statePath)}",
+                    WorkingDirectory = watcherRoot,
+                    UseShellExecute = true
+                });
+                SetStatus("GameTimeWatcher external crash diagnostic started. Results will be saved under the GameTimeWatcher diagnostics folder.");
+                return;
+            }
+
+            var args = $"--state-file {QuoteArgument(statePath)} --wait-on-error";
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = exe,
+                Arguments = args,
+                WorkingDirectory = Path.GetDirectoryName(exe)!,
+                UseShellExecute = true
+            });
+            SetStatus("GameTimeWatcher started in user console mode.");
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
+    }
+
     private static void EnsureBossEventFile(string target)
     {
         var path = Path.Combine(target, "poe2_boss_events.log");
         if (!File.Exists(path)) File.WriteAllText(path, "");
     }
 
-    private void WriteSetupSummary(string outputDirectory, string group, string setup, string lss, string asl, string deployedAslPath, bool bossWatcher)
+    private static void EnsureManualPauseStateFile(string target)
     {
-        var text = $"PoE2 Route AutoSplitter v{_manifest.Version}\r\n" +
-                   $"Mode: {group}\r\nSetup: {setup}\r\n" +
-                   $"Splits (.lss): {Path.GetFileName(lss)}\r\n" +
-                   $"AutoSplitter (.asl): {Path.GetFileName(asl)}\r\n" +
-                   $"AutoSplitter full path: {Path.GetFullPath(deployedAslPath)}\r\n" +
-                   "Layout (.lsl): Not generated by design\r\n" +
-                   $"BossWatcher required: {(bossWatcher ? "Yes" : "No")}\r\n\r\n" +
-                   "LiveSplit setup:\r\n" +
-                   "1. Open the generated .lss splits file.\r\n" +
-                   "2. Keep your own LiveSplit layout.\r\n" +
-                   "3. Add/edit the Scriptable Auto Splitter component in that layout and browse to the AutoSplitter full path above.\r\n" +
-                   "The Setup UI intentionally does not generate .lsl files because LiveSplit layout files are user-specific.\r\n" +
-                   (bossWatcher ? "4. Start BossWatcher from the Setup UI before/during the run.\r\n" : "");
-        File.WriteAllText(Path.Combine(outputDirectory, "SETUP_INFO.txt"), text, new UTF8Encoding(false));
+        var path = Path.Combine(target, "poe2_manual_pause_state.txt");
+        if (!File.Exists(path))
+        {
+            var initial = "version=1\r\n" +
+                          "state=RUNNING\r\n" +
+                          "reason=watcher-not-started\r\n" +
+                          "heartbeatUtcTicks=0\r\n" +
+                          "pauseMenuScore=0.0000\r\n" +
+                          "mtxShopScore=0.0000\r\n";
+            File.WriteAllText(path, initial, new UTF8Encoding(false));
+        }
+    }
+
+    private void WriteSetupSummary(string outputDirectory, string group, string setup, string lss, string asl, string deployedAslPath, bool bossWatcher, bool manualPauseRemoval, StartPolicy startPolicy)
+    {
+        var step = 4;
+        var text = new StringBuilder()
+            .AppendLine($"PoE2 Route AutoSplitter v{_manifest.Version}")
+            .AppendLine($"Mode: {group}")
+            .AppendLine($"Setup: {setup}")
+            .AppendLine($"Splits (.lss): {Path.GetFileName(lss)}")
+            .AppendLine($"AutoSplitter (.asl): {Path.GetFileName(asl)}")
+            .AppendLine($"AutoSplitter full path: {Path.GetFullPath(deployedAslPath)}")
+            .AppendLine("Layout (.lsl): Not generated by design")
+            .AppendLine("Game Time load removal: Enabled by default (Client.txt authoritative loading-screen durations)")
+            .AppendLine("Start policy: " + DescribeStartPolicy(startPolicy))
+            .AppendLine($"Manual pause exclusion: {(manualPauseRemoval ? "Enabled" : "Disabled")}")
+            .AppendLine($"BossWatcher required: {(bossWatcher ? "Yes" : "No")}")
+            .AppendLine($"GameTimeWatcher required: {(manualPauseRemoval ? "Yes" : "No")}")
+            .AppendLine()
+            .AppendLine("LiveSplit setup:")
+            .AppendLine("1. Open the generated .lss splits file.")
+            .AppendLine("2. Keep your own LiveSplit layout.")
+            .AppendLine("3. IMPORTANT: Add/edit the Scriptable Auto Splitter component in that layout and browse to the AutoSplitter full path above.")
+            .AppendLine("   LiveSplit does not automatically follow a new dev package folder; an old component path will continue running the old ASL.");
+
+        if (bossWatcher)
+            text.AppendLine($"{step++}. Start BossWatcher from the Setup UI before/during the run.");
+        if (manualPauseRemoval)
+            text.AppendLine($"{step++}. Start GameTimeWatcher from the Setup UI if manual pauses should stop Game Time.");
+
+        text.AppendLine();
+        text.AppendLine("For load-removed timing, configure LiveSplit to display/compare against Game Time.");
+        text.AppendLine("The Setup UI intentionally does not generate .lsl files because LiveSplit layout files are user-specific.");
+
+        File.WriteAllText(Path.Combine(outputDirectory, "SETUP_INFO.txt"), text.ToString(), new UTF8Encoding(false));
     }
 
     private string Resolve(string relative) => Path.GetFullPath(Path.Combine(_packageRoot, relative.Replace('/', Path.DirectorySeparatorChar)));

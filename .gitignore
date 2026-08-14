@@ -4,18 +4,25 @@
 **/publish/
 
 # Generated OCR data (downloaded during release builds)
-2 - Support Files/BossWatcher [Boss Rush Detection]/tessdata/eng.traineddata
+2 - Support Files/BossWatcher/tessdata/eng.traineddata
 
 # Generated user/release binaries
 1 - User Setup/PoE2RouteSetup.exe
 1 - User Setup/PoE2RouteAutoSplitter-v*-Setup.exe
 1 - User Setup/LiveSplit Target/*
 !1 - User Setup/LiveSplit Target/.gitkeep
+1 - User Setup/PoE2AS-v2.1.2-Setup.exe
 
 # Release staging/artifacts
 artifacts/
-2 - Support Files/Installer [Windows]/Output/
+2 - Support Files/Installer/Output/
 
 # Crash/runtime files
 **/PoE2RouteSetup-crash.log
 **/poe2_boss_events.log
+
+# Runtime diagnostic output
+**/diagnostics/
+**/poe2_manual_pause_state.txt
+**/poe2_gametimewatcher.log
+**/poe2_gametime_debug.log

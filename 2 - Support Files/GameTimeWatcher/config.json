@@ -1,0 +1,28 @@
+{
+  "ProcessNames": [
+    "PathOfExileSteam",
+    "PathOfExile",
+    "PathOfExile_x64Steam",
+    "PathOfExile_x64"
+  ],
+  "CaptureFps": 10,
+  "FastCaptureFps": 30,
+  "InputFastModeMs": 1500,
+  "InputHintWindowMs": 750,
+  "HeartbeatMs": 250,
+  "ConfirmPausedFrames": 2,
+  "ConfirmRunningFrames": 2,
+  "RequireForegroundForNewDetection": true,
+  "PauseStackThreshold": 0.62,
+  "ResumeGameThreshold": 0.58,
+  "PauseBannerThreshold": 0.4,
+  "ExitPathOfExileThreshold": 0.5,
+  "MtxShopThreshold": 0.7,
+  "CanonicalHeight": 576,
+  "PauseStackTemplate": "templates/pause-menu-stack.png",
+  "ResumeGameTemplate": "templates/pause-resume-game.png",
+  "PauseBannerTemplate": "templates/pause-menu-tight.png",
+  "ExitPathOfExileTemplate": "templates/pause-exit-path-of-exile.png",
+  "MtxShopTemplate": "templates/mtx-shop.png",
+  "ProvisionalTimeoutMs": 1200
+}

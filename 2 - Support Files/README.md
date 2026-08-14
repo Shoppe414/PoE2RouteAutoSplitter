@@ -1,81 +1,144 @@
-# Path of Exile 2 Route AutoSplitter for LiveSplit — v2.0.2
+# Path of Exile 2 Route AutoSplitter for LiveSplit — v2.1.0
 
-v2.0.2 retains the installer/release workflow introduced in v2.0.0 and adds Riverbank auto-start to campaign Boss Rush-only modes. Normal users do not need PowerShell, the .NET SDK, OCR setup, or compilation.
+v2.1.0 adds load-removed **Game Time** to every autosplitter mode and makes
+GameTimeWatcher an optional helper only for manual-pause removal.
+
+Normal users do not need PowerShell, the .NET SDK, OCR setup, or compilation.
+
+## Compact package paths
+
+This release uses a short archive root (`PoE2AS-v2.1.2-RC`) and compact support names such as `01-Ordered`, `04-Checklist`, `BossWatcher`, and `GameTimeWatcher`. Generated .NET `bin` and `obj` folders are intentionally excluded from the release archive.
+
+The four runtime anchor names `1 - User Setup`, `2 - Support Files`, `Setup UI [Configuration]`, and `LiveSplit Target` are intentionally retained for compatibility with the already-built Setup UI executable.
 
 ## Normal user installation
 
-Download the Windows installer from the GitHub Release:
+Download and run:
 
-`PoE2RouteAutoSplitter-v2.0.2-Setup.exe`
+`PoE2AS-v2.1.0-Setup.exe`
 
-Run it and launch **PoE2 Route AutoSplitter** from the Start Menu, optional desktop shortcut, or the installed `1 - User Setup\PoE2RouteSetup.exe`.
-
-The default install location is the current user's Local AppData folder, so the Setup UI can safely update its dedicated `LiveSplit Target` without requiring administrator access.
-
-The installer deploys a self-contained Windows runtime. It also installs the Microsoft Visual C++ x64 runtime used by BossWatcher's OCR/native dependencies.
-
-## Installed runtime layout
-
-The installed application preserves the established two-folder runtime structure:
+The installer uses the established two-folder runtime:
 
 ```text
-PoE2RouteAutoSplitter
+PoE2AS-v2.1.2-RC
 ├── 1 - User Setup
 │   ├── PoE2RouteSetup.exe
 │   └── LiveSplit Target\
 └── 2 - Support Files
     ├── Setup UI [Configuration]\ui-manifest.json
-    ├── BossWatcher [Boss Rush Detection]\publish\...
-    ├── 01 - Ordered Route [Exploration]\...
+    ├── BossWatcher\publish\...
+    ├── GameTimeWatcher\publish\...
+    ├── 01-Ordered\...
     ├── ...
-    └── 14 - Custom Route [Exploration + Boss Rush]\...
+    └── 14-Custom\...
 ```
 
-`LiveSplit Target` remains the fixed deployment directory. Each successful Setup UI deployment replaces that target's active generated setup after confirmation.
-
-The installer intentionally preserves `LiveSplit Target` across application upgrades/uninstalls so user-generated setup files are not silently destroyed.
+`LiveSplit Target` remains the fixed deployment directory and is preserved
+across installer upgrades.
 
 ## LiveSplit setup
 
 1. Launch `PoE2RouteSetup.exe`.
 2. Select a premade configuration or build a custom route.
-3. Press **Generate / Deploy Selected Setup**.
-4. Open the generated `.lss` from `1 - User Setup\LiveSplit Target` in LiveSplit.
-5. Keep your own LiveSplit layout.
-6. Add/edit the layout's **Scriptable Auto Splitter** component and point it at the generated `.asl` in `LiveSplit Target`.
-7. For Boss Rush or mixed routes, press **Start BossWatcher** in the Setup UI.
+3. Optionally enable **Pause LiveSplit Game Time while PoE2 is manually paused**.
+4. Press **Generate / Deploy Selected Setup**.
+5. Open the generated `.lss` from `1 - User Setup\LiveSplit Target`.
+6. Keep your own LiveSplit layout.
+7. Add/edit the layout's **Scriptable Auto Splitter** component and point it at
+   the generated `.asl`.
+8. For Boss Rush or mixed routes, press **Start BossWatcher**.
+9. If manual-pause removal was enabled, press **Start GameTimeWatcher**.
 
 The Setup UI does not generate, copy, or modify `.lsl` files.
 
+## Game Time
+
+Every deployed ASL has load removal enabled by default.
+
+The ASL tails Path of Exile 2 `Client.txt` independently of its route/boss
+reader. `Got Instance Details` begins the live Game Time pause for a zone
+transition. When PoE2 later writes:
+
+```text
+[LOADING SCREEN] (Area Name) Duration = X seconds
+```
+
+the ASL uses that game-reported duration as the authoritative amount of load
+time to remove and corrects any small log-observation difference.
+
+Boss introductions, boss outros, NPC dialogue, and ordinary scripted story
+sequences remain timed. Testing showed that PoE2 commonly allows useful
+inventory management during those sequences, so they are treated as part of
+the run rather than free time.
+
+For load-removed timing, configure LiveSplit to display/compare against
+**Game Time**.
+
+### Optional manual-pause removal
+
+GameTimeWatcher is **not required** for normal load removal.
+
+It is only used when the runner enables the Setup UI option to pause LiveSplit
+Game Time along with PoE2's real manual pause state. GameTimeWatcher v0.4.3 recognizes:
+
+- the centered in-game pause menu; and
+- the Microtransaction Shop when opened from that paused state.
+
+For ESC/controller-Start transitions, v0.4.3 publishes a provisional timestamp immediately and lets the ASL hold/release Game Time on its next update while the screen detector verifies the result. Rejected candidates are compensated automatically, so the final Game Time remains screen-authoritative.
+
+Options and Challenges/Achievements remain timed because PoE2 resumes the game
+simulation while those interfaces are open.
+
+The helper writes a heartbeat state file to `LiveSplit Target`. The ASL honors
+a pause only while that heartbeat is fresh; a missing/stale helper fails open.
+
+### GameTimeWatcher crash diagnostics
+
+Enable **Developer console diagnostics** before pressing **Start
+GameTimeWatcher** to launch the external watchdog instead of the helper directly.
+It records watcher stdout/stderr, exit code, working/private/virtual memory,
+handle/thread counts, CPU time/responsiveness, the internal watcher diagnostic
+log, and matching Windows Application crash events under:
+
+`GameTimeWatcher\diagnostics\YYYYMMDD-HHMMSS`
+
+v0.3.1 also disposes the `Process` wrappers created by repeated PoE2 window
+scans and throttles process discovery to 250 ms. The older loop enumerated
+processes every ~10 ms without disposing those wrappers, making native handle
+accumulation a plausible cause of the reported early exit. The watchdog remains
+in place to confirm resource stability or capture a different failure.
+
+## Setup UI
+
+The Setup UI exposes all 41 bundled premade `.lss` profiles and the mixed
+custom-route builder. Custom routes can combine supported areas and bosses,
+reorder objectives, choose ordered/unordered completion, and select manual or
+area-based timer start.
+
+Deployment is staged before the active target is touched. Replacing a non-empty
+target requires confirmation.
+
+## BossWatcher
+
+BossWatcher remains responsible only for Boss Rush detection. Normal console
+output reports encounters, defeats, and fight duration. `--dev-console`
+retains verbose diagnostics.
+
 ## Source repository vs. release assets
 
-Compiled executables are intentionally not committed to Git. `.gitignore` excludes generated `publish` folders, OCR language data, installer output, release artifacts, and the large user executables.
+Compiled executables are intentionally not committed to Git. GitHub Releases
+contain:
 
-The source repository contains the build definitions. GitHub Releases contain the ready-to-run files:
-
-- `PoE2RouteAutoSplitter-v2.0.2-Setup.exe` — recommended Windows installer.
-- `PoE2RouteAutoSplitter-v2.0.2.zip` — portable self-contained runtime.
-- `SHA256SUMS.txt` — release asset checksums.
+- `PoE2AS-v2.1.0-Setup.exe`
+- `PoE2AS-v2.1.0.zip`
+- `SHA256SUMS.txt`
 
 ## Automated GitHub release
 
-`.github\workflows\build-release.yml` runs for version tags such as `v2.0.2` and can also be started manually.
-
-The workflow:
-
-1. checks out the repository;
-2. installs the .NET 10 SDK;
-3. uses the Inno Setup 6 compiler provided by the Windows 2025 GitHub-hosted runner;
-4. downloads Tesseract English OCR data;
-5. builds the Setup UI and BossWatcher as self-contained Windows applications;
-6. assembles the two-folder runtime;
-7. creates the portable ZIP;
-8. creates the Windows installer;
-9. creates SHA-256 checksums;
-10. uploads workflow artifacts; and
-11. for a version tag, creates/updates the matching GitHub Release assets.
-
-Normal users never run these build steps.
+`.github\workflows\build-release.yml` runs for lowercase version tags such
+as `v2.1.0` and can also be started manually. It builds the Setup UI,
+BossWatcher, and optional GameTimeWatcher, assembles the two-folder runtime,
+creates the portable ZIP and installer, and generates SHA-256 checksums.
 
 ## Local developer release build
 
@@ -84,49 +147,42 @@ Requirements:
 - Windows x64
 - .NET 10 SDK
 - Inno Setup 6
-- Internet access for NuGet, Tesseract OCR data, and the Microsoft VC++ redistributable
+- Internet access for NuGet, Tesseract OCR data, and the Microsoft VC++
+  redistributable
 
 From `2 - Support Files`:
 
 ```powershell
-.\Build-Release.ps1 -Version 2.0.2
+.\Build-Release.ps1 -Version 2.1.0
 ```
 
-Generated release files are written to the repository-level `artifacts` directory. The installer is also copied to `1 - User Setup` for convenient local testing, but is ignored by Git.
-
-For development-only builds without creating an installer:
+For development-only user-tool builds:
 
 ```powershell
-.\Build-User-Tools.ps1
+.\Build-Tools.ps1
 ```
-
-## Setup UI
-
-The Setup UI exposes all 41 bundled premade `.lss` profiles and the mixed custom-route builder. The custom builder can combine supported areas and bosses, reorder objectives, choose ordered/unordered completion, and select manual or area-based timer start.
-
-Deployment is staged before the active target is touched. Once generation succeeds, replacing a non-empty target requires confirmation.
-
-## BossWatcher v0.3.0 console
-
-Normal BossWatcher output is event-focused: timestamped boss encounters, boss defeats, and fight duration in seconds. Verbose frame-by-frame detector output remains available through `--dev-console` or the Setup UI's **Developer console diagnostics** option.
 
 ## Mode directories
 
-1. `01 - Ordered Route [Exploration]`
-2. `02 - Flexible Route [Exploration]`
-3. `03 - Level Race`
-4. `04 - Area Checklist and Flexible Act Rush [Exploration]`
-5. `05 - Ordered Segment and Act Practice [Exploration]`
-6. `06 - Campaign 100 - Dynamic [Boss Rush]`
-7. `07 - Campaign 100 - Predefined [Boss Rush]`
-8. `08 - Campaign Any v0.5 - Dynamic [Boss Rush]`
-9. `09 - Campaign Required Bosses Only v0.5 - Predefined [Boss Rush]`
-10. `10 - Pinnacle v0.5 - Dynamic [Boss Rush]`
-11. `11 - Pinnacle v0.5 - Predefined [Boss Rush]`
-12. `12 - Campaign 100 - Dynamic [Exploration + Boss Rush]`
-13. `13 - Campaign Any v0.5 - Dynamic [Exploration + Boss Rush]`
-14. `14 - Custom Route [Exploration + Boss Rush]`
+1. `01-Ordered`
+2. `02-Flexible`
+3. `03-LevelRace`
+4. `04-Checklist`
+5. `05-Segment`
+6. `06-Boss100-Dyn`
+7. `07-Boss100-Pre`
+8. `08-BossAny-Dyn`
+9. `09-BossReq-Pre`
+10. `10-Pinnacle-Dyn`
+11. `11-Pinnacle-Pre`
+12. `12-Mixed100-Dyn`
+13. `13-MixedAny-Dyn`
+14. `14-Custom`
 
-Campaign 100% retains 67 boss targets. The required-boss v0.5 baseline retains 40 bosses. The merged Campaign 100% route contains 166 objectives (99 exploration + 67 bosses), and merged Campaign Any% v0.5 contains 118 objectives (78 exploration + 40 required bosses).
+Campaign modes that start in The Riverbank arm their start when `G1_1` is
+entered, but LiveSplit does not begin timing until Client.txt records the Wounded
+Man's final opening line: `Reach... Clearfell... Find the Miller...`. The initial
+wake-up/setup period and first NPC interaction are intentionally untimed.
+Pinnacle modes 10-11 remain manual-start.
 
-Campaign Boss Rush-only modes (06-09) auto-start when The Riverbank is entered. Pinnacle Boss Rush modes (10-11) intentionally use manual timer start.
+**v0.4.3 manual-pause integration:** after updating, regenerate the setup and reselect the generated `.asl` in LiveSplit. The provisional timestamp protocol requires the matching ASL and GameTimeWatcher build.

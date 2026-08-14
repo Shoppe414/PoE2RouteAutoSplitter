@@ -10,6 +10,7 @@ public sealed class SetupManifest
     public string BossSupportOnlyList { get; set; } = "";
     public string CustomAslSource { get; set; } = "";
     public string BossWatcherDirectory { get; set; } = "";
+    public string GameTimeWatcherDirectory { get; set; } = "";
     public List<PresetDefinition> Presets { get; set; } = [];
 
     public static SetupManifest Load(string path)
@@ -30,6 +31,7 @@ public sealed class PresetDefinition
     public string AslSource { get; set; } = "";
     public List<RuntimeFileDefinition> RuntimeFiles { get; set; } = [];
     public bool RequiresBossWatcher { get; set; }
+    public bool PrependRiverbankObjective { get; set; }
     public string Description { get; set; } = "";
 
     public override string ToString() => DisplayName;
@@ -39,6 +41,23 @@ public sealed class RuntimeFileDefinition
 {
     public string Source { get; set; } = "";
     public string Target { get; set; } = "";
+}
+
+
+public enum StartMode
+{
+    Manual,
+    Riverbank,
+    ZoneEntry
+}
+
+public sealed class StartPolicy
+{
+    public StartMode Mode { get; init; }
+    public string? AreaId { get; init; }
+    public string? AreaName { get; init; }
+    public bool IsAutomatic => Mode != StartMode.Manual;
+    public string RouteDirectiveValue => Mode == StartMode.Manual ? "manual" : AreaId ?? throw new InvalidOperationException("Automatic start requires an area ID.");
 }
 
 public sealed class RouteEntry
@@ -52,10 +71,3 @@ public sealed class RouteEntry
     public override string ToString() => DisplayText;
 }
 
-public sealed class StartAreaOption
-{
-    public string Id { get; init; } = "";
-    public string Name { get; init; } = "";
-    public string DisplayText => string.IsNullOrEmpty(Id) ? "Manual start" : $"{Name}  [{Id}]";
-    public override string ToString() => DisplayText;
-}

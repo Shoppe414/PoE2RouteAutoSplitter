@@ -1,5 +1,5 @@
 param(
-    [string]$Version = '2.0.2',
+    [string]$Version = '2.1.2',
     [switch]$SkipInstaller,
     [switch]$SkipPortableZip
 )
@@ -8,17 +8,18 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 if ($Version -notmatch '^\d+\.\d+\.\d+$') {
-    throw "Version must look like 2.0.2. Received: $Version"
+    throw "Version must look like 2.1.2. Received: $Version"
 }
 
 $supportRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $releaseRoot = Split-Path -Parent $supportRoot
 $userRoot = Join-Path $releaseRoot '1 - User Setup'
 $setupUiRoot = Join-Path $supportRoot 'Setup UI [Configuration]'
-$bossRoot = Join-Path $supportRoot 'BossWatcher [Boss Rush Detection]'
-$installerRoot = Join-Path $supportRoot 'Installer [Windows]'
+$bossRoot = Join-Path $supportRoot 'BossWatcher'
+$gameTimeRoot = Join-Path $supportRoot 'GameTimeWatcher'
+$installerRoot = Join-Path $supportRoot 'Installer'
 $artifactsRoot = Join-Path $releaseRoot 'artifacts'
-$portableName = "PoE2RouteAutoSplitter-v$Version"
+$portableName = "PoE2AS-v$Version"
 # Stage the expanded portable runtime under the Windows temp directory. Keeping
 # this tree out of the repository path avoids MAX_PATH failures when a checkout
 # itself already has a long path. Only the final ZIP/installer/checksums are
@@ -147,11 +148,18 @@ Write-Host 'Building self-contained BossWatcher...'
 & (Join-Path $bossRoot 'Build.ps1')
 if ($LASTEXITCODE -ne 0) { throw "BossWatcher build failed with exit code $LASTEXITCODE." }
 
+Write-Host 'Building self-contained GameTimeWatcher (optional manual-pause helper)...'
+& (Join-Path $gameTimeRoot 'Build.ps1')
+if ($LASTEXITCODE -ne 0) { throw "GameTimeWatcher build failed with exit code $LASTEXITCODE." }
+
 $setupExe = Join-Path $userRoot 'PoE2RouteSetup.exe'
 $bossPublish = Join-Path $bossRoot 'publish'
 $bossExe = Join-Path $bossPublish 'PoE2BossWatcher.exe'
+$gameTimePublish = Join-Path $gameTimeRoot 'publish'
+$gameTimeExe = Join-Path $gameTimePublish 'PoE2GameTimeWatcher.exe'
 if (-not (Test-Path -LiteralPath $setupExe)) { throw "Missing built Setup UI: $setupExe" }
 if (-not (Test-Path -LiteralPath $bossExe)) { throw "Missing built BossWatcher: $bossExe" }
+if (-not (Test-Path -LiteralPath $gameTimeExe)) { throw "Missing built GameTimeWatcher: $gameTimeExe" }
 
 if (Test-Path -LiteralPath $artifactsRoot) { Remove-DirectoryTreeSafe -Path $artifactsRoot }
 if (Test-Path -LiteralPath $stageBase) { Remove-DirectoryTreeSafe -Path $stageBase }
@@ -173,17 +181,25 @@ $manifest.Version = $Version
 $manifest | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath (Join-Path $runtimeUi 'ui-manifest.json') -Encoding UTF8
 
 # All route-mode data is small and remains available to the Setup UI at runtime.
-Get-ChildItem -LiteralPath $supportRoot -Directory | Where-Object { $_.Name -match '^\d{2} - ' } | Sort-Object Name | ForEach-Object {
+Get-ChildItem -LiteralPath $supportRoot -Directory | Where-Object { $_.Name -match '^\d{2}-' } | Sort-Object Name | ForEach-Object {
     Copy-DirectoryContents -Source $_.FullName -Destination (Join-Path $portableSupportRoot $_.Name)
 }
 
 # BossWatcher runtime plus the catalogs the Setup UI reads for custom-route selection.
-$runtimeBoss = Join-Path $portableSupportRoot 'BossWatcher [Boss Rush Detection]'
+$runtimeBoss = Join-Path $portableSupportRoot 'BossWatcher'
 New-Item -ItemType Directory -Force -Path $runtimeBoss | Out-Null
 Copy-DirectoryContents -Source $bossPublish -Destination (Join-Path $runtimeBoss 'publish')
 Copy-Item -LiteralPath (Join-Path $bossRoot 'bosses.txt') -Destination $runtimeBoss -Force
 New-Item -ItemType Directory -Force -Path (Join-Path $runtimeBoss 'BossLists') | Out-Null
 Copy-Item -LiteralPath (Join-Path $bossRoot 'BossLists\support-only.txt') -Destination (Join-Path $runtimeBoss 'BossLists\support-only.txt') -Force
+
+# Optional GameTimeWatcher runtime. It is only used when the runner elects to
+# pause LiveSplit Game Time along with PoE2's real pause menu / MTX Shop.
+$runtimeGameTime = Join-Path $portableSupportRoot 'GameTimeWatcher'
+New-Item -ItemType Directory -Force -Path $runtimeGameTime | Out-Null
+Copy-DirectoryContents -Source $gameTimePublish -Destination (Join-Path $runtimeGameTime 'publish')
+Copy-Item -LiteralPath (Join-Path $gameTimeRoot 'Run-Diagnostic.ps1') -Destination $runtimeGameTime -Force
+Copy-Item -LiteralPath (Join-Path $gameTimeRoot 'Run-Diagnostic.cmd') -Destination $runtimeGameTime -Force
 
 @"
 PoE2 Route AutoSplitter v$Version - Installed Runtime
@@ -198,8 +214,20 @@ LiveSplit layouts (.lsl) are intentionally not generated. Configure your own
 LiveSplit layout and point its Scriptable Auto Splitter component to the .asl
 file generated inside LiveSplit Target.
 
-BossWatcher is installed under 2 - Support Files and is started from the Setup UI.
-The installed runtime is self-contained; users do not need the .NET SDK or PowerShell.
+Load-removed Game Time is handled directly by the deployed ASL using Path of Exile 2
+Client.txt [LOADING SCREEN] duration records. Campaign setups starting in The
+Riverbank arm on G1_1 entry and begin timing on the Wounded Man's final opening
+Client.txt line: Reach... Clearfell... Find the Miller...
+
+BossWatcher is installed under 2 - Support Files and is started from the Setup UI
+for Boss Rush / mixed modes. GameTimeWatcher is also installed there, but is only
+needed when the user enables the optional setting to pause LiveSplit Game Time while
+PoE2 is manually paused (pause menu / MTX Shop). If Developer console diagnostics
+is enabled, Start GameTimeWatcher launches the external crash watchdog and stores
+a timestamped diagnostics folder beside the GameTimeWatcher runtime.
+
+The installed runtime is self-contained for normal use; users do not need the .NET SDK.
+The optional external crash diagnostic uses Windows PowerShell.
 "@ | Set-Content -LiteralPath (Join-Path $portableSupportRoot 'README - Installed Runtime.txt') -Encoding UTF8
 
 Write-Host 'Validating assembled runtime...'
@@ -223,11 +251,15 @@ foreach ($relative in @([string]$runtimeManifest.AreaCatalog, [string]$runtimeMa
     $required = Join-Path $portableSupportRoot ($relative.Replace('/', [IO.Path]::DirectorySeparatorChar))
     if (-not (Test-Path -LiteralPath $required -PathType Leaf)) { throw "Staged runtime is missing catalog/custom file: $relative" }
 }
+if ([string]$runtimeManifest.GameTimeWatcherDirectory -ne 'GameTimeWatcher') {
+    throw 'Staged manifest GameTimeWatcherDirectory is invalid.'
+}
 if (Get-ChildItem -LiteralPath $portableRoot -Recurse -File -Filter '*.lsl') {
     throw 'Staged runtime unexpectedly contains a LiveSplit .lsl layout.'
 }
 if (-not (Test-Path -LiteralPath (Join-Path $portableUserRoot 'PoE2RouteSetup.exe') -PathType Leaf)) { throw 'Staged Setup UI executable is missing.' }
 if (-not (Test-Path -LiteralPath (Join-Path $runtimeBoss 'publish\PoE2BossWatcher.exe') -PathType Leaf)) { throw 'Staged BossWatcher executable is missing.' }
+if (-not (Test-Path -LiteralPath (Join-Path $runtimeGameTime 'publish\PoE2GameTimeWatcher.exe') -PathType Leaf)) { throw 'Staged GameTimeWatcher executable is missing.' }
 Write-Host 'Assembled runtime validation passed.'
 
 if (-not $SkipPortableZip) {
@@ -248,7 +280,7 @@ if (-not $SkipInstaller) {
         Invoke-WebRequest -Uri 'https://aka.ms/vs/17/release/vc_redist.x64.exe' -OutFile $vcRedist
     }
 
-    $iss = Join-Path $installerRoot 'PoE2RouteAutoSplitter.iss'
+    $iss = Join-Path $installerRoot 'PoE2AS.iss'
     Write-Host 'Compiling Windows installer with Inno Setup...'
     & $iscc "/DMyAppVersion=$Version" "/DStageRoot=$portableRoot" "/DInstallerOutputDir=$installerOutput" "/DVcRedistPath=$vcRedist" $iss
     if ($LASTEXITCODE -ne 0) { throw "Inno Setup compiler failed with exit code $LASTEXITCODE." }

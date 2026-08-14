@@ -1,0 +1,82 @@
+PATH OF EXILE 2 ROUTE AUTOSPLITTER v2.1.0
+
+NORMAL USERS
+============
+
+Do not compile the application and do not run PowerShell setup scripts.
+
+1. Download from the GitHub Release:
+     PoE2AS-v2.1.0-Setup.exe
+
+2. Run the installer.
+
+3. Launch PoE2 Route AutoSplitter from the Start Menu, optional desktop
+   shortcut, or the installed:
+     1 - User Setup\PoE2RouteSetup.exe
+
+4. Select a premade route or create a custom route.
+
+5. Optional: enable:
+     Pause LiveSplit Game Time while PoE2 is manually paused
+   if your ruleset permits breaks to be removed from Game Time.
+
+6. Press:
+     Generate / Deploy Selected Setup
+
+7. Open the generated .lss from:
+     1 - User Setup\LiveSplit Target
+
+8. Use your own LiveSplit layout. Add/edit its Scriptable Auto Splitter
+   component and point it to the generated .asl in LiveSplit Target.
+
+9. For boss-enabled modes, press Start BossWatcher in the Setup UI.
+
+10. If manual-pause removal was enabled, press Start GameTimeWatcher.
+    For crash investigation, also enable Developer console diagnostics first;
+    this runs the external crash watchdog and saves a timestamped diagnostic folder.
+
+CAMPAIGN START POLICY
+=====================
+
+For campaign modes whose configured start is G1_1 / The Riverbank, entering
+Riverbank only arms the autosplitter. LiveSplit starts when Client.txt records
+the Wounded Man's final opening line:
+
+  Reach... Clearfell... Find the Miller...
+
+The initial wake-up, setup window, movement to the Wounded Man, and first NPC
+interaction are intentionally untimed. This gives a new-character runner a
+brief pre-run window to adjust controls/hotkeys or disable tutorials. Pinnacle
+modes remain manual-start. Non-Riverbank custom/configurable starts retain their
+normal area-entry behavior.
+
+GAME TIME
+=========
+
+All deployed ASLs remove PoE2-reported loading-screen time directly from
+Client.txt. GameTimeWatcher is NOT required for ordinary load-removed Game Time.
+
+GameTimeWatcher is only the optional manual-pause helper. It pauses LiveSplit
+Game Time while PoE2 is actually paused in the GAME PAUSED menu or
+Microtransaction Shop. Options and Challenges/Achievements remain timed because
+PoE2 unpauses while those interfaces are open.
+
+No .lsl layout file is generated or included.
+
+
+DEVELOPERS
+==========
+
+The Git repository intentionally does not contain compiled .exe files.
+
+To build the complete Windows release locally, run from 2 - Support Files:
+
+  .\Build-Release.ps1 -Version 2.1.0
+
+This creates the installer, portable ZIP, and checksums under the repository's
+artifacts directory. The installer is also copied into 1 - User Setup for local
+testing, but is ignored by Git.
+
+Creating/pushing a v2.1.0 tag triggers .github\workflows\build-release.yml,
+which performs the Windows build and attaches the installer/ZIP/checksums to
+the GitHub Release automatically.

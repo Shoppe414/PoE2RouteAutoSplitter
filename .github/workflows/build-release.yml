@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Release version (for example 2.0.2)
+        description: Release version (for example 2.1.0)
         required: true
-        default: 2.0.2
+        default: 2.1.0
   push:
     tags:
       - 'v*.*.*'
@@ -37,7 +37,7 @@ jobs:
             $version = '${{ inputs.version }}'
           }
           if ($version -notmatch '^\d+\.\d+\.\d+$') {
-            throw "Version must look like 2.0.2. Received: $version"
+            throw "Version must look like 2.1.0. Received: $version"
           }
           "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
           Write-Host "Building version $version"
@@ -50,10 +50,10 @@ jobs:
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: PoE2RouteAutoSplitter-v${{ steps.version.outputs.version }}
+          name: PoE2AS-v${{ steps.version.outputs.version }}
           path: |
-            artifacts/PoE2RouteAutoSplitter-v${{ steps.version.outputs.version }}-Setup.exe
-            artifacts/PoE2RouteAutoSplitter-v${{ steps.version.outputs.version }}.zip
+            artifacts/PoE2AS-v${{ steps.version.outputs.version }}-Setup.exe
+            artifacts/PoE2AS-v${{ steps.version.outputs.version }}.zip
             artifacts/SHA256SUMS.txt
           if-no-files-found: error
 
@@ -66,8 +66,8 @@ jobs:
           $tag = '${{ github.ref_name }}'
           $version = '${{ steps.version.outputs.version }}'
           $assets = @(
-            "artifacts\PoE2RouteAutoSplitter-v$version-Setup.exe",
-            "artifacts\PoE2RouteAutoSplitter-v$version.zip",
+            "artifacts\PoE2AS-v$version-Setup.exe",
+            "artifacts\PoE2AS-v$version.zip",
             'artifacts\SHA256SUMS.txt'
           )
 
