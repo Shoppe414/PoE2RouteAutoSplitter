@@ -25,7 +25,7 @@ I've tried my best to be as run agnostic as possible. Players have significant f
 how to best manage their run rules and what triggers they want to use.
 
 For the fresh starts on the Riverbank, I've intentionally made the short period between waking up 
-and speaking to the wounded un-timed. This is so players have a moment to fix settings, select
+and speaking to The Wounded Man un-timed. This is so players have a moment to fix settings, select
 'skip tutorial' option, or adjust any other options before actually starting their run. After
 interacting with the wounded man, run time will begin on his last voice line.
 
