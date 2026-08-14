@@ -19,6 +19,30 @@ Allows for synchronous pausing of the game and LiveSplit timer when opening the 
 Game Time option in LiveSplit will exclude loading times and pause timer (when option is active).
 
 ---
+# Run Policies
+
+I've tried my best to be as run agnostic as possible. Players have significant freedom when deciding
+how to best manage their run rules and what triggers they want to use.
+
+For the fresh starts on the Riverbank, I've intentionally made the short period between waking up 
+and speaking to the wounded un-timed. This is so players have a moment to fix settings, select
+'skip tutorial' option, or adjust any other options before actually starting their run. After
+interacting with the wounded man, run time will begin on his last voice line.
+
+Zone-Transition-Starts activate as soon as your character enters the pre-defined zone. For dynamic runs,
+this will mean the timer only starts and begins tracking when your character enters that specific zone, 
+even if you are are starting in a different zone.
+
+Because of the length of the game, I've developed the GameTimeWatcher which is a simple program that
+will tell LiveSplit to pause its Game Time while the Pause Game menu and microtransaction menu are open.
+This was intended to allow people to take breaks or address situations that may arise that require their full attention.
+Other menus will not pause the timer since you have control of your character.
+
+The timer will run during in game cut scenes since you will have access to your inventory during these moments
+which can be used for inventory management for run optimization. The timer currently only pauses during loading screens,
+the pause menu, and microtransaction shop.
+
+---
 
 # Download
 
