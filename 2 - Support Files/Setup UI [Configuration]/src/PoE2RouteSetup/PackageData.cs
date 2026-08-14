@@ -68,6 +68,7 @@ public static class PackageData
             if (line.StartsWith("# Act ", StringComparison.OrdinalIgnoreCase)) group = line.TrimStart('#', ' ');
             else if (line.StartsWith("# Interlude", StringComparison.OrdinalIgnoreCase)) group = line.TrimStart('#', ' ');
             else if (line.StartsWith("# Pinnacle", StringComparison.OrdinalIgnoreCase)) group = line.TrimStart('#', ' ');
+            else if (line.StartsWith("# Trial of", StringComparison.OrdinalIgnoreCase)) group = line.TrimStart('#', ' ');
             if (line.Length == 0 || line.StartsWith('#')) continue;
             var parts = line.Split('|');
             if (parts.Length < 2) continue;

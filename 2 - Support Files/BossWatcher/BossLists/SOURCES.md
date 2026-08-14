@@ -1,6 +1,6 @@
 # Boss List Research Sources
 
-Research snapshot: 2026-08-10. Path of Exile 2 is Early Access and boss/quest routing can change between patches or leagues.
+Research snapshot: 2026-08-14. Path of Exile 2 is Early Access and boss/quest routing can change between patches or leagues.
 
 Primary reference: the official Path of Exile 2 Wiki, community-maintained and hosted by Grinding Gear Games.
 
@@ -17,5 +17,8 @@ Primary reference: the official Path of Exile 2 Wiki, community-maintained and h
 - Rare monster category: https://www.poe2wiki.net/wiki/Category:Rare_monsters
 - Pinnacle boss category: https://www.poe2wiki.net/wiki/Category:Pinnacle_bosses
 - Pinnacle encounter definition: https://www.poe2wiki.net/wiki/Pinnacle_encounter
+- Trial of the Sekhemas: https://www.poe2wiki.net/wiki/Trial_of_the_Sekhemas
+- Trial of Chaos: https://www.poe2wiki.net/wiki/The_Trial_of_Chaos
+- Trialmaster: https://www.poe2wiki.net/wiki/The_Trialmaster
 
 The Any% target set is a project-defined core-progression interpretation derived from current quest/progression data. It is intentionally labeled as such instead of being presented as an official speedrun category.

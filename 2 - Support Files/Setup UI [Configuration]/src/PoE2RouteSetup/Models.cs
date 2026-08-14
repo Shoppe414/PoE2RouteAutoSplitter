@@ -66,7 +66,7 @@ public sealed class RouteEntry
     public string Id { get; init; } = "";
     public string Name { get; init; } = "";
     public string Group { get; init; } = "";
-    public string DisplayText => $"{Group} — {Name}  [{Id}]";
+    public string DisplayText => $"{Group} — {Name}";
     public string RouteText => $"{Type}|{Id}";
     public override string ToString() => DisplayText;
 }

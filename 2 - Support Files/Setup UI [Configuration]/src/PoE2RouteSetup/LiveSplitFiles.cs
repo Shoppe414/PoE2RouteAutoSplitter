@@ -355,13 +355,47 @@ public static class LiveSplitFiles
         run.Save(outputPath);
     }
 
+    public static void WritePremadeSplits(string outputPath, IReadOnlyList<RouteEntry> objectives, string categoryName)
+    {
+        var segments = new XElement("Segments");
+        foreach (var objective in objectives)
+            segments.Add(CreateSegment(objective.Name));
+
+        var run = new XDocument(
+            new XDeclaration("1.0", "utf-8", null),
+            new XElement("Run", new XAttribute("version", "1.7.0"),
+                new XElement("GameIcon"),
+                new XElement("GameName", "Path of Exile 2"),
+                new XElement("CategoryName", categoryName),
+                new XElement("Metadata",
+                    new XElement("Run", new XAttribute("id", "")),
+                    new XElement("Platform", new XAttribute("usesEmulator", "False"), "PC"),
+                    new XElement("Region"),
+                    new XElement("Variables")),
+                new XElement("Offset", "00:00:00"),
+                new XElement("AttemptCount", 0),
+                segments));
+        run.Save(outputPath);
+    }
+
     public static void WriteCustomSplits(string outputPath, IReadOnlyList<RouteEntry> objectives)
     {
         var segments = new XElement("Segments");
         for (var i = 0; i < objectives.Count; i++)
         {
             var objective = objectives[i];
-            var typeLabel = objective.Type.Equals("boss", StringComparison.OrdinalIgnoreCase) ? "Boss" : "Area";
+            var typeLabel = objective.Type.ToLowerInvariant() switch
+            {
+                "boss" => "Boss",
+                "bossocc" => "Repeated Boss",
+                "bossall" => "Boss Pair",
+                "bossany" => "Dynamic Boss",
+                "bossnth" => "Nth Dynamic Boss",
+                "bossslot" => "Dynamic Boss",
+                "level" => "Level",
+                "areaocc" => "Repeated Area",
+                _ => "Area"
+            };
             segments.Add(CreateSegment($"{objective.Name} [{typeLabel}]"));
         }
 
@@ -370,7 +404,7 @@ public static class LiveSplitFiles
             new XElement("Run", new XAttribute("version", "1.7.0"),
                 new XElement("GameIcon"),
                 new XElement("GameName", "Path of Exile 2"),
-                new XElement("CategoryName", "Custom Route - Exploration + Boss Rush"),
+                new XElement("CategoryName", "Custom Route - Areas + Bosses + Levels"),
                 new XElement("Metadata",
                     new XElement("Run", new XAttribute("id", "")),
                     new XElement("Platform", new XAttribute("usesEmulator", "False"), "PC"),

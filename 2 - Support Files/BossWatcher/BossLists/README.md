@@ -28,3 +28,9 @@ For v0.2.0, **Campaign 100%** means every supported unique boss encounter in Act
 ## Campaign Any% scope
 
 The Any% list is explicitly a **BossRush v0.5 core-progression baseline**, not an official community leaderboard ruleset. It is intended to represent bosses that gate the current campaign progression. Act 4 has league-rotating required islands, so that section is version-scoped and should be revisited when the rotation changes.
+
+## Optional trial boss scope
+
+`../bosses.txt` also contains the complete supported Trial of the Sekhemas / Trial of Chaos boss identities. These identities are intentionally **not** added to Campaign 100%, Campaign Any%, or other existing route target lists simply because the OCR catalog recognizes them. Custom-route users opt in through the Setup UI's trial-boss checklist, and campaign/Act premades can opt into trial progression through the Premade tab. Pinnacle retains Zarokh and Trialmaster as established category targets.
+
+Sekhemas uses a fixed floor-boss sequence. The second-floor Hadi/Rafiq encounter is emitted as two BossWatcher identities but is represented by one composite custom-route milestone. Chaos uses a random three-boss pool, so its boss identities are selected individually instead of assuming a fixed order.

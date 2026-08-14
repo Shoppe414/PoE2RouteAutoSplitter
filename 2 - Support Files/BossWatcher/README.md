@@ -67,11 +67,18 @@ Both options may be combined:
 
 ## Boss catalog
 
-The retained v0.2.0 content baseline contains **78 OCR identities** in `bosses.txt`:
+The current catalog contains **85 OCR identities** in `bosses.txt`. The bundled campaign and pinnacle target lists remain unchanged; seven newly cataloged trial identities expand visual recognition without silently adding optional trial bosses to existing routes.
 
-- **67 Campaign 100% split targets**;
-- **10 v0.5 Pinnacle split targets**;
-- **1 support-only identity** (`The Plagueling`).
+The catalog now includes the full Trial of the Sekhemas boss roster and the Trial of Chaos boss pool. Zarokh and The Trialmaster were already OCR-supported through the pinnacle catalog; the remaining trial identities are new in the v2.1.3 development package.
+
+
+### Optional trial bosses
+
+Trial bosses are OCR-supported but are **opt-in** for custom route construction. The Setup UI keeps them out of the normal Bosses list and exposes a separate **Add trial boss objectives** checklist. Checked milestones are inserted into the custom route preview and can be moved normally.
+
+Sekhemas Floor 2 is represented as one composite route objective: **Hadi of the Flaming River + Rafiq of the Frozen Spring**. BossWatcher still recognizes both identities separately, while the custom ASL completes the single floor milestone only after both `GONE` events are observed in either kill order.
+
+The three ordinary Chaos bosses are random. They remain individually selectable rather than being bulk-required by the Setup UI; custom rules should select only the identities their category actually requires. The dedicated Trials runtime will define random-round semantics separately after further validation.
 
 ### Campaign 100%
 

@@ -110,13 +110,11 @@ in place to confirm resource stability or capture a different failure.
 
 ## Setup UI
 
-The Setup UI exposes all 41 bundled premade `.lss` profiles and the mixed
-custom-route builder. Custom routes can combine supported areas and bosses,
-reorder objectives, choose ordered/unordered completion, and select manual or
-area-based timer start.
+The Setup UI provides a compact premade generator plus the mixed custom-route builder. Premade generation is selected with **Mode**, **Setup**, and **Ordered / Dynamic** controls rather than a long preset table. Area and boss modes support Campaign 100% / Any%, Act, Interlude, All-Interlude, and Act/Interlude Combination scopes where applicable; Boss Completion also exposes Pinnacle. Optional Sekhemas/Chaos content can be scheduled per floor/stage with user-facing **Run after** placement controls on ordered routes. Level Race retains the 1–100 / every-10-level premade.
 
-Deployment is staged before the active target is touched. Replacing a non-empty
-target requires confirmation.
+Sekhemas and Chaos are independent opt-ins on the Premade tab. The user chooses the trial depth/encounter count, and ordered routes choose the base area or boss immediately preceding the trial block. Dynamic routes add the selected trial objectives to the completion pool without imposing a trial order. The underlying static preset files remain in Support Files for reference/backward compatibility, but new premade deployments are generated as `Premade-Route.lss` + `PoE2-Premade.asl`.
+
+Custom routes can combine supported areas, bosses, levels, and opt-in trial boss milestones. The catalog is filtered by Act / Interlude / Pinnacle and hides internal IDs; Areas and Bosses both provide **Add All** for the currently visible filtered list. Ordered routes support repeated copies of the same boss through unique occurrence objectives; dynamic/unordered routes use a user-selected eligible boss pool plus a configurable encounter target (defaulting to the current 40-boss campaign-required baseline). Deployment is staged before the active target is touched. Replacing a non-empty target requires confirmation.
 
 ## BossWatcher
 

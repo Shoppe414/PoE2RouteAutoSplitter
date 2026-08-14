@@ -220,6 +220,13 @@ startup
     vars.bossNames["vessel_of_kulemak"] = "Vessel of Kulemak";
     vars.bossNames["xesht_we_that_are_one"] = "Xesht, We That Are One";
     vars.bossNames["zarokh_temporal"] = "Zarokh, the Temporal";
+    vars.bossNames["rattlecage_earthbreaker"] = "Rattlecage, the Earthbreaker";
+    vars.bossNames["hadi_flaming_river"] = "Hadi of the Flaming River";
+    vars.bossNames["rafiq_frozen_spring"] = "Rafiq of the Frozen Spring";
+    vars.bossNames["ashar_sand_mother"] = "Ashar, the Sand Mother";
+    vars.bossNames["uxmal_beastlord"] = "Uxmal, the Beastlord";
+    vars.bossNames["chetza_feathered_plague"] = "Chetza, the Feathered Plague";
+    vars.bossNames["bahlak_sky_seer"] = "Bahlak, the Sky Seer";
 
     vars.areaRegex = new System.Text.RegularExpressions.Regex(
         "^[^ ]+ [^ ]+ (\\d+).*Generating level (\\d+) area \"([^\"]+)\"",

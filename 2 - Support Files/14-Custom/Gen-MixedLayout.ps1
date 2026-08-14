@@ -6,7 +6,7 @@ $objectives = @()
 Get-Content $RouteFile | ForEach-Object {
   $line = ($_ -split '#',2)[0].Trim()
   if ($line -and -not $line.StartsWith('@')) {
-    if ($line -notmatch '^(area|boss)\|.+$') { throw "Invalid objective: $line" }
+    if ($line -notmatch '^(area|boss|bossocc|bossall|bossany|bossnth|bossslot|level)\|.+$') { throw "Invalid objective: $line" }
     $objectives += $line
   }
 }

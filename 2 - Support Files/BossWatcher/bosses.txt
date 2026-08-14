@@ -1,6 +1,6 @@
 # Path of Exile 2 BossWatcher v0.3.0 / BossRush boss definition catalog
 # Format: id|display name|alias1;alias2;...
-# 78 supported OCR identities: 67 Campaign 100% targets + 10 Pinnacle targets + 1 support-only identity.
+# 85 supported OCR identities: campaign, pinnacle, optional trial, and support-only identities.
 # Named rare minibosses are intentionally excluded; see BossLists/excluded-unstable-minibosses.txt.
 # Keep aliases conservative: every alias expands the fuzzy-OCR candidate set.
 
@@ -92,10 +92,21 @@ arbiter_of_ash|The Arbiter of Ash|
 arbiter_of_divinity|The Arbiter of Divinity|
 the_bodach|The Bodach|
 raven_trickster|The Raven Trickster|
-the_trialmaster|The Trialmaster|
 vessel_of_kulemak|Vessel of Kulemak|
 xesht_we_that_are_one|Xesht, We That Are One|
+
+# Trial of the Sekhemas (optional route objectives)
+rattlecage_earthbreaker|Rattlecage, the Earthbreaker|Rattlecage The Earthbreaker
+hadi_flaming_river|Hadi of the Flaming River|Hadi, the Flaming River
+rafiq_frozen_spring|Rafiq of the Frozen Spring|Rafiq, the Frozen Spring
+ashar_sand_mother|Ashar, the Sand Mother|
 zarokh_temporal|Zarokh, the Temporal|
+
+# Trial of Chaos (optional route objectives)
+uxmal_beastlord|Uxmal, the Beastlord|
+chetza_feathered_plague|Chetza, the Feathered Plague|
+bahlak_sky_seer|Bahlak, the Sky Seer|
+the_trialmaster|The Trialmaster|
 
 # Support-only
 plagueling|The Plagueling|
