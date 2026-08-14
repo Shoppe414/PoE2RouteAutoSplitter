@@ -15,6 +15,9 @@ PoE2 Route AutoSplitter provides premade and custom routes for:
 
 The included **PoE2RouteSetup** application handles most of the setup for you.
 
+Allows for synchronous pausing of the game and LiveSplit timer when opening the pause menu.
+Game Time option in LiveSplit will exclude loading times.
+
 ---
 
 # Download
