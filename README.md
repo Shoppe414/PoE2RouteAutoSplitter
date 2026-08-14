@@ -77,11 +77,11 @@ You can also select **Custom Route** to build your own route.
 
 ## 3. Generate the LiveSplit Setup
 
-After selecting your route, click the setup/deploy button.
+After selecting your route, click the Generate button.
 
 The application will create the required files inside:
 
-`LiveSplit Target`
+`LiveSplit Target` directory
 
 This folder contains the files LiveSplit needs for the selected route.
 
