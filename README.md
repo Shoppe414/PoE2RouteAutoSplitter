@@ -11,7 +11,10 @@ PoE2 Route AutoSplitter provides premade and custom routes for:
 * Campaign 100%
 * Required Campaign Bosses Only
 * 0.5 Pinnacle bosses
+* Temple of Chaos
+* Sekhemas Trials
 * Custom user-defined routes
+* IN DEVELOPMENT - Maps
 
 The included **PoE2RouteSetup** application handles most of the setup for you.
 
