@@ -1,10 +1,10 @@
-﻿# PoE2 Route AutoSplitter Setup UI — v2.1.3
+# PoE2 Route AutoSplitter Setup UI — v2.2.0 Release Candidate
 
 This is the Windows configuration tool for the Route AutoSplitter package.
 
 ## Normal users
 
-Install the ready-to-run `PoE2AS-v2.1.3-Setup.exe` GitHub Release asset.
+Install the ready-to-run `PoE2AS-v2.2.0-Setup.exe` GitHub Release asset.
 
 The installed launcher is:
 
@@ -78,6 +78,24 @@ For Chaos **Final boss only** without Trialmaster, the shared ASL uses an Nth-dy
 
 Each rule group includes a short description of its current selection. The right-side **Selected trial rules** table remains a compact two-column summary.
 
+## Maps
+
+The **Maps** tab generates a functional Dynamic/unordered ordinary-map boss run while keeping map classification under diagnostic validation.
+
+Current policy:
+
+- **Map boss encounters:** 1–100, default 100.
+- **Ordinary map completion:** BossWatcher structural boss-UI disappearance. Boss names are not read and ordinary map rows are never renamed to boss identities.
+- **Dynamic row name:** `Map Level X - Boss #Y`, using the generated area level observed on entry.
+- **Failed attempt:** if the boss UI disappears because the runner dies/leaves before completing the boss, use LiveSplit **Undo Split**. The ASL restores that map objective and re-arms BossWatcher for the retry.
+- **Optional Pinnacles:** individually selectable. They keep the normal BossWatcher OCR/identity path because the correct selected Pinnacle objective must be credited.
+- **Map objective / random quest clear:** visible but disabled as **NON-FUNCTIONAL — Needs diagnostics**.
+- **Unique modifier count:** diagnostic only; it is not added unless a reliable Client.txt signal is proven.
+
+The ASL writes `poe2_boss_context.txt`. `mode=map` activates BossWatcher's identity-free structural tracker; `mode=identity` uses the existing OCR tracker; `mode=off` is written after a committed ordinary-map split so another bar in the same map cannot consume a second map slot. BossWatcher is launched by SetupUI with both `--event-file` and `--context-file`.
+
+The current candidate heuristic is a transition from **The Ziggurat Refuge** or a scene containing **Hideout** into an unknown generated level-65+ area. Candidates remain labeled `unconfirmed-map-or-special`; this intentionally exposes false positives such as special/Pinnacle endgame spaces for later exclusion. Preserve `Client.txt`, `poe2_mixed_route_debug.log`, `poe2_boss_events.log`, `poe2_boss_watcher_debug.log`, and `poe2_boss_context.txt` during map diagnostics.
+
 ## Start policy
 
 The Setup UI requires exactly one mutually exclusive timer-start policy.
@@ -148,8 +166,7 @@ Timer start is controlled by the same required three-option start policy used by
 
 ## Watcher buttons
 
-**Start BossWatcher** launches BossWatcher for Boss Rush / mixed modes and
-directs its event log to the active `LiveSplit Target`.
+**Start BossWatcher** launches BossWatcher for Boss Rush, mixed, Trials, and Maps modes and directs its event log to the active `LiveSplit Target`. Maps deployments also pass the active `poe2_boss_context.txt` so ordinary map structural detection and optional Pinnacle OCR detection can coexist in one run.
 
 **Start GameTimeWatcher** is enabled when the optional manual-pause setting is
 selected. It writes `poe2_manual_pause_state.txt` into the active target.
@@ -179,7 +196,7 @@ To build all user tools without creating an installer:
 To create the distributable installer and portable ZIP:
 
 ```powershell
-.\..\Build-Release.ps1 -Version 2.1.3
+.\..\Build-Release.ps1 -Version 2.2.0
 ```
 
 > **Manual-pause protocol note:** v0.4.3 GameTimeWatcher requires an ASL generated from the same package. Re-run the Setup UI after updating and re-browse LiveSplit's Scriptable Auto Splitter component to the newly generated `.asl`.

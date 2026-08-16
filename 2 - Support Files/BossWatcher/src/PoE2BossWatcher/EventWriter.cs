@@ -60,6 +60,26 @@ public sealed class EventWriter
     public void BossReturned(BossDefinition boss, DateTimeOffset when)
         => WriteEvent(when, "RETURNED", boss, "missingWindowCancelled=true", printToUserConsole: false);
 
+    public void MapBossSeen(DateTimeOffset when, BossContextState context, BossBarMetrics metrics, string layout)
+    {
+        WriteRawEvent(when, "MAP_SEEN", "mapboss", "Map Boss",
+            $"area={Clean(context.AreaId)}|areaLevel={context.AreaLevel}|mapBossNumber={context.MapBossNumber}|classification={Clean(context.Classification)}|layout={layout}|detector=structural-only|redRun={metrics.HealthRedRunFraction:F4}|nameGold={metrics.NameGoldFraction:F4}",
+            userMessage: context.MapBossNumber > 0
+                ? $"Map boss encounter #{context.MapBossNumber} started (Level {context.AreaLevel})."
+                : $"Map boss encounter started (Level {context.AreaLevel}).");
+    }
+
+    public void MapBossGone(DateTimeOffset firstMissing, DateTimeOffset verifyStarted, DateTimeOffset confirmed, int confirmMs, BossContextState context, string layout)
+    {
+        var preVerifyBackdateMs = Math.Max(0, (verifyStarted - firstMissing).TotalMilliseconds);
+        WriteRawEvent(confirmed, "MAP_GONE", "mapboss", "Map Boss",
+            $"firstMissing={firstMissing:O}|verifyStarted={verifyStarted:O}|confirmMs={confirmMs}|preVerifyBackdateMs={preVerifyBackdateMs:F1}|area={Clean(context.AreaId)}|areaLevel={context.AreaLevel}|mapBossNumber={context.MapBossNumber}|classification={Clean(context.Classification)}|layout={layout}",
+            displayWhen: firstMissing,
+            userMessage: context.MapBossNumber > 0
+                ? $"Map boss bar cleared for Boss #{context.MapBossNumber}. LiveSplit may split; Undo Split if the attempt failed."
+                : "Map boss bar cleared. LiveSplit may split; Undo Split if the attempt failed.");
+    }
+
     public void Debug(string message)
     {
         lock (_gate)
@@ -90,6 +110,35 @@ public sealed class EventWriter
         {
             var stamp = displayWhen ?? when;
             Console.WriteLine($"[{stamp:HH:mm:ss.fff}] {userMessage ?? $"{type}: {boss.Name}"}");
+        }
+    }
+
+
+    private void WriteRawEvent(
+        DateTimeOffset when,
+        string type,
+        string id,
+        string name,
+        string extra,
+        bool printToUserConsole = true,
+        DateTimeOffset? displayWhen = null,
+        string? userMessage = null)
+    {
+        var line = $"{when:O}|{type}|{Clean(id)}|{Clean(name)}|{extra}";
+        lock (_gate)
+        {
+            AppendShared(EventPath, line + Environment.NewLine);
+            AppendShared(DebugPath, line + Environment.NewLine);
+        }
+
+        if (_devConsole)
+        {
+            Console.WriteLine(line);
+        }
+        else if (printToUserConsole)
+        {
+            var stamp = displayWhen ?? when;
+            Console.WriteLine($"[{stamp:HH:mm:ss.fff}] {userMessage ?? $"{type}: {name}"}");
         }
     }
 

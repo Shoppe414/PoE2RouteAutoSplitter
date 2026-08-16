@@ -1,12 +1,12 @@
 /*
 Path of Exile 2 Mixed Objective AutoSplitter for LiveSplit
-v1.3.4 dedicated trial-run experimental build
+v1.3.9 configurable zone-start hotfix
 
 Combines Exploration area-completion events from Client.txt with Boss Rush GONE events
 from poe2_boss_events.log. One mixed objective file controls both sources.
 
 Config beside LiveSplit.exe: poe2_mixed_route.txt
-Objective types: area|ID, areaocc|AREA~N, boss|ID, bossocc|BOSS~N, bossall|GROUP, bossany|SLOT, bossnth|TARGET, bossslot|N, level|N
+Objective types: area|ID, areaocc|AREA~N, boss|ID, bossocc|BOSS~N, bossall|GROUP, bossany|SLOT, bossnth|TARGET, bossslot|N, level|N, mapboss|N
   @start=G1_1        or @start=manual
   @order=unordered   or @order=ordered
   @areaCompletion=entry or @areaCompletion=successor
@@ -24,7 +24,6 @@ state("PathOfExile_x64") {}
 startup
 {
     refreshRate = 30;
-    settings.Add("autoStart", true, "Auto-start on @start (Riverbank waits for the Wounded Man final opening line)");
     settings.Add("dynamicSegmentNames", true, "Rename generic split slots to completed area/boss names");
     settings.Add("debugLog", true, "Write mixed objective diagnostic log");
     settings.Add("enteredNameFallback", true, "Fallback to Client.txt 'You have entered ...' messages");
@@ -33,6 +32,7 @@ startup
     vars.liveSplitDir = System.IO.Path.GetDirectoryName(liveSplitExe);
     vars.configPath = System.IO.Path.Combine(vars.liveSplitDir, "poe2_mixed_route.txt");
     vars.eventPath = System.IO.Path.Combine(vars.liveSplitDir, "poe2_boss_events.log");
+    vars.bossContextPath = System.IO.Path.Combine(vars.liveSplitDir, "poe2_boss_context.txt");
     vars.statusPath = System.IO.Path.Combine(vars.liveSplitDir, "poe2_mixed_route_status.txt");
     vars.debugPath = System.IO.Path.Combine(vars.liveSplitDir, "poe2_mixed_route_debug.log");
 
@@ -283,13 +283,38 @@ startup
         System.Text.RegularExpressions.RegexOptions.Compiled
     );
     vars.enteredNameRegex = new System.Text.RegularExpressions.Regex(
-        "^[^ ]+ [^ ]+ (\\d+).*: You have entered (.+)\.$",
+        "^[^ ]+ [^ ]+ (\\d+).*: You have entered (.+)\\.$",
         System.Text.RegularExpressions.RegexOptions.Compiled
     );
     vars.levelRegex = new System.Text.RegularExpressions.Regex(
         "^[^ ]+ [^ ]+ (\\d+).* is now level (\\d+)$",
         System.Text.RegularExpressions.RegexOptions.Compiled
     );
+    vars.sceneSourceRegex = new System.Text.RegularExpressions.Regex(
+        "\\[SCENE\\] Set Source \\[([^\\]]+)\\]",
+        System.Text.RegularExpressions.RegexOptions.Compiled
+    );
+
+    // Maps mode: the ASL classifies candidate endgame maps from Client.txt, writes
+    // a boss-detection context file for BossWatcher, and consumes identity-free
+    // MAP_GONE events. Unknown level-65+ hub destinations remain diagnostic
+    // candidates because special/Pinnacle area exclusions still need field data.
+    vars.mapModeEnabled = false;
+    vars.mapDiagEnabled = false;
+    vars.mapDiagLastRawAreaId = "";
+    vars.mapDiagLastRawAreaLevel = 0;
+    vars.mapDiagLastSceneName = "";
+    vars.mapDiagCandidateActive = false;
+    vars.mapDiagCandidateAreaId = "";
+    vars.mapDiagCandidateAreaLevel = 0;
+    vars.mapCurrentObjectiveKey = "";
+    vars.mapCurrentBossNumber = 0;
+    vars.mapCurrentSplitName = "";
+    vars.mapContextMode = "identity";
+    vars.mapContextAreaId = "";
+    vars.mapContextAreaLevel = 0;
+    vars.mapContextBossNumber = 0;
+    vars.mapContextClassification = "startup";
 
     vars.objectiveOrder = new System.Collections.Generic.List<string>();
     vars.objectiveSet = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
@@ -372,6 +397,31 @@ startup
         "^[^ ]+ [^ ]+ (\\d+).*\\[LOADING SCREEN\\] \\((.*?)\\) Duration = ([0-9]+(?:\\.[0-9]+)?) seconds",
         System.Text.RegularExpressions.RegexOptions.Compiled
     );
+    // Present only the SetupUI-selected start rule in LiveSplit settings.
+    string setupStartPolicyLabel = "Timer start: Manual Start";
+    try
+    {
+        string setupStartPolicyId = "";
+        if (System.IO.File.Exists(vars.configPath))
+        {
+            foreach (string setupStartRaw in System.IO.File.ReadLines(vars.configPath))
+            {
+                string setupStartText = setupStartRaw.Trim();
+                if (!setupStartText.StartsWith("@start=", System.StringComparison.OrdinalIgnoreCase)) continue;
+                setupStartPolicyId = setupStartText.Substring(7).Trim();
+                break;
+            }
+        }
+        if (System.String.Equals(setupStartPolicyId, "G1_1", System.StringComparison.OrdinalIgnoreCase))
+            setupStartPolicyLabel = "Timer start: Riverbank Start — Wounded Man final opening line";
+        else if (setupStartPolicyId != "" && !System.String.Equals(setupStartPolicyId, "manual", System.StringComparison.OrdinalIgnoreCase))
+        {
+            string setupStartDisplayName = vars.areaNames.ContainsKey(setupStartPolicyId) ? vars.areaNames[setupStartPolicyId] : setupStartPolicyId;
+            setupStartPolicyLabel = "Timer start: First Split Zone Entry Auto Start — " + setupStartDisplayName;
+        }
+    }
+    catch {}
+    settings.Add("autoStart", true, setupStartPolicyLabel);
 }
 
 init
@@ -468,6 +518,22 @@ init
     vars.lastObservedIndex = timer.CurrentSplitIndex;
     vars.highestObservedLevel = 1;
     vars.lastUnskippableMissedLevel = "";
+    vars.mapModeEnabled = false;
+    vars.mapDiagEnabled = false;
+    vars.mapDiagLastRawAreaId = "";
+    vars.mapDiagLastRawAreaLevel = 0;
+    vars.mapDiagLastSceneName = "";
+    vars.mapDiagCandidateActive = false;
+    vars.mapDiagCandidateAreaId = "";
+    vars.mapDiagCandidateAreaLevel = 0;
+    vars.mapCurrentObjectiveKey = "";
+    vars.mapCurrentBossNumber = 0;
+    vars.mapCurrentSplitName = "";
+    vars.mapContextMode = "identity";
+    vars.mapContextAreaId = "";
+    vars.mapContextAreaLevel = 0;
+    vars.mapContextBossNumber = 0;
+    vars.mapContextClassification = "startup";
 
     try
     {
@@ -527,7 +593,7 @@ init
             }
 
             string[] parts = line.Split(new char[] { '|' }, 2);
-            if (parts.Length != 2) throw new System.Exception("Objective must use area|ID, areaocc|AREA~N, boss|ID, bossocc|BOSS~N, bossall|GROUP, bossany|SLOT, bossnth|TARGET, bossslot|N, or level|N: " + line);
+            if (parts.Length != 2) throw new System.Exception("Objective must use area|ID, areaocc|AREA~N, boss|ID, bossocc|BOSS~N, bossall|GROUP, bossany|SLOT, bossnth|TARGET, bossslot|N, level|N, or mapboss|N: " + line);
             string type = parts[0].Trim().ToLowerInvariant();
             string id = parts[1].Trim();
             string key = type + ":" + id;
@@ -595,6 +661,14 @@ init
                 id = level.ToString();
                 key = "level:" + id;
             }
+            else if (type == "mapboss")
+            {
+                int mapBossNumber;
+                if (!System.Int32.TryParse(id, out mapBossNumber) || mapBossNumber < 1 || mapBossNumber > 100)
+                    throw new System.Exception("mapboss must use a boss number from 1..100: " + id);
+                vars.mapModeEnabled = true;
+                vars.mapDiagEnabled = true;
+            }
             else throw new System.Exception("Unknown objective type: " + type);
             if (!vars.objectiveSet.Add(key)) throw new System.Exception("Duplicate objective: " + line);
             vars.objectiveOrder.Add(key);
@@ -657,14 +731,26 @@ init
         if (!System.IO.File.Exists(vars.eventPath))
             System.IO.File.WriteAllText(vars.eventPath, "# Created by LiveSplit mixed objective bridge" + System.Environment.NewLine);
         vars.processedLineCount = System.IO.File.ReadAllLines(vars.eventPath).Length;
+        if (vars.mapModeEnabled)
+        {
+            string contextText = "version=1" + System.Environment.NewLine
+                + "mode=identity" + System.Environment.NewLine
+                + "areaId=" + System.Environment.NewLine
+                + "areaLevel=0" + System.Environment.NewLine
+                + "mapBossNumber=0" + System.Environment.NewLine
+                + "classification=startup" + System.Environment.NewLine;
+            System.IO.File.WriteAllText(vars.bossContextPath, contextText);
+        }
         vars.configValid = true;
 
         string startName = vars.startAreaId == "" ? "manual" : vars.areaNames[vars.startAreaId];
-        string ready = "READY | v1.3.4-custom-boss-occurrence | Mode=MIXED_" + (vars.ordered ? "ORDERED" : "UNORDERED")
+        string ready = "READY | v1.3.9-zone-start | Mode=MIXED_" + (vars.ordered ? "ORDERED" : "UNORDERED")
             + " | Objectives=" + vars.objectiveOrder.Count + " | Start=" + startName
             + " | AreaCompletion=" + (vars.areaSuccessorCompletion ? "SUCCESSOR_ENTRY" : "ENTRY")
             + " | LevelObjectives=true | MissedLevelPolicy=SKIP"
             + " | CustomBossPool=" + vars.customBossPool.Count + " | CustomBossTarget=" + vars.customBossTarget
+            + " | MapMode=" + (vars.mapModeEnabled ? "true" : "false")
+            + " | MapDiagnostics=" + (vars.mapDiagEnabled ? "true" : "false")
             + " | Client.txt=" + vars.clientLogPath + " | BossEvents=" + vars.eventPath;
         System.IO.File.WriteAllText(vars.statusPath, ready + System.Environment.NewLine);
         if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath, System.DateTime.Now.ToString("s") + " " + ready + System.Environment.NewLine);
@@ -1013,6 +1099,29 @@ update
             if (vars.areaSuccessorCompletion && (key.StartsWith("area:", System.StringComparison.OrdinalIgnoreCase) || key.StartsWith("areaocc:", System.StringComparison.OrdinalIgnoreCase)))
                 vars.armedAreaObjectives.Add(key);
             vars.lastUndoneKey = key;
+            if (key.StartsWith("mapboss:", System.StringComparison.OrdinalIgnoreCase) && vars.mapModeEnabled && vars.mapDiagCandidateActive)
+            {
+                int undoneMapNumber = 0;
+                System.Int32.TryParse(key.Substring("mapboss:".Length), out undoneMapNumber);
+                vars.mapCurrentObjectiveKey = key;
+                vars.mapCurrentBossNumber = undoneMapNumber;
+                vars.mapCurrentSplitName = "Map Level " + vars.mapDiagCandidateAreaLevel + " - Boss #" + undoneMapNumber;
+                vars.mapContextMode = "map";
+                vars.mapContextAreaId = vars.mapDiagCandidateAreaId;
+                vars.mapContextAreaLevel = vars.mapDiagCandidateAreaLevel;
+                vars.mapContextBossNumber = undoneMapNumber;
+                vars.mapContextClassification = "undo-retry";
+                string contextText = "version=1" + System.Environment.NewLine
+                    + "mode=map" + System.Environment.NewLine
+                    + "areaId=" + vars.mapDiagCandidateAreaId + System.Environment.NewLine
+                    + "areaLevel=" + vars.mapDiagCandidateAreaLevel + System.Environment.NewLine
+                    + "mapBossNumber=" + undoneMapNumber + System.Environment.NewLine
+                    + "classification=undo-retry" + System.Environment.NewLine;
+                try { System.IO.File.WriteAllText(vars.bossContextPath, contextText); } catch {}
+                if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                    System.DateTime.Now.ToString("s") + " MAP_UNDO_REARM_CONTEXT | objective=" + key
+                    + " | area=" + vars.mapDiagCandidateAreaId + " | level=" + vars.mapDiagCandidateAreaLevel + System.Environment.NewLine);
+            }
             if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
                 System.DateTime.Now.ToString("s") + " UNDO_REARM | objective=" + key + " | liveSplitIndex=" + idx + System.Environment.NewLine);
             undoCount--;
@@ -1057,7 +1166,9 @@ update
                     vars.completedOrder.Add(expectedKey);
                     vars.lastUndoneKey = "";
                     int beforeSkip = timer.CurrentSplitIndex;
-                    timer.SkipSplit();
+                    var nativeSkipTimer = new LiveSplit.Model.TimerModel();
+                    nativeSkipTimer.CurrentState = timer;
+                    nativeSkipTimer.SkipSplit();
                     vars.lastObservedIndex = timer.CurrentSplitIndex;
                     vars.lastUnskippableMissedLevel = "";
 
@@ -1135,9 +1246,89 @@ update
                     vars.processedLineCount = j + 1;
                     if (line == null || line.Trim() == "" || line.StartsWith("#")) continue;
                     string[] parts = line.Split('|');
-                    if (parts.Length < 4 || !System.String.Equals(parts[1].Trim(), "GONE", System.StringComparison.OrdinalIgnoreCase)) continue;
+                    if (parts.Length < 4) continue;
+                    string eventType = parts[1].Trim();
+
+                    if (System.String.Equals(eventType, "MAP_GONE", System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!vars.mapModeEnabled) continue;
+
+                        bool mapHasFirstMissing = false;
+                        System.DateTimeOffset mapFirstMissing = System.DateTimeOffset.MinValue;
+                        int eventAreaLevel = 0;
+                        int eventBossNumber = 0;
+                        string eventAreaId = "";
+                        for (int mapExtraIndex = 4; mapExtraIndex < parts.Length; mapExtraIndex++)
+                        {
+                            string mapExtra = parts[mapExtraIndex].Trim();
+                            if (mapExtra.StartsWith("firstMissing=", System.StringComparison.OrdinalIgnoreCase))
+                            {
+                                System.DateTimeOffset mapParsedMissing;
+                                if (System.DateTimeOffset.TryParse(mapExtra.Substring("firstMissing=".Length), out mapParsedMissing))
+                                { mapFirstMissing = mapParsedMissing; mapHasFirstMissing = true; }
+                            }
+                            else if (mapExtra.StartsWith("areaLevel=", System.StringComparison.OrdinalIgnoreCase))
+                                System.Int32.TryParse(mapExtra.Substring("areaLevel=".Length), out eventAreaLevel);
+                            else if (mapExtra.StartsWith("mapBossNumber=", System.StringComparison.OrdinalIgnoreCase))
+                                System.Int32.TryParse(mapExtra.Substring("mapBossNumber=".Length), out eventBossNumber);
+                            else if (mapExtra.StartsWith("area=", System.StringComparison.OrdinalIgnoreCase))
+                                eventAreaId = mapExtra.Substring("area=".Length);
+                        }
+
+                        string mapKey = eventBossNumber > 0 ? "mapboss:" + eventBossNumber : vars.mapCurrentObjectiveKey;
+                        if (mapKey == "" || !vars.objectiveSet.Contains(mapKey) || vars.completed.Contains(mapKey) || vars.suppressed.Contains(mapKey))
+                        {
+                            mapKey = "";
+                            foreach (string candidateKey in vars.objectiveOrder)
+                            {
+                                if (!candidateKey.StartsWith("mapboss:", System.StringComparison.OrdinalIgnoreCase)) continue;
+                                if (vars.completed.Contains(candidateKey) || vars.suppressed.Contains(candidateKey)) continue;
+                                mapKey = candidateKey;
+                                break;
+                            }
+                        }
+
+                        if (mapKey == "")
+                        {
+                            if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                                System.DateTime.Now.ToString("s") + " MAP_GONE_IGNORED | reason=no-open-map-objective"
+                                + " | eventBossNumber=" + eventBossNumber + " | area=" + eventAreaId + System.Environment.NewLine);
+                            continue;
+                        }
+                        if (timer.CurrentPhase != LiveSplit.Model.TimerPhase.Running && timer.CurrentPhase != LiveSplit.Model.TimerPhase.Paused) continue;
+
+                        int mapNumber = 0;
+                        System.Int32.TryParse(mapKey.Substring("mapboss:".Length), out mapNumber);
+                        int mapLevel = eventAreaLevel > 0 ? eventAreaLevel : vars.mapDiagCandidateAreaLevel;
+                        vars.pendingKey = mapKey;
+                        vars.pendingName = vars.mapCurrentSplitName != "" && mapNumber == vars.mapCurrentBossNumber
+                            ? vars.mapCurrentSplitName
+                            : "Map Level " + (mapLevel > 0 ? mapLevel.ToString() : "?") + " - Boss #" + mapNumber;
+                        vars.pendingType = "mapboss";
+                        vars.pendingHasFirstMissing = mapHasFirstMissing;
+                        vars.pendingFirstMissing = mapFirstMissing;
+                        vars.lastUndoneKey = "";
+
+                        if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                            System.DateTime.Now.ToString("s") + " MAP_BOSS_SPLIT_SIGNAL | objective=" + mapKey
+                            + " | area=" + (eventAreaId == "" ? vars.mapDiagCandidateAreaId : eventAreaId)
+                            + " | level=" + mapLevel
+                            + " | name=" + vars.pendingName
+                            + " | firstMissing=" + (mapHasFirstMissing ? mapFirstMissing.ToString("O") : "unavailable")
+                            + System.Environment.NewLine);
+                        break;
+                    }
+
+                    if (!System.String.Equals(eventType, "GONE", System.StringComparison.OrdinalIgnoreCase)) continue;
                     string bossId = parts[2].Trim();
                     string bossName = parts[3].Trim();
+                    if (vars.mapDiagEnabled && settings["debugLog"])
+                    {
+                        System.IO.File.AppendAllText(vars.debugPath,
+                            System.DateTime.Now.ToString("s") + " IDENTITY_BOSS_EVENT | area=" + vars.mapDiagCandidateAreaId
+                            + " | level=" + vars.mapDiagCandidateAreaLevel
+                            + " | bossId=" + bossId + " | boss=" + bossName + System.Environment.NewLine);
+                    }
                     string directKey = "boss:" + bossId;
                     string expectedKey = timer.CurrentSplitIndex >= 0 && timer.CurrentSplitIndex < vars.objectiveOrder.Count
                         ? vars.objectiveOrder[timer.CurrentSplitIndex]
@@ -1337,6 +1528,11 @@ update
                     {
                         vars.pendingKey = bossAnyKey;
                         vars.pendingName = bossName == "" && vars.bossNames.ContainsKey(bossId) ? vars.bossNames[bossId] : bossName;
+                        if (bossAnyKey.StartsWith("bossany:sekhemas_floor2_", System.StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (System.String.Equals(bossId, "hadi_flaming_river", System.StringComparison.OrdinalIgnoreCase)) vars.pendingName = "Hadi";
+                            else if (System.String.Equals(bossId, "rafiq_frozen_spring", System.StringComparison.OrdinalIgnoreCase)) vars.pendingName = "Rafiq";
+                        }
                         vars.pendingType = "bossany";
                         vars.pendingHasFirstMissing = hasFirstMissing;
                         vars.pendingFirstMissing = firstMissing;
@@ -1378,6 +1574,206 @@ update
         while (vars.reader.Peek() >= 0)
         {
             string line = vars.reader.ReadLine();
+
+
+            // SetupUI zone-entry fast path. Client.txt format can vary around the
+            // numeric prefix, so start detection intentionally uses stable substrings
+            // instead of depending on the stricter route-area regex.
+            if (!vars.startTrigger
+                && vars.startAreaId != ""
+                && !System.String.Equals(vars.startAreaId, "G1_1", System.StringComparison.OrdinalIgnoreCase)
+                && timer.CurrentPhase == LiveSplit.Model.TimerPhase.NotRunning)
+            {
+                bool setupStartWildcard = vars.startAreaId.EndsWith("*", System.StringComparison.Ordinal);
+                string setupStartIdPrefix = setupStartWildcard ? vars.startAreaId.Substring(0, vars.startAreaId.Length - 1) : vars.startAreaId;
+                string setupStartAreaNeedle = "area \"" + setupStartIdPrefix + (setupStartWildcard ? "" : "\"");
+                bool setupStartInternal = line.IndexOf("Generating level", System.StringComparison.OrdinalIgnoreCase) >= 0
+                    && line.IndexOf(setupStartAreaNeedle, System.StringComparison.OrdinalIgnoreCase) >= 0;
+                bool setupStartNamed = vars.areaNames.ContainsKey(vars.startAreaId)
+                    && line.IndexOf("You have entered " + vars.areaNames[vars.startAreaId] + ".", System.StringComparison.OrdinalIgnoreCase) >= 0;
+                if (setupStartInternal || setupStartNamed)
+                {
+                    string setupStartKey = "area:" + vars.startAreaId;
+                    if (vars.areaSuccessorCompletion && vars.objectiveSet.Contains(setupStartKey) && !vars.completed.Contains(setupStartKey))
+                        vars.armedAreaObjectives.Add(setupStartKey);
+                    vars.startTrigger = true;
+                    if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                        System.DateTime.Now.ToString("s") + " START_TRIGGER_FAST | area=" + vars.startAreaId + " " + vars.areaNames[vars.startAreaId]
+                        + " | source=" + (setupStartInternal ? "GeneratingLevelSubstring" : "EnteredNameSubstring") + System.Environment.NewLine);
+                    break;
+                }
+            }
+
+            // ---- Endgame / Maps diagnostic observer ----
+            // This runs before normal route filtering, so unknown endgame area IDs are
+            // retained in the diagnostic log instead of being discarded as non-campaign.
+            if (vars.mapDiagEnabled)
+            {
+            var mapSceneMatch = vars.sceneSourceRegex.Match(line);
+            if (mapSceneMatch.Success)
+            {
+                string sceneName = mapSceneMatch.Groups[1].Value.Trim();
+                if (sceneName != "" && !System.String.Equals(sceneName, "(null)", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    vars.mapDiagLastSceneName = sceneName;
+                    if (vars.mapDiagCandidateActive && settings["debugLog"])
+                        System.IO.File.AppendAllText(vars.debugPath,
+                            System.DateTime.Now.ToString("s") + " MAP_SCENE | area=" + vars.mapDiagCandidateAreaId
+                            + " | level=" + vars.mapDiagCandidateAreaLevel + " | scene=" + sceneName + System.Environment.NewLine);
+                }
+            }
+
+            var mapAreaMatch = vars.areaRegex.Match(line);
+            if (mapAreaMatch.Success)
+            {
+                int rawAreaLevel = 0;
+                System.Int32.TryParse(mapAreaMatch.Groups[2].Value, out rawAreaLevel);
+                string rawAreaId = mapAreaMatch.Groups[3].Value;
+                string previousRawId = vars.mapDiagLastRawAreaId;
+                string previousScene = vars.mapDiagLastSceneName;
+                bool previousZiggurat = System.String.Equals(previousRawId, "G_Endgame_Town", System.StringComparison.OrdinalIgnoreCase)
+                    || System.String.Equals(previousScene, "The Ziggurat Refuge", System.StringComparison.OrdinalIgnoreCase);
+                bool previousHideout = previousScene.IndexOf("Hideout", System.StringComparison.OrdinalIgnoreCase) >= 0;
+                bool previousHub = previousZiggurat || previousHideout;
+
+                string normalizedDiagId = rawAreaId;
+                if (rawAreaId.StartsWith("Sanctum_1_", System.StringComparison.OrdinalIgnoreCase)) normalizedDiagId = "Sanctum_1_*";
+                else if (rawAreaId.StartsWith("Sanctum_2_", System.StringComparison.OrdinalIgnoreCase)) normalizedDiagId = "Sanctum_2_*";
+                else if (rawAreaId.StartsWith("Sanctum_3_", System.StringComparison.OrdinalIgnoreCase)) normalizedDiagId = "Sanctum_3_*";
+                else if (rawAreaId.StartsWith("Sanctum_4_", System.StringComparison.OrdinalIgnoreCase)) normalizedDiagId = "Sanctum_4_*";
+                bool knownArea = vars.areaNames.ContainsKey(normalizedDiagId);
+                bool rawCandidate = previousHub && rawAreaLevel >= 65 && !knownArea;
+
+                string nextMapKey = "";
+                int nextMapNumber = 0;
+                foreach (string candidateKey in vars.objectiveOrder)
+                {
+                    if (!candidateKey.StartsWith("mapboss:", System.StringComparison.OrdinalIgnoreCase)) continue;
+                    if (vars.completed.Contains(candidateKey) || vars.suppressed.Contains(candidateKey)) continue;
+                    nextMapKey = candidateKey;
+                    System.Int32.TryParse(candidateKey.Substring("mapboss:".Length), out nextMapNumber);
+                    break;
+                }
+                bool candidate = rawCandidate && nextMapKey != "";
+
+                if (settings["debugLog"])
+                    System.IO.File.AppendAllText(vars.debugPath,
+                        System.DateTime.Now.ToString("s") + " ENDGAME_TRANSITION | from=" + (previousRawId == "" ? "<unknown>" : previousRawId)
+                        + " | fromScene=" + (previousScene == "" ? "<unknown>" : previousScene)
+                        + " | to=" + rawAreaId + " | level=" + rawAreaLevel
+                        + " | knownArea=" + (knownArea ? "true" : "false")
+                        + " | sourceHub=" + (previousHub ? "true" : "false")
+                        + " | rawCandidate=" + (rawCandidate ? "true" : "false")
+                        + " | mapSlot=" + (nextMapKey == "" ? "<none>" : nextMapKey) + System.Environment.NewLine);
+
+                vars.mapDiagCandidateActive = candidate;
+                vars.mapDiagCandidateAreaId = candidate ? rawAreaId : "";
+                vars.mapDiagCandidateAreaLevel = candidate ? rawAreaLevel : 0;
+                vars.mapCurrentObjectiveKey = candidate ? nextMapKey : "";
+                vars.mapCurrentBossNumber = candidate ? nextMapNumber : 0;
+                vars.mapCurrentSplitName = candidate
+                    ? "Map Level " + rawAreaLevel + " - Boss #" + nextMapNumber
+                    : "";
+
+                string desiredContextMode = candidate ? "map" : "identity";
+                string desiredClassification = rawCandidate
+                    ? (candidate ? "unconfirmed-map-or-special" : "candidate-no-open-map-slot")
+                    : (knownArea ? "known-non-map-area" : "non-map-transition");
+                if (!System.String.Equals(vars.mapContextMode, desiredContextMode, System.StringComparison.OrdinalIgnoreCase)
+                    || !System.String.Equals(vars.mapContextAreaId, rawAreaId, System.StringComparison.OrdinalIgnoreCase)
+                    || vars.mapContextAreaLevel != rawAreaLevel
+                    || vars.mapContextBossNumber != (candidate ? nextMapNumber : 0)
+                    || !System.String.Equals(vars.mapContextClassification, desiredClassification, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    vars.mapContextMode = desiredContextMode;
+                    vars.mapContextAreaId = rawAreaId;
+                    vars.mapContextAreaLevel = rawAreaLevel;
+                    vars.mapContextBossNumber = candidate ? nextMapNumber : 0;
+                    vars.mapContextClassification = desiredClassification;
+                    string contextText = "version=1" + System.Environment.NewLine
+                        + "mode=" + desiredContextMode + System.Environment.NewLine
+                        + "areaId=" + rawAreaId + System.Environment.NewLine
+                        + "areaLevel=" + rawAreaLevel + System.Environment.NewLine
+                        + "mapBossNumber=" + (candidate ? nextMapNumber : 0) + System.Environment.NewLine
+                        + "classification=" + desiredClassification + System.Environment.NewLine;
+                    try { System.IO.File.WriteAllText(vars.bossContextPath, contextText); } catch {}
+                    if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                        System.DateTime.Now.ToString("s") + " BOSS_CONTEXT_WRITE | mode=" + desiredContextMode
+                        + " | area=" + rawAreaId + " | level=" + rawAreaLevel
+                        + " | bossNumber=" + (candidate ? nextMapNumber : 0)
+                        + " | classification=" + desiredClassification + System.Environment.NewLine);
+                }
+
+                if (candidate)
+                {
+                    if (settings["debugLog"])
+                        System.IO.File.AppendAllText(vars.debugPath,
+                            System.DateTime.Now.ToString("s") + " ENDGAME_CANDIDATE | source=" + (previousHideout ? "Hideout" : "Ziggurat")
+                            + " | area=" + rawAreaId + " | level=" + rawAreaLevel
+                            + " | bossNumber=" + nextMapNumber
+                            + " | classification=unconfirmed-map-or-special" + System.Environment.NewLine);
+
+                    // Update the currently active LiveSplit row as soon as the map level is
+                    // known. Ordinary map boss identity never changes this name.
+                    if (settings["dynamicSegmentNames"])
+                    {
+                        try
+                        {
+                            int targetSegmentIndex = timer.CurrentPhase == LiveSplit.Model.TimerPhase.NotRunning ? 0 : timer.CurrentSplitIndex;
+                            int segmentIndex = 0;
+                            foreach (LiveSplit.Model.ISegment segment in timer.Run)
+                            {
+                                if (segmentIndex == targetSegmentIndex)
+                                {
+                                    segment.Name = vars.mapCurrentSplitName;
+                                    timer.Run.HasChanged = true;
+                                    timer.CallRunManuallyModified();
+                                    break;
+                                }
+                                segmentIndex++;
+                            }
+                        } catch {}
+                    }
+
+                    // Maps own their start policy: the timer begins on entry to the first
+                    // qualifying map candidate, not manually in the hub.
+                    if (timer.CurrentPhase == LiveSplit.Model.TimerPhase.NotRunning && !vars.startTrigger)
+                    {
+                        vars.startTrigger = true;
+                        if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                            System.DateTime.Now.ToString("s") + " MAP_START_TRIGGER | area=" + rawAreaId
+                            + " | level=" + rawAreaLevel + " | bossNumber=" + nextMapNumber + System.Environment.NewLine);
+                    }
+                }
+
+                vars.mapDiagLastRawAreaId = rawAreaId;
+                vars.mapDiagLastRawAreaLevel = rawAreaLevel;
+                vars.mapDiagLastSceneName = "";
+            }
+            else if (vars.mapDiagCandidateActive)
+            {
+                // Preserve potentially useful map-entry/modifier/objective clues without
+                // copying the entire Client.txt stream. Chat lines are excluded to reduce noise.
+                string lowerMapSignal = line.ToLowerInvariant();
+                bool mapSignal = lowerMapSignal.Contains("modifier") || lowerMapSignal.Contains("waystone")
+                    || lowerMapSignal.Contains("map mod") || lowerMapSignal.Contains("mapmod")
+                    || lowerMapSignal.Contains("monster level") || lowerMapSignal.Contains("area has")
+                    || lowerMapSignal.Contains("affix") || lowerMapSignal.Contains("objective")
+                    || lowerMapSignal.Contains("mission") || lowerMapSignal.Contains("map complete")
+                    || lowerMapSignal.Contains("map boss") || lowerMapSignal.Contains("completed")
+                    || lowerMapSignal.Contains("completion");
+                bool chatLike = line.IndexOf("] #", System.StringComparison.Ordinal) >= 0
+                    || line.IndexOf("] $", System.StringComparison.Ordinal) >= 0
+                    || line.IndexOf("] @", System.StringComparison.Ordinal) >= 0;
+                if (mapSignal && !chatLike && settings["debugLog"])
+                {
+                    string signalText = line.Length > 700 ? line.Substring(0, 700) : line;
+                    System.IO.File.AppendAllText(vars.debugPath,
+                        System.DateTime.Now.ToString("s") + " MAP_SIGNAL | area=" + vars.mapDiagCandidateAreaId
+                        + " | level=" + vars.mapDiagCandidateAreaLevel + " | " + signalText + System.Environment.NewLine);
+                }
+            }
+            }
 
             if (vars.riverbankStartArmed
                 && !vars.startTrigger
@@ -1509,19 +1905,19 @@ update
                 if (vars.areaCompletionQueue.Count > 0
                     && (timer.CurrentPhase == LiveSplit.Model.TimerPhase.Running || timer.CurrentPhase == LiveSplit.Model.TimerPhase.Paused))
                 {
-                    string key = vars.areaCompletionQueue[0];
+                    string queuedAreaKey = vars.areaCompletionQueue[0];
                     vars.areaCompletionQueue.RemoveAt(0);
-                    string completedBaseId = vars.areaBaseByKey.ContainsKey(key) ? vars.areaBaseByKey[key] : "";
-                    vars.pendingKey = key;
-                    if (key.StartsWith("areaocc:", System.StringComparison.OrdinalIgnoreCase))
+                    string completedBaseId = vars.areaBaseByKey.ContainsKey(queuedAreaKey) ? vars.areaBaseByKey[queuedAreaKey] : "";
+                    vars.pendingKey = queuedAreaKey;
+                    if (queuedAreaKey.StartsWith("areaocc:", System.StringComparison.OrdinalIgnoreCase))
                     {
-                        string occurrenceId = key.Substring("areaocc:".Length);
-                        int occurrenceSep = occurrenceId.LastIndexOf('~');
-                        int occurrenceNumber = 0;
-                        if (occurrenceSep > 0) System.Int32.TryParse(occurrenceId.Substring(occurrenceSep + 1), out occurrenceNumber);
+                        string queuedOccurrenceId = queuedAreaKey.Substring("areaocc:".Length);
+                        int queuedOccurrenceSep = queuedOccurrenceId.LastIndexOf('~');
+                        int queuedOccurrenceNumber = 0;
+                        if (queuedOccurrenceSep > 0) System.Int32.TryParse(queuedOccurrenceId.Substring(queuedOccurrenceSep + 1), out queuedOccurrenceNumber);
                         if (System.String.Equals(completedBaseId, "G3_10", System.StringComparison.OrdinalIgnoreCase))
-                            vars.pendingName = occurrenceNumber == 2 ? "Trial of Chaos — 7 Rounds"
-                                : occurrenceNumber == 3 ? "Trial of Chaos — 10 Rounds"
+                            vars.pendingName = queuedOccurrenceNumber == 2 ? "Trial of Chaos — 7 Rounds"
+                                : queuedOccurrenceNumber == 3 ? "Trial of Chaos — 10 Rounds"
                                 : "Trial of Chaos — 4 Rounds";
                         else
                             vars.pendingName = vars.areaNames.ContainsKey(completedBaseId) ? vars.areaNames[completedBaseId] : completedBaseId;
@@ -1540,25 +1936,25 @@ update
                 continue;
             }
 
-            string key = enteredKey;
-            if (!vars.objectiveSet.Contains(key) || vars.completed.Contains(key) || vars.suppressed.Contains(key))
-                key = enteredOccurrenceKey;
-            if (key == "" || !vars.objectiveSet.Contains(key) || vars.completed.Contains(key) || vars.suppressed.Contains(key)) continue;
-            if (vars.ordered && (timer.CurrentSplitIndex < 0 || timer.CurrentSplitIndex >= vars.objectiveOrder.Count || !System.String.Equals(vars.objectiveOrder[timer.CurrentSplitIndex], key, System.StringComparison.OrdinalIgnoreCase)))
+            string enteredObjectiveKey = enteredKey;
+            if (!vars.objectiveSet.Contains(enteredObjectiveKey) || vars.completed.Contains(enteredObjectiveKey) || vars.suppressed.Contains(enteredObjectiveKey))
+                enteredObjectiveKey = enteredOccurrenceKey;
+            if (enteredObjectiveKey == "" || !vars.objectiveSet.Contains(enteredObjectiveKey) || vars.completed.Contains(enteredObjectiveKey) || vars.suppressed.Contains(enteredObjectiveKey)) continue;
+            if (vars.ordered && (timer.CurrentSplitIndex < 0 || timer.CurrentSplitIndex >= vars.objectiveOrder.Count || !System.String.Equals(vars.objectiveOrder[timer.CurrentSplitIndex], enteredObjectiveKey, System.StringComparison.OrdinalIgnoreCase)))
             {
-                if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath, System.DateTime.Now.ToString("s") + " IGNORE_OUT_OF_ORDER | got=" + key + " | expected=" + (timer.CurrentSplitIndex >= 0 && timer.CurrentSplitIndex < vars.objectiveOrder.Count ? vars.objectiveOrder[timer.CurrentSplitIndex] : "<none>") + System.Environment.NewLine);
+                if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath, System.DateTime.Now.ToString("s") + " IGNORE_OUT_OF_ORDER | got=" + enteredObjectiveKey + " | expected=" + (timer.CurrentSplitIndex >= 0 && timer.CurrentSplitIndex < vars.objectiveOrder.Count ? vars.objectiveOrder[timer.CurrentSplitIndex] : "<none>") + System.Environment.NewLine);
                 continue;
             }
             if (timer.CurrentPhase != LiveSplit.Model.TimerPhase.Running && timer.CurrentPhase != LiveSplit.Model.TimerPhase.Paused) continue;
-            vars.pendingKey = key;
-            if (key.StartsWith("areaocc:", System.StringComparison.OrdinalIgnoreCase))
+            vars.pendingKey = enteredObjectiveKey;
+            if (enteredObjectiveKey.StartsWith("areaocc:", System.StringComparison.OrdinalIgnoreCase))
             {
-                string occurrenceId = key.Substring("areaocc:".Length);
-                int occurrenceSep = occurrenceId.LastIndexOf('~');
-                int occurrenceNumber = 0;
-                if (occurrenceSep > 0) System.Int32.TryParse(occurrenceId.Substring(occurrenceSep + 1), out occurrenceNumber);
+                string enteredOccurrenceId = enteredObjectiveKey.Substring("areaocc:".Length);
+                int enteredOccurrenceSep = enteredOccurrenceId.LastIndexOf('~');
+                int enteredOccurrenceNumber = 0;
+                if (enteredOccurrenceSep > 0) System.Int32.TryParse(enteredOccurrenceId.Substring(enteredOccurrenceSep + 1), out enteredOccurrenceNumber);
                 vars.pendingName = System.String.Equals(areaId, "G3_10", System.StringComparison.OrdinalIgnoreCase)
-                    ? (occurrenceNumber == 2 ? "Trial of Chaos — 7 Rounds" : occurrenceNumber == 3 ? "Trial of Chaos — 10 Rounds" : "Trial of Chaos — 4 Rounds")
+                    ? (enteredOccurrenceNumber == 2 ? "Trial of Chaos — 7 Rounds" : enteredOccurrenceNumber == 3 ? "Trial of Chaos — 10 Rounds" : "Trial of Chaos — 4 Rounds")
                     : areaName;
                 vars.pendingType = "areaocc";
             }
@@ -1613,7 +2009,7 @@ onSplit
         // BossWatcher confirms disappearance after a short delay. Backdate boss objective Real Time
         // and Game Time to firstMissing, preserving the tested BossRush timing behavior. Area
         // objectives keep the native LiveSplit timestamp.
-        if (type == "boss" || type == "bossocc" || type == "bossall" || type == "bossany" || type == "bossnth" || type == "bossslot")
+        if (type == "boss" || type == "bossocc" || type == "bossall" || type == "bossany" || type == "bossnth" || type == "bossslot" || type == "mapboss")
         {
             try
             {
@@ -1674,6 +2070,29 @@ onSplit
 
         vars.completed.Add(key);
         vars.completedOrder.Add(key);
+
+        // One ordinary map contributes at most one automatic map-boss completion.
+        // After a committed map split, switch BossWatcher OFF while the player remains
+        // in that ordinary map so a later unrelated boss bar cannot consume another map
+        // slot or accidentally enter the OCR identity path. The next area transition
+        // restores the appropriate map/identity context. Undo Split re-arms map tracking.
+        if (type == "mapboss" && vars.mapModeEnabled)
+        {
+            vars.mapContextMode = "off";
+            vars.mapContextBossNumber = 0;
+            vars.mapContextClassification = "map-boss-committed";
+            string contextText = "version=1" + System.Environment.NewLine
+                + "mode=off" + System.Environment.NewLine
+                + "areaId=" + vars.mapDiagCandidateAreaId + System.Environment.NewLine
+                + "areaLevel=" + vars.mapDiagCandidateAreaLevel + System.Environment.NewLine
+                + "mapBossNumber=0" + System.Environment.NewLine
+                + "classification=map-boss-committed" + System.Environment.NewLine;
+            try { System.IO.File.WriteAllText(vars.bossContextPath, contextText); } catch {}
+            if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                System.DateTime.Now.ToString("s") + " MAP_CONTEXT_DISARM_AFTER_SPLIT | objective=" + key
+                + " | area=" + vars.mapDiagCandidateAreaId + System.Environment.NewLine);
+        }
+
         vars.pendingKey = "";
         vars.pendingName = "";
         vars.pendingType = "";
@@ -1687,7 +2106,7 @@ onSplit
             + "Completed: " + vars.completed.Count + " / " + vars.objectiveOrder.Count + System.Environment.NewLine
             + "Suppressed: " + vars.suppressed.Count + System.Environment.NewLine
             + "LiveSplit index: " + timer.CurrentSplitIndex + System.Environment.NewLine
-            + ((type == "boss" || type == "bossocc" || type == "bossall" || type == "bossany" || type == "bossnth" || type == "bossslot") ? "Boss split RealTime: " + finalReal + System.Environment.NewLine : "");
+            + ((type == "boss" || type == "bossocc" || type == "bossall" || type == "bossany" || type == "bossnth" || type == "bossslot" || type == "mapboss") ? "Boss split RealTime: " + finalReal + System.Environment.NewLine : "");
         System.IO.File.WriteAllText(vars.statusPath, status);
         if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
             System.DateTime.Now.ToString("s") + " OBJECTIVE_SPLIT_COMMITTED | " + key + " " + name
@@ -1835,6 +2254,31 @@ onReset
     vars.lastObservedIndex = timer.CurrentSplitIndex;
     try { vars.processedLineCount = System.IO.File.Exists(vars.eventPath) ? System.IO.File.ReadAllLines(vars.eventPath).Length : 0; } catch {}
 
+    if (vars.mapModeEnabled)
+    {
+        vars.mapDiagCandidateActive = false;
+        vars.mapDiagCandidateAreaId = "";
+        vars.mapDiagCandidateAreaLevel = 0;
+        vars.mapCurrentObjectiveKey = "";
+        vars.mapCurrentBossNumber = 0;
+        vars.mapCurrentSplitName = "";
+        vars.mapContextMode = "identity";
+        vars.mapContextAreaId = "";
+        vars.mapContextAreaLevel = 0;
+        vars.mapContextBossNumber = 0;
+        vars.mapContextClassification = "reset";
+        try
+        {
+            System.IO.File.WriteAllText(vars.bossContextPath,
+                "version=1" + System.Environment.NewLine
+                + "mode=identity" + System.Environment.NewLine
+                + "areaId=" + System.Environment.NewLine
+                + "areaLevel=0" + System.Environment.NewLine
+                + "mapBossNumber=0" + System.Environment.NewLine
+                + "classification=reset" + System.Environment.NewLine);
+        } catch {}
+    }
+
     if (settings["dynamicSegmentNames"])
     {
         try
@@ -1851,6 +2295,10 @@ onReset
 
 exit
 {
+    if (vars.mapModeEnabled)
+    {
+        try { System.IO.File.WriteAllText(vars.bossContextPath, "version=1" + System.Environment.NewLine + "mode=identity" + System.Environment.NewLine + "classification=asl-exit" + System.Environment.NewLine); } catch {}
+    }
     try { if (vars.gtReader != null) vars.gtReader.Close(); } catch {}
     vars.gtReader = null;
 
@@ -1860,6 +2308,10 @@ exit
 
 shutdown
 {
+    if (vars.mapModeEnabled)
+    {
+        try { System.IO.File.WriteAllText(vars.bossContextPath, "version=1" + System.Environment.NewLine + "mode=identity" + System.Environment.NewLine + "classification=asl-shutdown" + System.Environment.NewLine); } catch {}
+    }
     try { if (vars.gtReader != null) vars.gtReader.Close(); } catch {}
     vars.gtReader = null;
 

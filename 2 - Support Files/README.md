@@ -1,13 +1,16 @@
-# Path of Exile 2 Route AutoSplitter for LiveSplit — v2.1.0
+# Path of Exile 2 Route AutoSplitter for LiveSplit — v2.2.0 Release Candidate
 
-v2.1.0 adds load-removed **Game Time** to every autosplitter mode and makes
-GameTimeWatcher an optional helper only for manual-pause removal.
+## Maps structural boss mode (v2.2.0 Release Candidate)
 
-Normal users do not need PowerShell, the .NET SDK, OCR setup, or compilation.
+SetupUI includes a **Maps** tab for Dynamic/unordered endgame boss runs. The user chooses 1–100 ordinary map-boss completions and may optionally add selected Pinnacle bosses. On a qualifying ordinary-map entry, the mixed ASL renames the active row to `Map Level X - Boss #Y` and writes `mode=map` to `poe2_boss_context.txt`. BossWatcher then bypasses Tesseract and the boss-name catalog: it uses only structural boss-UI evidence (red health-bar run plus the gold boss-UI band) and emits `MAP_GONE` after the UI is verified absent.
+
+After a committed ordinary-map split, BossWatcher is switched to `mode=off` for the remainder of that map so another boss UI cannot consume the next slot. LiveSplit **Undo Split** re-arms the current map objective when a disappearance represented a failed/abandoned attempt. Known non-map/Pinnacle contexts use `mode=identity`, preserving the normal OCR path for selected Pinnacle objectives.
+
+Map classification remains diagnostic: a level-65+ unknown destination entered from The Ziggurat Refuge or a Hideout is logged as `unconfirmed-map-or-special`. Additional special/Pinnacle exclusions will be based on mapping diagnostics. Random map-objective completion and modifier-count extraction remain non-functional/diagnostic.
 
 ## Compact package paths
 
-This release uses a short archive root (`PoE2AS-v2.1.2-RC`) and compact support names such as `01-Ordered`, `04-Checklist`, `BossWatcher`, and `GameTimeWatcher`. Generated .NET `bin` and `obj` folders are intentionally excluded from the release archive.
+This release uses a short archive root (`PoE2AS-v2.2.0`) and compact support names such as `01-Ordered`, `04-Checklist`, `BossWatcher`, and `GameTimeWatcher`. Generated .NET `bin` and `obj` folders are intentionally excluded from the release archive.
 
 The four runtime anchor names `1 - User Setup`, `2 - Support Files`, `Setup UI [Configuration]`, and `LiveSplit Target` are intentionally retained for compatibility with the already-built Setup UI executable.
 
@@ -15,12 +18,12 @@ The four runtime anchor names `1 - User Setup`, `2 - Support Files`, `Setup UI [
 
 Download and run:
 
-`PoE2AS-v2.1.0-Setup.exe`
+`PoE2AS-v2.2.0-Setup.exe`
 
 The installer uses the established two-folder runtime:
 
 ```text
-PoE2AS-v2.1.2-RC
+PoE2AS-v2.2.0
 ├── 1 - User Setup
 │   ├── PoE2RouteSetup.exe
 │   └── LiveSplit Target\
@@ -118,23 +121,21 @@ Custom routes can combine supported areas, bosses, levels, and opt-in trial boss
 
 ## BossWatcher
 
-BossWatcher remains responsible only for Boss Rush detection. Normal console
-output reports encounters, defeats, and fight duration. `--dev-console`
-retains verbose diagnostics.
+BossWatcher handles identity-based Boss Rush / trial / Pinnacle events and the Maps structural boss-bar mode. Ordinary Maps context bypasses OCR and boss-name matching; selected Pinnacle objectives keep the identity/OCR path. Normal console output reports meaningful encounter/completion events, while `--dev-console` retains verbose diagnostics.
 
 ## Source repository vs. release assets
 
 Compiled executables are intentionally not committed to Git. GitHub Releases
 contain:
 
-- `PoE2AS-v2.1.0-Setup.exe`
-- `PoE2AS-v2.1.0.zip`
+- `PoE2AS-v2.2.0-Setup.exe`
+- `PoE2AS-v2.2.0.zip`
 - `SHA256SUMS.txt`
 
 ## Automated GitHub release
 
 `.github\workflows\build-release.yml` runs for lowercase version tags such
-as `v2.1.0` and can also be started manually. It builds the Setup UI,
+as `v2.2.0` and can also be started manually. It builds the Setup UI,
 BossWatcher, and optional GameTimeWatcher, assembles the two-folder runtime,
 creates the portable ZIP and installer, and generates SHA-256 checksums.
 
@@ -151,7 +152,7 @@ Requirements:
 From `2 - Support Files`:
 
 ```powershell
-.\Build-Release.ps1 -Version 2.1.0
+.\Build-Release.ps1 -Version 2.2.0
 ```
 
 For development-only user-tool builds:

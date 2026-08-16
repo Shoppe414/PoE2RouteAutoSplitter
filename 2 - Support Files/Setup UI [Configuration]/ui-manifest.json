@@ -1,5 +1,5 @@
 {
-  "Version": "2.1.3",
+  "Version": "2.2.0",
   "AreaCatalog": "01-Ordered/zones.csv",
   "BossCatalog": "BossWatcher/bosses.txt",
   "BossSupportOnlyList": "BossWatcher/BossLists/support-only.txt",

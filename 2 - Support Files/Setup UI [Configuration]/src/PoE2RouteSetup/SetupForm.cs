@@ -99,6 +99,21 @@ public sealed class SetupForm : Form
     private readonly Label _trialPreviewFinishValue = new();
     private readonly Label _trialPreviewSplitsValue = new();
 
+    // Endgame Maps configuration. Ordinary map bosses use BossWatcher's identity-free
+    // structural bar mode; map classification, modifier counts, and random-objective
+    // completion remain diagnostic areas for field validation.
+    private readonly NumericUpDown _mapBossTargetNumeric = new();
+    private readonly RadioButton _mapBossCompletionRadio = new();
+    private readonly RadioButton _mapQuestCompletionRadio = new();
+    private readonly CheckBox _mapIncludePinnacleCheck = new();
+    private readonly CheckedListBox _mapPinnacleChecklist = new();
+    private readonly CheckBox _mapModifierCountCheck = new();
+    private readonly Label _mapPreviewOrderValue = new();
+    private readonly Label _mapPreviewTargetValue = new();
+    private readonly Label _mapPreviewCompletionValue = new();
+    private readonly Label _mapPreviewPinnacleValue = new();
+    private readonly Label _mapPreviewNameValue = new();
+
     private readonly RadioButton _manualStartRadio = new();
     private readonly RadioButton _riverbankStartRadio = new();
     private readonly RadioButton _zoneStartRadio = new();
@@ -198,9 +213,12 @@ public sealed class SetupForm : Form
         custom.Controls.Add(BuildCustomPanel());
         var trials = new TabPage("Trials");
         trials.Controls.Add(BuildTrialsPanel());
+        var maps = new TabPage("Maps");
+        maps.Controls.Add(BuildMapsPanel());
         _modeTabs.TabPages.Add(premade);
         _modeTabs.TabPages.Add(custom);
         _modeTabs.TabPages.Add(trials);
+        _modeTabs.TabPages.Add(maps);
         return _modeTabs;
     }
 
@@ -1131,6 +1149,209 @@ public sealed class SetupForm : Form
         2 => 3,
         _ => 1
     };
+
+    private Control BuildMapsPanel()
+    {
+        var outer = new SplitContainer
+        {
+            Dock = DockStyle.Fill,
+            Orientation = Orientation.Vertical,
+            Size = new Size(1000, 560),
+            SplitterDistance = 600,
+            Panel1MinSize = 500,
+            Panel2MinSize = 280
+        };
+
+        var settingsHost = new Panel { Dock = DockStyle.Fill, AutoScroll = true, Padding = new Padding(8) };
+        var settings = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            AutoSize = true,
+            FlowDirection = FlowDirection.TopDown,
+            WrapContents = false
+        };
+
+        settings.Controls.Add(new Label
+        {
+            AutoSize = true,
+            MaximumSize = new Size(560, 0),
+            BorderStyle = BorderStyle.FixedSingle,
+            Padding = new Padding(10, 8, 10, 8),
+            Margin = new Padding(0, 0, 0, 8),
+            Text =
+                "Maps — dynamic endgame boss runs.\r\n" +
+                "Map runs are always Dynamic / unordered. Ordinary map bosses use structural health-bar detection only: BossWatcher does not need the boss name or OCR identity. When the verified boss UI disappears, LiveSplit receives the split. If the boss was not actually defeated (for example, the player died or left), use LiveSplit Undo Split before retrying. Map-entry classification and random-objective completion remain under diagnostic validation."
+        });
+
+        var orderLabel = new Label
+        {
+            Text = "Dynamic / unordered — Required",
+            AutoSize = true
+        };
+        var orderDescription = new Label();
+        ConfigureTrialDescriptionLabel(orderDescription);
+        orderDescription.Text =
+            "Map level and encounter order are discovered at runtime. The route therefore cannot assume a fixed map sequence or a fixed point for optional Pinnacle encounters.";
+        settings.Controls.Add(BuildTrialGroup("Route order", orderLabel, orderDescription));
+
+        _mapBossTargetNumeric.Minimum = 1;
+        _mapBossTargetNumeric.Maximum = 100;
+        _mapBossTargetNumeric.Value = 100;
+        _mapBossTargetNumeric.Width = 90;
+        _mapBossTargetNumeric.ValueChanged += (_, _) => UpdateMapsUi();
+        var targetPanel = new FlowLayoutPanel { AutoSize = true, FlowDirection = FlowDirection.LeftToRight, WrapContents = false };
+        targetPanel.Controls.Add(new Label { Text = "Map boss encounters:", AutoSize = true, Padding = new Padding(0, 6, 8, 0) });
+        targetPanel.Controls.Add(_mapBossTargetNumeric);
+        var targetDescription = new Label();
+        ConfigureTrialDescriptionLabel(targetDescription);
+        targetDescription.Text =
+            "Choose 1–100 dynamic map-boss objectives. The active split is named at map entry, for example: Map Level 78 - Boss #12. Ordinary map boss names are never required or written into the split.";
+        settings.Controls.Add(BuildTrialGroup("Run length", targetPanel, targetDescription));
+
+        _mapBossCompletionRadio.Text = "Map boss kill — Default / functional";
+        _mapBossCompletionRadio.AutoSize = true;
+        _mapBossCompletionRadio.Checked = true;
+        _mapBossCompletionRadio.CheckedChanged += (_, _) => UpdateMapsUi();
+        _mapQuestCompletionRadio.Text = "Map objective / random quest clear — NON-FUNCTIONAL — Needs diagnostics";
+        _mapQuestCompletionRadio.AutoSize = true;
+        _mapQuestCompletionRadio.Enabled = false;
+        var completionDescription = new Label();
+        ConfigureTrialDescriptionLabel(completionDescription);
+        completionDescription.Text =
+            "Boss policy uses BossWatcher's structural red-bar / boss-UI detector and deliberately bypasses OCR for ordinary map bosses. Verified bar disappearance sends the split signal; the runner is responsible for Undo Split if the encounter was not actually completed. Random map objectives/quests remain non-functional until Client.txt exposes a reliable completion signal.";
+        settings.Controls.Add(BuildTrialGroup("Map completion rule", _mapBossCompletionRadio, _mapQuestCompletionRadio, completionDescription));
+
+        _mapIncludePinnacleCheck.Text = "Include Pinnacle bosses";
+        _mapIncludePinnacleCheck.AutoSize = true;
+        _mapIncludePinnacleCheck.CheckedChanged += (_, _) =>
+        {
+            _mapPinnacleChecklist.Visible = _mapIncludePinnacleCheck.Checked;
+            UpdateMapsUi();
+        };
+        _mapPinnacleChecklist.CheckOnClick = true;
+        _mapPinnacleChecklist.DisplayMember = nameof(RouteEntry.Name);
+        _mapPinnacleChecklist.Width = 500;
+        _mapPinnacleChecklist.Height = 150;
+        _mapPinnacleChecklist.IntegralHeight = false;
+        _mapPinnacleChecklist.Visible = false;
+        foreach (var boss in GetPinnacleBossEntries())
+            _mapPinnacleChecklist.Items.Add(boss);
+        _mapPinnacleChecklist.ItemCheck += (_, _) => BeginInvoke(new Action(UpdateMapsUi));
+        var pinnacleDescription = new Label();
+        ConfigureTrialDescriptionLabel(pinnacleDescription);
+        pinnacleDescription.Text =
+            "Pinnacle objectives are optional and remain dynamic. Ordinary maps use identity-free structural detection, while Pinnacle encounters retain the normal BossWatcher OCR identity path so the selected Pinnacle objective can be credited. Their exact position is not predetermined.";
+        settings.Controls.Add(BuildTrialGroup("Optional Pinnacle bosses", _mapIncludePinnacleCheck, _mapPinnacleChecklist, pinnacleDescription));
+
+        _mapModifierCountCheck.Text = "Include unique modifier count in the split name when detectable — Diagnostic only";
+        _mapModifierCountCheck.AutoSize = true;
+        _mapModifierCountCheck.Checked = true;
+        _mapModifierCountCheck.CheckedChanged += (_, _) => UpdateMapsUi();
+        var namingDescription = new Label();
+        ConfigureTrialDescriptionLabel(namingDescription);
+        namingDescription.Text =
+            "Planned format: Map Level X - Boss #Y. If diagnostics reveal a reliable unique-modifier count at entry, the format can become Map Level X - N Mods - Boss #Y. If no reliable signal exists, modifier count will simply be omitted.";
+        settings.Controls.Add(BuildTrialGroup("Dynamic split naming", _mapModifierCountCheck, namingDescription));
+
+        var detectionDescription = new Label();
+        ConfigureTrialDescriptionLabel(detectionDescription);
+        detectionDescription.Text =
+            "The diagnostic classifier records every generated area and flags an ENDGAME_CANDIDATE when the previous scene appears to be The Ziggurat Refuge or a Hideout, the destination is level 65+, and the destination is not a known campaign/trial/hub area. Candidates are deliberately logged as unconfirmed map-or-special instances so Pinnacle/unique endgame destinations can be identified rather than silently misclassified.";
+        settings.Controls.Add(BuildTrialGroup("Map-entry diagnostics", detectionDescription));
+
+        settingsHost.Controls.Add(settings);
+        outer.Panel1.Controls.Add(settingsHost);
+
+        var previewGroup = new GroupBox { Text = "Proposed Maps rules", Dock = DockStyle.Fill, Padding = new Padding(10) };
+        var previewRoot = new TableLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            AutoSize = true,
+            ColumnCount = 2,
+            RowCount = 5,
+            Padding = new Padding(2)
+        };
+        previewRoot.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38));
+        previewRoot.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62));
+        AddTrialPreviewRow(previewRoot, 0, "Order", _mapPreviewOrderValue);
+        AddTrialPreviewRow(previewRoot, 1, "Map bosses", _mapPreviewTargetValue);
+        AddTrialPreviewRow(previewRoot, 2, "Completion", _mapPreviewCompletionValue);
+        AddTrialPreviewRow(previewRoot, 3, "Pinnacles", _mapPreviewPinnacleValue);
+        AddTrialPreviewRow(previewRoot, 4, "Split naming", _mapPreviewNameValue);
+        previewGroup.Controls.Add(previewRoot);
+        outer.Panel2.Controls.Add(previewGroup);
+
+        UpdateMapsUi();
+        return outer;
+    }
+
+    private List<RouteEntry> GetPinnacleBossEntries()
+    {
+        string[] ids =
+        {
+            "atziri_red_queen", "the_aberration", "arbiter_of_ash", "arbiter_of_divinity", "the_bodach",
+            "raven_trickster", "the_trialmaster", "vessel_of_kulemak", "xesht_we_that_are_one", "zarokh_temporal"
+        };
+        return ids.Select(RequiredBoss).ToList();
+    }
+
+    private List<RouteEntry> GetSelectedMapPinnacleBosses()
+    {
+        var result = new List<RouteEntry>();
+        if (!_mapIncludePinnacleCheck.Checked) return result;
+        foreach (var item in _mapPinnacleChecklist.CheckedItems)
+            if (item is RouteEntry boss) result.Add(boss);
+        return result;
+    }
+
+    private void UpdateMapsUi()
+    {
+        _mapPinnacleChecklist.Visible = _mapIncludePinnacleCheck.Checked;
+        var selectedPinnacles = GetSelectedMapPinnacleBosses();
+        _mapPreviewOrderValue.Text = "Dynamic / unordered";
+        _mapPreviewTargetValue.Text = ((int)_mapBossTargetNumeric.Value).ToString();
+        _mapPreviewCompletionValue.Text = _mapBossCompletionRadio.Checked ? "Map boss bar disappearance" : "Map objective / random quest";
+        _mapPreviewPinnacleValue.Text = _mapIncludePinnacleCheck.Checked
+            ? (selectedPinnacles.Count == 0 ? "Enabled; none selected yet" : $"{selectedPinnacles.Count} selected")
+            : "Not included";
+        _mapPreviewNameValue.Text = _mapModifierCountCheck.Checked
+            ? "Map Level X - N Mods - Boss #Y (when detectable)"
+            : "Map Level X - Boss #Y";
+    }
+
+    private void ValidateMapsSelection()
+    {
+        if (_mapBossTargetNumeric.Value < 1 || _mapBossTargetNumeric.Value > 100)
+            throw new InvalidOperationException("Map boss encounter count must be between 1 and 100.");
+        if (!_mapBossCompletionRadio.Checked)
+            throw new InvalidOperationException("Map objective / random quest completion is non-functional. Keep Map boss kill selected.");
+    }
+
+    private List<RouteEntry> BuildMapObjectives()
+    {
+        var result = new List<RouteEntry>();
+        for (var i = 1; i <= (int)_mapBossTargetNumeric.Value; i++)
+        {
+            result.Add(new RouteEntry
+            {
+                Type = "mapboss",
+                Id = i.ToString(),
+                Name = $"Map Boss #{i}",
+                Group = "Dynamic Maps"
+            });
+        }
+        foreach (var boss in GetSelectedMapPinnacleBosses())
+        {
+            result.Add(new RouteEntry
+            {
+                Type = "boss",
+                Id = boss.Id,
+                Name = boss.Name,
+                Group = "Optional Pinnacle"
+            });
+        }
+        return result;
+    }
 
     private Control BuildRoutePanel()
     {
@@ -2146,17 +2367,20 @@ public sealed class SetupForm : Form
     private void UpdateStartZoneEnabled()
     {
         var trialsSelected = _modeTabs.SelectedIndex == 2;
+        var mapsSelected = _modeTabs.SelectedIndex == 3;
+        var ownsStartPolicy = trialsSelected || mapsSelected;
 
-        // Dedicated Trials owns a fixed first-chamber start policy. The standard
-        // Manual / Riverbank / arbitrary-zone controls therefore do not apply.
-        _manualStartRadio.Enabled = !trialsSelected;
-        _riverbankStartRadio.Enabled = !trialsSelected;
-        _zoneStartRadio.Enabled = !trialsSelected;
-        _startZoneCombo.Enabled = !trialsSelected && _zoneStartRadio.Checked;
+        // Dedicated Trials owns a fixed first-chamber start policy. Maps is currently
+        // a diagnostic-only dynamic mode and therefore does not use the normal campaign
+        // Manual / Riverbank / arbitrary-zone timing controls either.
+        _manualStartRadio.Enabled = !ownsStartPolicy;
+        _riverbankStartRadio.Enabled = !ownsStartPolicy;
+        _zoneStartRadio.Enabled = !ownsStartPolicy;
+        _startZoneCombo.Enabled = !ownsStartPolicy && _zoneStartRadio.Checked;
         _deployButton.Enabled = true;
 
-        if (trialsSelected)
-            UpdateTrialsUi();
+        if (trialsSelected) UpdateTrialsUi();
+        if (mapsSelected) UpdateMapsUi();
     }
 
     private StartPolicy GetRequiredStartPolicy()
@@ -2510,6 +2734,7 @@ public sealed class SetupForm : Form
             var premade = _modeTabs.SelectedIndex == 0;
             var custom = _modeTabs.SelectedIndex == 1;
             var trials = _modeTabs.SelectedIndex == 2;
+            var maps = _modeTabs.SelectedIndex == 3;
             if (premade)
             {
                 if (_premadeSetupCombo.SelectedIndex < 0)
@@ -2528,12 +2753,20 @@ public sealed class SetupForm : Form
             {
                 ValidateTrialSelection();
             }
+            else if (maps)
+            {
+                ValidateMapsSelection();
+            }
             else
             {
                 throw new InvalidOperationException("Select a setup tab before generating.");
             }
 
-            var startPolicy = trials ? GetTrialStartPolicy() : GetRequiredStartPolicy();
+            var startPolicy = trials
+                ? GetTrialStartPolicy()
+                : maps
+                    ? new StartPolicy { Mode = StartMode.Manual }
+                    : GetRequiredStartPolicy();
             var target = ValidateTargetPath();
             stage = Path.Combine(Path.GetTempPath(), "PoE2RouteSetup", Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(stage);
@@ -2542,8 +2775,10 @@ public sealed class SetupForm : Form
                 DeployPremadeGenerated(stage, target, startPolicy);
             else if (custom)
                 DeployCustom(stage, target, startPolicy);
-            else
+            else if (trials)
                 DeployTrial(stage, target, startPolicy);
+            else
+                DeployMaps(stage, target, startPolicy);
 
             if (!CommitStage(stage, target)) return;
 
@@ -2551,8 +2786,10 @@ public sealed class SetupForm : Form
                 SetStatus($"Deployed premade: {PremadeMode} / {PremadeSetup} / {(PremadeOrdered ? "Ordered" : "Dynamic")}");
             else if (custom)
                 SetStatus($"Deployed custom route with {BuildCustomRuntimeObjectives().Count} timed objective(s).");
-            else
+            else if (trials)
                 SetStatus($"Deployed trial run: {(_trialSekhemasRadio.Checked ? "Sekhemas" : "Chaos")} / {(_trialFinalBossRadio.Checked ? "Boss finish" : "Exit finish")}.");
+            else
+                SetStatus($"Deployed Maps run for {(int)_mapBossTargetNumeric.Value} map-boss encounter(s) with {GetSelectedMapPinnacleBosses().Count} optional Pinnacle objective(s).");
 
             // The persistent LiveSplit reminder panel contains the required post-generation
             // instructions. Do not show a second success dialog after the target-clear
@@ -2603,8 +2840,13 @@ public sealed class SetupForm : Form
                 if (floors >= 1) objectives.Add(new RouteEntry { Type = "boss", Id = "rattlecage_earthbreaker", Name = "Rattlecage, the Earthbreaker", Group = "Sekhemas" });
                 if (floors >= 2)
                 {
-                    objectives.Add(new RouteEntry { Type = "bossany", Id = "sekhemas_floor2_boss_1", Name = "Sekhemas Floor 2 Boss 1", Group = "Sekhemas" });
-                    objectives.Add(new RouteEntry { Type = "bossany", Id = "sekhemas_floor2_boss_2", Name = "Sekhemas Floor 2 Boss 2", Group = "Sekhemas" });
+                    // Floor 2 is a dual-boss encounter whose kill order is not fixed.
+                    // Keep two independent LiveSplit rows so each defeat retains its own
+                    // split time, but expose both real boss names before the run. The mixed
+                    // ASL renames each row to the boss BossWatcher actually reports, so the
+                    // completed rows naturally appear in kill order.
+                    objectives.Add(new RouteEntry { Type = "bossany", Id = "sekhemas_floor2_boss_1", Name = "Hadi", Group = "Sekhemas" });
+                    objectives.Add(new RouteEntry { Type = "bossany", Id = "sekhemas_floor2_boss_2", Name = "Rafiq", Group = "Sekhemas" });
                 }
                 if (floors >= 3) objectives.Add(new RouteEntry { Type = "boss", Id = "ashar_sand_mother", Name = "Ashar, the Sand Mother", Group = "Sekhemas" });
                 if (floors >= 4) objectives.Add(new RouteEntry { Type = "boss", Id = "zarokh_temporal", Name = "Zarokh, the Temporal", Group = "Sekhemas" });
@@ -2720,6 +2962,79 @@ public sealed class SetupForm : Form
             throw new InvalidOperationException("Trial of Chaos is enabled but no trial stage is selected.");
     }
 
+    private void DeployMaps(string stage, string target, StartPolicy startPolicy)
+    {
+        var objectives = BuildMapObjectives();
+        if (objectives.Count == 0)
+            throw new InvalidOperationException("Maps setup requires at least one map-boss objective.");
+
+        var routePath = Path.Combine(stage, "poe2_mixed_route.txt");
+        var route = new StringBuilder();
+        route.AppendLine("# Generated Maps dynamic boss run");
+        route.AppendLine("@start=manual");
+        route.AppendLine("@order=unordered");
+        route.AppendLine("@areaCompletion=entry");
+        route.AppendLine();
+        foreach (var entry in objectives)
+            route.AppendLine($"{entry.RouteText,-42} # {entry.Name}");
+        File.WriteAllText(routePath, route.ToString(), new UTF8Encoding(false));
+
+        var sourceAsl = Resolve(_manifest.CustomAslSource);
+        if (!File.Exists(sourceAsl)) throw new FileNotFoundException("Maps ASL source was not found.", sourceAsl);
+        var stagedAsl = Path.Combine(stage, "PoE2-Maps.asl");
+        var targetAsl = Path.Combine(target, "PoE2-Maps.asl");
+        var patchedAsl = LiveSplitFiles.RewriteRuntimePaths(File.ReadAllText(sourceAsl), target);
+        patchedAsl = LiveSplitFiles.ApplyAutoStartOption(patchedAsl, true);
+        patchedAsl = LiveSplitFiles.ApplyGameTimeOptions(patchedAsl, _excludeManualPauseCheck.Checked);
+        File.WriteAllText(stagedAsl, patchedAsl, new UTF8Encoding(false));
+
+        var stagedLss = Path.Combine(stage, "Maps-Dynamic.lss");
+        LiveSplitFiles.WritePremadeSplits(stagedLss, objectives, "Maps - Dynamic Boss Run");
+
+        EnsureBossEventFile(stage);
+        EnsureBossContextFile(stage, "identity", "setup-ready");
+        if (_excludeManualPauseCheck.Checked) EnsureManualPauseStateFile(stage);
+
+        WriteSetupSummary(stage, "Maps - Dynamic Boss Run",
+            $"{(int)_mapBossTargetNumeric.Value} map-boss encounters; {GetSelectedMapPinnacleBosses().Count} optional Pinnacle boss(es); dynamic only; auto-start on first qualifying map entry",
+            stagedLss, stagedAsl, targetAsl, true, _excludeManualPauseCheck.Checked, startPolicy);
+
+        var info = new StringBuilder();
+        info.AppendLine("PoE2 Maps dynamic boss run / diagnostics");
+        info.AppendLine("Status: MAP BOSS AUTOSPLITTING ENABLED — map classification remains under diagnostic validation.");
+        info.AppendLine($"Map boss encounters: {(int)_mapBossTargetNumeric.Value}");
+        info.AppendLine("Route order: Dynamic / unordered only");
+        info.AppendLine("Completion: verified ordinary-map boss-bar disappearance (no OCR identity required)");
+        info.AppendLine($"Modifier count in name: {(_mapModifierCountCheck.Checked ? "Requested when a reliable signal is found" : "Disabled")}");
+        info.AppendLine();
+        info.AppendLine("Candidate map heuristic logged by the ASL:");
+        info.AppendLine("  previous scene = The Ziggurat Refuge or contains 'Hideout'");
+        info.AppendLine("  destination generated level >= 65");
+        info.AppendLine("  destination is not a known campaign/trial/hub area");
+        info.AppendLine("  result is logged as ENDGAME_CANDIDATE classification=unconfirmed-map-or-special");
+        info.AppendLine();
+        info.AppendLine("BossWatcher context policy:");
+        info.AppendLine("  ordinary map candidate -> mode=map -> structural boss-bar tracking, OCR bypassed");
+        info.AppendLine("  non-map / known special area -> mode=identity -> normal OCR identity tracking");
+        info.AppendLine("  MAP_GONE -> LiveSplit split; use Undo Split when the boss was not actually completed");
+        info.AppendLine();
+        info.AppendLine("Relevant diagnostic markers:");
+        info.AppendLine("  ENDGAME_TRANSITION");
+        info.AppendLine("  ENDGAME_CANDIDATE");
+        info.AppendLine("  BOSS_CONTEXT_WRITE");
+        info.AppendLine("  MAP_SCENE");
+        info.AppendLine("  MAP_SIGNAL");
+        info.AppendLine("  MAP_BOSS_SPLIT_SIGNAL");
+        info.AppendLine();
+        info.AppendLine("Optional Pinnacle objectives selected:");
+        var pinnacles = GetSelectedMapPinnacleBosses();
+        if (pinnacles.Count == 0) info.AppendLine("  (none)");
+        foreach (var boss in pinnacles) info.AppendLine("  - " + boss.Name);
+        info.AppendLine();
+        info.AppendLine("Testing goal: enter several ordinary maps from Ziggurat/personal/party/guild hideouts, confirm the split row updates to Map Level X - Boss #Y, kill/fail/retry bosses (using Undo Split on failed attempts), and record any random map objectives encountered. Preserve poe2_mixed_route_debug.log, poe2_boss_context.txt, Client.txt, and BossWatcher debug/event logs.");
+        File.WriteAllText(Path.Combine(stage, "MAPS_DIAGNOSTIC_RULES.txt"), info.ToString(), new UTF8Encoding(false));
+    }
+
     private void DeployPremadeGenerated(string stage, string target, StartPolicy startPolicy)
     {
         var objectives = BuildPremadeObjectivesWithTrials();
@@ -2750,7 +3065,7 @@ public sealed class SetupForm : Form
         var targetAsl = Path.Combine(target, "PoE2-Premade.asl");
         var sourceAslText = File.ReadAllText(sourceAsl);
         var patchedAsl = LiveSplitFiles.RewriteRuntimePaths(sourceAslText, target);
-        patchedAsl = LiveSplitFiles.ApplyAutoStartOption(patchedAsl, startPolicy.IsAutomatic);
+        patchedAsl = LiveSplitFiles.ApplyGeneratedZoneStartPolicy(patchedAsl, startPolicy);
         patchedAsl = LiveSplitFiles.ApplyGameTimeOptions(patchedAsl, _excludeManualPauseCheck.Checked);
         File.WriteAllText(stagedAsl, patchedAsl, new UTF8Encoding(false));
 
@@ -2790,7 +3105,6 @@ public sealed class SetupForm : Form
         if (!File.Exists(sourceAsl)) throw new FileNotFoundException("Preset autosplitter file was not found.", sourceAsl);
 
         var sourceAslText = File.ReadAllText(sourceAsl);
-        var runtimeStartSupported = LiveSplitFiles.SupportsRuntimeStartPolicy(sourceAslText);
         var stagedLss = Path.Combine(stage, Path.GetFileName(sourceLss));
         var stagedAsl = Path.Combine(stage, Path.GetFileName(sourceAsl));
         var targetAsl = Path.Combine(target, Path.GetFileName(sourceAsl));
@@ -2820,9 +3134,7 @@ public sealed class SetupForm : Form
             LiveSplitFiles.AdjustAreaChecklistSplits(stagedLss, areaChecklistRuntimeText);
 
         var patchedAsl = LiveSplitFiles.RewriteRuntimePaths(sourceAslText, target);
-        patchedAsl = runtimeStartSupported
-            ? LiveSplitFiles.ApplyAutoStartOption(patchedAsl, startPolicy.IsAutomatic)
-            : LiveSplitFiles.ApplyGeneratedZoneStartPolicy(patchedAsl, startPolicy);
+        patchedAsl = LiveSplitFiles.ApplyGeneratedZoneStartPolicy(patchedAsl, startPolicy);
         patchedAsl = LiveSplitFiles.ApplyGameTimeOptions(patchedAsl, _excludeManualPauseCheck.Checked);
         File.WriteAllText(stagedAsl, patchedAsl, new UTF8Encoding(false));
 
@@ -2860,7 +3172,7 @@ public sealed class SetupForm : Form
         var targetAsl = Path.Combine(target, "PoE2-Custom.asl");
         var sourceAslText = File.ReadAllText(sourceAsl);
         var patchedAsl = LiveSplitFiles.RewriteRuntimePaths(sourceAslText, target);
-        patchedAsl = LiveSplitFiles.ApplyAutoStartOption(patchedAsl, startPolicy.IsAutomatic);
+        patchedAsl = LiveSplitFiles.ApplyGeneratedZoneStartPolicy(patchedAsl, startPolicy);
         patchedAsl = LiveSplitFiles.ApplyGameTimeOptions(patchedAsl, _excludeManualPauseCheck.Checked);
         File.WriteAllText(stagedAsl, patchedAsl, new UTF8Encoding(false));
 
@@ -3000,7 +3312,8 @@ public sealed class SetupForm : Form
 
             var eventPath = Path.Combine(target, "poe2_boss_events.log");
             EnsureBossEventFile(target);
-            var args = $"--event-file {QuoteArgument(eventPath)}" + (_devConsoleCheck.Checked ? " --dev-console" : "");
+            var contextPath = Path.Combine(target, "poe2_boss_context.txt");
+            var args = $"--event-file {QuoteArgument(eventPath)} --context-file {QuoteArgument(contextPath)}" + (_devConsoleCheck.Checked ? " --dev-console" : "");
             Process.Start(new ProcessStartInfo
             {
                 FileName = exe,
@@ -3086,6 +3399,18 @@ public sealed class SetupForm : Form
     {
         var path = Path.Combine(target, "poe2_boss_events.log");
         if (!File.Exists(path)) File.WriteAllText(path, "");
+    }
+
+    private static void EnsureBossContextFile(string target, string mode = "identity", string classification = "setup")
+    {
+        var path = Path.Combine(target, "poe2_boss_context.txt");
+        var text = "version=1\r\n" +
+                   $"mode={mode}\r\n" +
+                   "areaId=\r\n" +
+                   "areaLevel=0\r\n" +
+                   "mapBossNumber=0\r\n" +
+                   $"classification={classification}\r\n";
+        File.WriteAllText(path, text, new UTF8Encoding(false));
     }
 
     private static void EnsureManualPauseStateFile(string target)

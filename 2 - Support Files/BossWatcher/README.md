@@ -1,6 +1,18 @@
-# Path of Exile 2 BossWatcher v0.3.0 / BossRush
+# Path of Exile 2 BossWatcher v0.3.1 / BossRush + Maps
 
-BossWatcher is the visual boss-completion tracker used by the package's `[Boss Rush]` and `[Exploration + Boss Rush]` modes. v0.3.0 changes the **user-facing console and launch integration** while retaining the v0.2.0 boss catalog/profile baseline and the tested disappearance detector.
+BossWatcher is the visual boss-completion tracker used by Boss Rush, mixed, Trials, and Maps setups. Identity-based encounters retain the established OCR/catalog detector. v0.3.1 adds an ASL-controlled structural mode for ordinary map bosses so map completion does not depend on recognizing a boss name.
+
+## Map context (v0.3.1)
+
+BossWatcher now accepts `--context-file <path>`. The ASL-owned context file selects one of three detector modes without changing the existing identity/OCR logic:
+
+- `mode=map` — ordinary map boss. Tesseract/name matching is bypassed. A structurally valid PoE2 boss UI (health-bar red run plus the gold boss-UI band) arms the encounter; verified UI disappearance emits `MAP_GONE`. No boss name is required or written to LiveSplit.
+- `mode=identity` — existing OCR/catalog path for campaign bosses, trial identities, and selected Pinnacle objectives.
+- `mode=off` — no boss tracking, used after an ordinary map split until the next area transition.
+
+Map events are `MAP_SEEN` and `MAP_GONE` and include the ASL-provided area ID, generated area level, and map-boss number. The map tracker does not use boss-name glyph/template matching. Dual boss UI is treated as one ordinary map objective and completes only when the full boss UI disappears.
+
+If a map boss bar disappears because the runner died or left rather than completing the encounter, the Maps policy intentionally relies on LiveSplit **Undo Split**. The ASL then restores/re-arms the current map objective.
 
 ## User console
 
@@ -53,6 +65,8 @@ v0.3.0 accepts:
 
 This overrides automatic event-log path resolution. The v1.3.2 Setup UI uses it so BossWatcher writes `poe2_boss_events.log` directly into the currently deployed LiveSplit target directory.
 
+Maps deployments also pass `--context-file <LiveSplit Target\poe2_boss_context.txt>` so the same BossWatcher process can switch between structural ordinary-map detection and OCR identity detection for optional Pinnacles.
+
 Source-run example:
 
 ```powershell
@@ -69,7 +83,7 @@ Both options may be combined:
 
 The current catalog contains **85 OCR identities** in `bosses.txt`. The bundled campaign and pinnacle target lists remain unchanged; seven newly cataloged trial identities expand visual recognition without silently adding optional trial bosses to existing routes.
 
-The catalog now includes the full Trial of the Sekhemas boss roster and the Trial of Chaos boss pool. Zarokh and The Trialmaster were already OCR-supported through the pinnacle catalog; the remaining trial identities are new in the v2.1.3 development package.
+The catalog now includes the full Trial of the Sekhemas boss roster and the Trial of Chaos boss pool. Zarokh and The Trialmaster were already OCR-supported through the pinnacle catalog; the remaining trial identities are promoted in the v2.2.0 Release Candidate.
 
 
 ### Optional trial bosses

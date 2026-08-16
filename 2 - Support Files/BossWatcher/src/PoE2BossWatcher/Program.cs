@@ -5,14 +5,15 @@ namespace PoE2BossWatcher;
 
 internal static class Program
 {
-    private const string Version = "0.3.0-bossrush";
+    private const string Version = "0.3.1-map-context";
 
     [STAThread]
     private static async Task<int> Main(string[] args)
     {
         var devConsole = args.Any(a => string.Equals(a, "--dev-console", StringComparison.OrdinalIgnoreCase) || string.Equals(a, "--dev", StringComparison.OrdinalIgnoreCase));
         var eventFileOverride = GetArgValue(args, "--event-file");
-        Console.Title = devConsole ? "PoE2 BossWatcher 0.3.0 - DEV" : "PoE2 BossWatcher 0.3.0";
+        var contextFileOverride = GetArgValue(args, "--context-file");
+        Console.Title = devConsole ? "PoE2 BossWatcher 0.3.1 - DEV" : "PoE2 BossWatcher 0.3.1";
         var baseDir = AppContext.BaseDirectory;
         var configPath = Path.Combine(baseDir, "config.json");
 
@@ -34,11 +35,17 @@ internal static class Program
                 ? PathResolver.ResolveEventFile(config, baseDir)
                 : Path.GetFullPath(eventFileOverride);
             var events = new EventWriter(eventPath, devConsole);
+            var contextPath = string.IsNullOrWhiteSpace(contextFileOverride)
+                ? Path.Combine(Path.GetDirectoryName(eventPath)!, "poe2_boss_context.txt")
+                : Path.GetFullPath(contextFileOverride);
+            var contextReader = new BossContextReader(contextPath);
+            var currentContext = contextReader.Read();
             var debugDir = Path.GetFullPath(Path.IsPathRooted(config.DebugDirectory)
                 ? config.DebugDirectory
                 : Path.Combine(baseDir, config.DebugDirectory));
             var imageWriter = new DebugImageWriter(debugDir);
             var tracker = new BossEncounterTracker(config, events, imageWriter, ocr, matcher);
+            var mapTracker = new GenericMapBossTracker(config, events, imageWriter);
             var finder = new GameWindowFinder(config.ProcessNames);
             var capture = new ScreenCapture();
 
@@ -48,6 +55,10 @@ internal static class Program
                 Console.WriteLine("Console mode: DEVELOPMENT (verbose frame diagnostics)");
                 Console.WriteLine($"Boss definitions: {bosses.Count}");
                 Console.WriteLine($"Event file: {eventPath}");
+                Console.WriteLine($"Context file: {contextPath}");
+                Console.WriteLine($"Detection context: {currentContext.Summary}");
+                Console.WriteLine("Map context: structural boss-bar tracking only; OCR/catalog matching is bypassed.");
+                Console.WriteLine("Identity context: existing OCR boss identification remains unchanged (used by campaign/trials/Pinnacles).");
                 Console.WriteLine($"ROI: X={config.BossRoi.X:P1}, Y={config.BossRoi.Y:P1}, W={config.BossRoi.Width:P1}, H={config.BossRoi.Height:P1}");
                 Console.WriteLine($"Single OCR gate: redRun>={config.OcrTriggerRedRunFraction:P0}, name>={config.OcrMinNameGoldPixelFraction:P1}, frames={config.OcrCandidateConsecutiveFrames}");
                 Console.WriteLine($"Dual topology: lane anchors>={config.DualLayoutMinLaneNameGoldFraction:P1}, center gap<={config.DualLayoutMaxCenterNameGoldFraction:P1}, lane health>={config.DualLayoutMinLaneHealthRunFraction:P0}, initial frames={config.DualLayoutConfirmFrames}");
@@ -67,7 +78,7 @@ internal static class Program
                 Console.WriteLine($"[{DateTimeOffset.Now:HH:mm:ss.fff}] BossWatcher started. Press [Q] to quit.");
             }
             if (devConsole) Console.WriteLine();
-            events.Debug($"READY | v={Version} | bosses={bosses.Count} | eventFile={eventPath}");
+            events.Debug($"READY | v={Version} | bosses={bosses.Count} | eventFile={eventPath} | contextFile={contextPath} | context={currentContext.Summary}");
 
             GameWindowInfo? game = null;
             Bitmap? lastRaw = null;
@@ -91,7 +102,16 @@ internal static class Program
                 var loopStart = Stopwatch.GetTimestamp();
                 var now = DateTimeOffset.Now;
 
-                HandleKeys(cts, tracker, imageWriter, lastRaw, config, devConsole);
+                var nextContext = contextReader.Read();
+                if (nextContext != currentContext)
+                {
+                    events.Debug($"BOSS_CONTEXT_CHANGE | from={currentContext.Summary} | to={nextContext.Summary}");
+                    tracker.ResetTracking("boss context changed");
+                    mapTracker.ResetTracking("boss context changed");
+                    currentContext = nextContext;
+                }
+
+                HandleKeys(cts, tracker, mapTracker, imageWriter, lastRaw, config, devConsole);
                 if (cts.IsCancellationRequested) break;
 
                 if (game is null || now >= nextFind)
@@ -107,6 +127,7 @@ internal static class Program
                     {
                         game = found;
                         tracker.ResetTracking("game process changed");
+                        mapTracker.ResetTracking("game process changed");
                         events.Debug($"GAME_FOUND | process={game.ProcessName} | pid={game.ProcessId}");
                     }
                 }
@@ -126,6 +147,7 @@ internal static class Program
                 if (result is null)
                 {
                     tracker.SuspendCapture();
+                    mapTracker.SuspendCapture();
                     if (devConsole && now >= nextConsole)
                     {
                         Console.Write($"\r[{now:HH:mm:ss.fff}] State=SUSPENDED (PoE2 not foreground)                                                                                                 ");
@@ -160,7 +182,10 @@ internal static class Program
                 // Name, health-run, lane anchors and dual topology are always evaluated.
                 // Expensive broad diagnostics are only collected at console cadence.
                 var metrics = BossBarMetrics.Analyze(result.Bitmap, config, includeDiagnostics: consoleDue);
-                tracker.Observe(now, result.Bitmap, metrics);
+                if (currentContext.Mode == BossDetectionMode.Map)
+                    mapTracker.Observe(now, result.Bitmap, metrics, currentContext);
+                else if (currentContext.Mode == BossDetectionMode.Identity)
+                    tracker.Observe(now, result.Bitmap, metrics);
 
                 if (config.SaveDebugFrameEverySeconds > 0 && now >= lastPeriodicSave.AddSeconds(config.SaveDebugFrameEverySeconds))
                 {
@@ -170,21 +195,28 @@ internal static class Program
 
                 if (consoleDue)
                 {
-                    var recentOcr = (now - tracker.LastOcrAt).TotalSeconds <= 3 ? Trim(tracker.LastOcr, 28) : "-";
-                    var recentMatch = (now - tracker.LastOcrAt).TotalSeconds <= 3 ? Trim(tracker.LastMatch, 20) : "-";
-                    var recentSource = (now - tracker.LastOcrAt).TotalSeconds <= 3 ? Trim(tracker.LastOcrSource, 14) : "-";
-                    var tracked = Trim(tracker.TrackedSummary, 34);
-                    var template = tracker.IsDualMode
-                        ? $"L{tracker.LeftTemplateCoverage:P0}/R{tracker.RightTemplateCoverage:P0}"
-                        : tracker.SingleUsingTemplate ? $"{tracker.SingleTemplateCoverage:P0}" : "-";
-                    var recentRun = tracker.IsDualMode || !tracker.IsTrackingAny ? "-" : $"{tracker.SingleRecentRunReference:P1}";
-                    var drop = tracker.IsDualMode || !tracker.IsTrackingAny ? "-" : $"{tracker.SingleRunDropRatio:F2}";
-                    var collapse = !tracker.IsDualMode && tracker.SingleRunCollapse ? "Y" : "-";
+                    var mapMode = currentContext.Mode == BossDetectionMode.Map;
+                    var recentOcr = !mapMode && (now - tracker.LastOcrAt).TotalSeconds <= 3 ? Trim(tracker.LastOcr, 28) : "-";
+                    var recentMatch = !mapMode && (now - tracker.LastOcrAt).TotalSeconds <= 3 ? Trim(tracker.LastMatch, 20) : "-";
+                    var recentSource = !mapMode && (now - tracker.LastOcrAt).TotalSeconds <= 3 ? Trim(tracker.LastOcrSource, 14) : "-";
+                    var tracked = mapMode
+                        ? (mapTracker.IsTracking ? $"Map Boss #{currentContext.MapBossNumber}" : "-")
+                        : Trim(tracker.TrackedSummary, 34);
+                    var template = mapMode
+                        ? (mapTracker.IsDual ? "dual-ui" : mapTracker.IsTracking ? "structural" : "-")
+                        : tracker.IsDualMode
+                            ? $"L{tracker.LeftTemplateCoverage:P0}/R{tracker.RightTemplateCoverage:P0}"
+                            : tracker.SingleUsingTemplate ? $"{tracker.SingleTemplateCoverage:P0}" : "-";
+                    var recentRun = mapMode || tracker.IsDualMode || !tracker.IsTrackingAny ? "-" : $"{tracker.SingleRecentRunReference:P1}";
+                    var drop = mapMode || tracker.IsDualMode || !tracker.IsTrackingAny ? "-" : $"{tracker.SingleRunDropRatio:F2}";
+                    var collapse = !mapMode && !tracker.IsDualMode && tracker.SingleRunCollapse ? "Y" : "-";
                     var dual = metrics.DualNameSignature ? "Y" : "-";
+                    var state = currentContext.Mode == BossDetectionMode.Off ? "OFF" : mapMode ? mapTracker.StateLabel : tracker.StateLabel;
+                    var contextLabel = currentContext.Mode == BossDetectionMode.Map ? "MAP" : currentContext.Mode == BossDetectionMode.Off ? "OFF" : "OCR";
 
                     Console.Write(
-                        $"\r[{now:HH:mm:ss.fff}] State={tracker.StateLabel,-13}" +
-                        $" track={tracked,-34}" +
+                        $"\r[{now:HH:mm:ss.fff}] Ctx={contextLabel,-3} State={state,-15}" +
+                        $" track={Trim(tracked, 34),-34}" +
                         $" dual={dual}" +
                         $" run={metrics.HealthRedRunFraction,6:P1}" +
                         $" laneRun=L{metrics.LeftHealthRedRunFraction,5:P0}/R{metrics.RightHealthRedRunFraction,5:P0}" +
@@ -222,7 +254,7 @@ internal static class Program
         }
     }
 
-    private static void HandleKeys(CancellationTokenSource cts, BossEncounterTracker tracker, DebugImageWriter writer, Bitmap? raw, AppConfig config, bool devConsole)
+    private static void HandleKeys(CancellationTokenSource cts, BossEncounterTracker tracker, GenericMapBossTracker mapTracker, DebugImageWriter writer, Bitmap? raw, AppConfig config, bool devConsole)
     {
         while (Console.KeyAvailable)
         {
@@ -231,6 +263,7 @@ internal static class Program
             else if (devConsole && key == ConsoleKey.R)
             {
                 tracker.ResetTracking("manual R key");
+                mapTracker.ResetTracking("manual R key");
             }
             else if (devConsole && key == ConsoleKey.S && raw is not null)
             {

@@ -2,7 +2,7 @@
 
 Use this mode when the campaign route is known before the run.
 
-This mode retains the tested v0.2.15 ordered-route progression behavior and adds the shared v2.1.0 Game Time layer.
+This mode retains the tested v0.2.15 ordered-route progression behavior and uses the shared Game Time layer.
 
 ## Files
 

@@ -2,7 +2,7 @@
 
 Use this mode when the player's route order should be determined during the run rather than written beforehand.
 
-This mode retains the tested v0.3.0 unordered first-visit behavior and adds the shared v2.1.0 Game Time layer.
+This mode retains the tested v0.3.0 unordered first-visit behavior and uses the shared Game Time layer.
 
 ## Files
 

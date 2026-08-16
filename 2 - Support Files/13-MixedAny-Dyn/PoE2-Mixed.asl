@@ -1,6 +1,6 @@
 /*
 Path of Exile 2 Mixed Objective AutoSplitter for LiveSplit
-v1.2.1 integration build
+v1.2.2 zone-start hotfix
 
 Combines Exploration area-completion events from Client.txt with Boss Rush GONE events
 from poe2_boss_events.log. One mixed objective file controls both sources.
@@ -23,7 +23,6 @@ state("PathOfExile_x64") {}
 startup
 {
     refreshRate = 30;
-    settings.Add("autoStart", true, "Auto-start on @start (Riverbank waits for the Wounded Man final opening line)");
     settings.Add("dynamicSegmentNames", true, "Rename generic split slots to completed area/boss names");
     settings.Add("debugLog", true, "Write mixed objective diagnostic log");
     settings.Add("enteredNameFallback", true, "Fallback to Client.txt 'You have entered ...' messages");
@@ -233,7 +232,7 @@ startup
         System.Text.RegularExpressions.RegexOptions.Compiled
     );
     vars.enteredNameRegex = new System.Text.RegularExpressions.Regex(
-        "^[^ ]+ [^ ]+ (\\d+).*: You have entered (.+)\.$",
+        "^[^ ]+ [^ ]+ (\\d+).*: You have entered (.+)\\.$",
         System.Text.RegularExpressions.RegexOptions.Compiled
     );
 
@@ -311,6 +310,31 @@ startup
         "^[^ ]+ [^ ]+ (\\d+).*\\[LOADING SCREEN\\] \\((.*?)\\) Duration = ([0-9]+(?:\\.[0-9]+)?) seconds",
         System.Text.RegularExpressions.RegexOptions.Compiled
     );
+    // Present only the SetupUI-selected start rule in LiveSplit settings.
+    string setupStartPolicyLabel = "Timer start: Manual Start";
+    try
+    {
+        string setupStartPolicyId = "";
+        if (System.IO.File.Exists(vars.configPath))
+        {
+            foreach (string setupStartRaw in System.IO.File.ReadLines(vars.configPath))
+            {
+                string setupStartText = setupStartRaw.Trim();
+                if (!setupStartText.StartsWith("@start=", System.StringComparison.OrdinalIgnoreCase)) continue;
+                setupStartPolicyId = setupStartText.Substring(7).Trim();
+                break;
+            }
+        }
+        if (System.String.Equals(setupStartPolicyId, "G1_1", System.StringComparison.OrdinalIgnoreCase))
+            setupStartPolicyLabel = "Timer start: Riverbank Start — Wounded Man final opening line";
+        else if (setupStartPolicyId != "" && !System.String.Equals(setupStartPolicyId, "manual", System.StringComparison.OrdinalIgnoreCase))
+        {
+            string setupStartDisplayName = vars.areaNames.ContainsKey(setupStartPolicyId) ? vars.areaNames[setupStartPolicyId] : setupStartPolicyId;
+            setupStartPolicyLabel = "Timer start: First Split Zone Entry Auto Start — " + setupStartDisplayName;
+        }
+    }
+    catch {}
+    settings.Add("autoStart", true, setupStartPolicyLabel);
 }
 
 init
@@ -486,7 +510,7 @@ init
         vars.configValid = true;
 
         string startName = vars.startAreaId == "" ? "manual" : vars.areaNames[vars.startAreaId];
-        string ready = "READY | v1.2.1 | Mode=MIXED_" + (vars.ordered ? "ORDERED" : "UNORDERED")
+        string ready = "READY | v1.2.2-zone-start | Mode=MIXED_" + (vars.ordered ? "ORDERED" : "UNORDERED")
             + " | Objectives=" + vars.objectiveOrder.Count + " | Start=" + startName
             + " | AreaCompletion=" + (vars.areaSuccessorCompletion ? "SUCCESSOR_ENTRY" : "ENTRY")
             + " | Client.txt=" + vars.clientLogPath + " | BossEvents=" + vars.eventPath;
@@ -943,6 +967,35 @@ update
         while (vars.reader.Peek() >= 0)
         {
             string line = vars.reader.ReadLine();
+
+
+            // SetupUI zone-entry fast path. Client.txt format can vary around the
+            // numeric prefix, so start detection intentionally uses stable substrings
+            // instead of depending on the stricter route-area regex.
+            if (!vars.startTrigger
+                && vars.startAreaId != ""
+                && !System.String.Equals(vars.startAreaId, "G1_1", System.StringComparison.OrdinalIgnoreCase)
+                && timer.CurrentPhase == LiveSplit.Model.TimerPhase.NotRunning)
+            {
+                bool setupStartWildcard = vars.startAreaId.EndsWith("*", System.StringComparison.Ordinal);
+                string setupStartIdPrefix = setupStartWildcard ? vars.startAreaId.Substring(0, vars.startAreaId.Length - 1) : vars.startAreaId;
+                string setupStartAreaNeedle = "area \"" + setupStartIdPrefix + (setupStartWildcard ? "" : "\"");
+                bool setupStartInternal = line.IndexOf("Generating level", System.StringComparison.OrdinalIgnoreCase) >= 0
+                    && line.IndexOf(setupStartAreaNeedle, System.StringComparison.OrdinalIgnoreCase) >= 0;
+                bool setupStartNamed = vars.areaNames.ContainsKey(vars.startAreaId)
+                    && line.IndexOf("You have entered " + vars.areaNames[vars.startAreaId] + ".", System.StringComparison.OrdinalIgnoreCase) >= 0;
+                if (setupStartInternal || setupStartNamed)
+                {
+                    string setupStartKey = "area:" + vars.startAreaId;
+                    if (vars.areaSuccessorCompletion && vars.objectiveSet.Contains(setupStartKey) && !vars.completed.Contains(setupStartKey))
+                        vars.armedAreaObjectives.Add(setupStartKey);
+                    vars.startTrigger = true;
+                    if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                        System.DateTime.Now.ToString("s") + " START_TRIGGER_FAST | area=" + vars.startAreaId + " " + vars.areaNames[vars.startAreaId]
+                        + " | source=" + (setupStartInternal ? "GeneratingLevelSubstring" : "EnteredNameSubstring") + System.Environment.NewLine);
+                    break;
+                }
+            }
 
             if (vars.riverbankStartArmed
                 && !vars.startTrigger
