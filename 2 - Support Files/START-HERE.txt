@@ -1,4 +1,4 @@
-PATH OF EXILE 2 ROUTE AUTOSPLITTER v2.2.0 RELEASE CANDIDATE
+PATH OF EXILE 2 ROUTE AUTOSPLITTER v2.2.1 RELEASE CANDIDATE
 
 NORMAL USERS
 ============
@@ -6,7 +6,7 @@ NORMAL USERS
 Do not compile the application and do not run PowerShell setup scripts.
 
 1. Download from the GitHub Release:
-     PoE2AS-v2.2.0-Setup.exe
+     PoE2AS-v2.2.1-Setup.exe
 
 2. Run the installer.
 
@@ -71,12 +71,12 @@ The Git repository intentionally does not contain compiled .exe files.
 
 To build the complete Windows release locally, run from 2 - Support Files:
 
-  .\Build-Release.ps1 -Version 2.2.0
+  .\Build-Release.ps1 -Version 2.2.1
 
 This creates the installer, portable ZIP, and checksums under the repository's
 artifacts directory. The installer is also copied into 1 - User Setup for local
 testing, but is ignored by Git.
 
-Creating/pushing a v2.2.0 tag triggers .github\workflows\build-release.yml,
+Creating/pushing a v2.2.1 tag triggers .github\workflows\build-release.yml,
 which performs the Windows build and attaches the installer/ZIP/checksums to
 the GitHub Release automatically.

@@ -61,7 +61,8 @@ public sealed class SetupForm : Form
     private readonly Label _unorderedBossTargetNote = new();
     private readonly ListBox _routeList = new();
     private readonly Label _routePolicySummary = new();
-    private readonly CheckBox _orderedCheck = new();
+    private readonly RadioButton _orderedCheck = new();
+    private readonly RadioButton _dynamicRouteRadio = new();
     private readonly CheckBox _levelProgressionCheck = new();
     private readonly NumericUpDown _maxLevelNumeric = new();
     private readonly NumericUpDown _levelIntervalNumeric = new();
@@ -135,10 +136,20 @@ public sealed class SetupForm : Form
         _trialBossRouteEntries = BuildTrialBossRouteEntries();
 
         Text = $"PoE2 Route AutoSplitter Setup — v{_manifest.Version}";
-        Width = 1120;
-        Height = 860;
         MinimumSize = new Size(920, 720);
-        StartPosition = FormStartPosition.CenterScreen;
+
+        // Open at half of the usable monitor width and the full usable monitor height.
+        // Use the monitor containing the mouse cursor so ultrawide / multi-monitor users
+        // do not get an unnecessarily maximized application window.
+        var startupScreen = Screen.FromPoint(Cursor.Position);
+        var startupWorkArea = startupScreen.WorkingArea;
+        StartPosition = FormStartPosition.Manual;
+        Size = new Size(
+            Math.Max(MinimumSize.Width, startupWorkArea.Width / 2),
+            Math.Max(MinimumSize.Height, startupWorkArea.Height));
+        Location = new Point(
+            startupWorkArea.Left + (startupWorkArea.Width - Width) / 2,
+            startupWorkArea.Top);
 
         BuildUi();
         PopulatePresets();
@@ -550,7 +561,7 @@ public sealed class SetupForm : Form
         panel.Controls.Add(selectorRow);
         panel.Controls.Add(new Label
         {
-            Text = "Only areas/bosses from the selected Act, Interlude, or Pinnacle group are shown. Trial content remains in its separate selector above.",
+            Text = "Only areas/bosses from the selected Act, Interlude, or Pinnacle group are shown. Trial content uses the separate selector below.",
             AutoSize = true,
             MaximumSize = new Size(450, 0),
             Padding = new Padding(0, 3, 0, 0)
@@ -814,9 +825,8 @@ public sealed class SetupForm : Form
             AutoSize = true,
             MaximumSize = new Size(470, 0),
             Text =
-                "Trial bosses are optional and are kept out of the normal boss list. Checking a milestone adds it directly to the route preview, where ordered routes can move it to the desired position; unordered routes treat it as another completion objective. " +
-                "Sekhemas Floor 2 is one composite objective and completes only after both Hadi and Rafiq are defeated, in either kill order. " +
-                "Chaos Boss 1/2/3 are dynamic encounter slots backed by the restricted Uxmal/Chetza/Bahlak pool. Each slot accepts whichever of those bosses BossWatcher actually identifies and renames that LiveSplit split to the detected boss; Trialmaster remains a fixed final-boss objective."
+                "Select the Trial boss milestones to include. Sekhemas Floor 2 requires both Hadi and Rafiq, in either order. " +
+                "Chaos Boss 1/2/3 may be Uxmal, Chetza, or Bahlak. Trialmaster is listed separately as the final Trial of Chaos boss."
         });
         body.Controls.Add(_trialBossOptionsPanel);
 
@@ -1356,46 +1366,67 @@ public sealed class SetupForm : Form
     private Control BuildRoutePanel()
     {
         var group = new GroupBox { Text = "Custom route", Dock = DockStyle.Fill, Padding = new Padding(10) };
-        var panel = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 5, ColumnCount = 1 };
-        panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        var panel = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 4, ColumnCount = 1 };
         panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-        _orderedCheck.Text = "Ordered route (otherwise objectives may complete in any order)";
+        var orderGroup = new GroupBox
+        {
+            Text = "Route order (select one)",
+            Dock = DockStyle.Top,
+            AutoSize = true,
+            Padding = new Padding(8, 5, 8, 7)
+        };
+        var orderChoices = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            AutoSize = true,
+            FlowDirection = FlowDirection.TopDown,
+            WrapContents = false
+        };
+
+        _orderedCheck.Text = "Ordered";
         _orderedCheck.AutoSize = true;
         _orderedCheck.CheckedChanged += (_, _) =>
         {
+            if (!_orderedCheck.Checked) return;
             UpdateCustomBossModeUi();
             RefreshCustomCatalogs();
             RefreshRouteList();
         };
-        panel.Controls.Add(_orderedCheck, 0, 0);
+        orderChoices.Controls.Add(_orderedCheck);
 
-        _routePolicySummary.AutoSize = true;
-        _routePolicySummary.MaximumSize = new Size(430, 0);
-        _routePolicySummary.Padding = new Padding(0, 3, 0, 3);
-        panel.Controls.Add(_routePolicySummary, 0, 1);
-
-        var startNote = new Label
+        _dynamicRouteRadio.Text = "Dynamic / unordered";
+        _dynamicRouteRadio.AutoSize = true;
+        _dynamicRouteRadio.Checked = true;
+        _dynamicRouteRadio.CheckedChanged += (_, _) =>
         {
-            Text = "Timer start is selected below. Riverbank uses the fresh-character Wounded Man gate; Zone Entry starts when the selected non-Riverbank zone is entered; Manual requires you to start LiveSplit yourself.",
-            AutoSize = true,
-            MaximumSize = new Size(430, 0),
-            Padding = new Padding(0, 4, 0, 4)
+            if (!_dynamicRouteRadio.Checked) return;
+            UpdateCustomBossModeUi();
+            RefreshCustomCatalogs();
+            RefreshRouteList();
         };
-        panel.Controls.Add(startNote, 0, 2);
+        orderChoices.Controls.Add(_dynamicRouteRadio);
+        orderGroup.Controls.Add(orderChoices);
+        panel.Controls.Add(orderGroup, 0, 0);
 
         _routeList.Dock = DockStyle.Fill;
-        panel.Controls.Add(_routeList, 0, 3);
+        panel.Controls.Add(_routeList, 0, 1);
 
         var buttons = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = true, FlowDirection = FlowDirection.LeftToRight, WrapContents = false };
         buttons.Controls.Add(MakeButton("Move Up", () => MoveRoute(-1)));
         buttons.Controls.Add(MakeButton("Move Down", () => MoveRoute(1)));
         buttons.Controls.Add(MakeButton("Remove", RemoveRoute));
         buttons.Controls.Add(MakeButton("Clear", ClearRoute));
-        panel.Controls.Add(buttons, 0, 4);
+        panel.Controls.Add(buttons, 0, 2);
+
+        _routePolicySummary.AutoSize = true;
+        _routePolicySummary.MaximumSize = new Size(430, 0);
+        _routePolicySummary.Padding = new Padding(0, 5, 0, 2);
+        panel.Controls.Add(_routePolicySummary, 0, 3);
+
         group.Controls.Add(panel);
         return group;
     }
@@ -2297,8 +2328,8 @@ public sealed class SetupForm : Form
             occurrenceColumn.Visible = ordered && _multiBossCheck.Checked;
 
         _routePolicySummary.Text = ordered
-            ? "Ordered boss objectives are exact encounters. Multi-boss mode can create repeated copies of the same boss, each with a unique internal occurrence key."
-            : $"Dynamic/unordered boss policy: BOSS POOL rows define eligible identities. The generated run requires {_unorderedBossTargetNumeric.Value} boss encounter(s); repeat kills of the same eligible boss count separately and each completed row is renamed to the detected boss.";
+            ? "Ordered: objectives must be completed in the sequence shown. The next objective becomes active only after the current objective is completed."
+            : "Dynamic / unordered: objectives may be completed in any order. Any selected objective can advance the run when its completion condition is met.";
     }
 
     private void PopulateStartZones()
@@ -2911,7 +2942,11 @@ public sealed class SetupForm : Form
         var targetAsl = Path.Combine(target, "PoE2-Trial.asl");
         var sourceAslText = File.ReadAllText(sourceAsl);
         var patchedAsl = LiveSplitFiles.RewriteRuntimePaths(sourceAslText, target);
-        patchedAsl = LiveSplitFiles.ApplyAutoStartOption(patchedAsl, true);
+        // Dedicated Trial runs use the same independent Client.txt start reader as
+        // premade/custom zone-entry starts. This is required for wildcard trial area
+        // IDs such as Sanctum_1_* and avoids relying only on the mixed ASL's legacy
+        // internal @start path.
+        patchedAsl = LiveSplitFiles.ApplyGeneratedZoneStartPolicy(patchedAsl, startPolicy);
         patchedAsl = LiveSplitFiles.ApplyGameTimeOptions(patchedAsl, _excludeManualPauseCheck.Checked);
         File.WriteAllText(stagedAsl, patchedAsl, new UTF8Encoding(false));
 

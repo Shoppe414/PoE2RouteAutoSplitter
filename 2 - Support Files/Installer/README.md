@@ -1,4 +1,4 @@
-# Windows Installer — v2.2.0 Release Candidate
+# Windows Installer — v2.2.1 Release Candidate
 
 `PoE2AS.iss` is the Inno Setup 6 definition used by
 `..\Build-Release.ps1` and the GitHub Actions release workflow.
@@ -37,7 +37,7 @@ preserve:
 From `2 - Support Files`:
 
 ```powershell
-.\Build-Release.ps1 -Version 2.2.0
+.\Build-Release.ps1 -Version 2.2.1
 ```
 
 The script locates `ISCC.exe`, assembles a short-path runtime staging package,

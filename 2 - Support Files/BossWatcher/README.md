@@ -83,7 +83,7 @@ Both options may be combined:
 
 The current catalog contains **85 OCR identities** in `bosses.txt`. The bundled campaign and pinnacle target lists remain unchanged; seven newly cataloged trial identities expand visual recognition without silently adding optional trial bosses to existing routes.
 
-The catalog now includes the full Trial of the Sekhemas boss roster and the Trial of Chaos boss pool. Zarokh and The Trialmaster were already OCR-supported through the pinnacle catalog; the remaining trial identities are promoted in the v2.2.0 Release Candidate.
+The catalog now includes the full Trial of the Sekhemas boss roster and the Trial of Chaos boss pool. Zarokh and The Trialmaster were already OCR-supported through the pinnacle catalog; the remaining trial identities are promoted in the v2.2.1 Release Candidate.
 
 
 ### Optional trial bosses

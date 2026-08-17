@@ -1,10 +1,10 @@
-# PoE2 Route AutoSplitter Setup UI — v2.2.0 Release Candidate
+# PoE2 Route AutoSplitter Setup UI — v2.2.1 Release Candidate
 
 This is the Windows configuration tool for the Route AutoSplitter package.
 
 ## Normal users
 
-Install the ready-to-run `PoE2AS-v2.2.0-Setup.exe` GitHub Release asset.
+Install the ready-to-run `PoE2AS-v2.2.1-Setup.exe` GitHub Release asset.
 
 The installed launcher is:
 
@@ -156,7 +156,9 @@ Premade generation writes `Premade-Route.lss`, `PoE2-Premade.asl`, `poe2_mixed_r
 
 ## Custom route
 
-The **Custom route** tab keeps separate **Areas** and **Bosses** subtabs and filters both catalogs through a shared **Content** dropdown: Act 1-4, Interlude 1-3, or Pinnacle. Only user-facing names are shown; internal IDs remain implementation details. Trial content stays in its separate opt-in selector. After an area or boss is added, it is removed from the available list until that route entry is removed. Both subtabs also provide **Add All**, which adds every currently visible item in the selected Content group/search so a complete list can be built quickly and pruned in the route preview.
+The **Custom route** tab uses a two-choice **Route order** radio-button selector: **Ordered** or **Dynamic / unordered**. The selected rule is summarized at the bottom of the Custom route panel. Ordered routes advance through objectives in the sequence shown; Dynamic / unordered routes allow eligible objectives to complete in any order.
+
+The tab keeps separate **Areas** and **Bosses** subtabs and filters both catalogs through a shared **Content** dropdown: Act 1-4, Interlude 1-3, or Pinnacle. Only user-facing names are shown; internal IDs remain implementation details. Trial content stays in its separate opt-in selector. After an area or boss is added, it is removed from the available list until that route entry is removed. Both subtabs also provide **Add All**, which adds every currently visible item in the selected Content group/search so a complete list can be built quickly and pruned in the route preview.
 
 For **ordered** routes, enable **Multi-boss / repeated encounters** to expose an **Occurrences** input beside every boss (minimum 1, default 1). Adding a boss with Occurrences 5 creates five separately keyed objectives such as `Count Geonor — Kill 1` through `Kill 5`; BossWatcher may therefore satisfy the same boss identity on five distinct encounters.
 
@@ -196,7 +198,7 @@ To build all user tools without creating an installer:
 To create the distributable installer and portable ZIP:
 
 ```powershell
-.\..\Build-Release.ps1 -Version 2.2.0
+.\..\Build-Release.ps1 -Version 2.2.1
 ```
 
 > **Manual-pause protocol note:** v0.4.3 GameTimeWatcher requires an ASL generated from the same package. Re-run the Setup UI after updating and re-browse LiveSplit's Scriptable Auto Splitter component to the newly generated `.asl`.

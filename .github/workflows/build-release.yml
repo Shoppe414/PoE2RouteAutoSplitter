@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Release version (for example 2.2.0)
+        description: Release version (for example 2.2.1)
         required: true
-        default: 2.2.0
+        default: 2.2.1
   push:
     tags:
       - 'v*.*.*'
@@ -37,7 +37,7 @@ jobs:
             $version = '${{ inputs.version }}'
           }
           if ($version -notmatch '^\d+\.\d+\.\d+$') {
-            throw "Version must look like 2.2.0. Received: $version"
+            throw "Version must look like 2.2.1. Received: $version"
           }
           "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
           Write-Host "Building version $version"
