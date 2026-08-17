@@ -21,7 +21,7 @@ The included **PoE2RouteSetup** application handles most of the setup for you.
 Allows for synchronous pausing of the game and LiveSplit timer when opening the pause menu.
 Game Time option in LiveSplit will exclude loading times and pause timer (when option is active).
 
-Screen shots found here: https://imgur.com/a/bmdGpsR
+Screen shots found here: [https://imgur.com/a/ti5faD5]
 
 ---
 # Run Policies
