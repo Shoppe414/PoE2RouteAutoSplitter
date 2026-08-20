@@ -292,10 +292,10 @@ Vaal ruins are still under development
 
 # Maps
 
-Setup of a map is not time while in a hideout or other type of map hub. Upon entry into the map, 
+Setup of a map is not timed while in a hideout or other type of map hub. Upon entry into the map, 
 the timer starts automatically, and will split on the first exit after the area boss is defeated. 
 If exiting the map before the area boss is defeated, the timer will continue to run. 
-This means you can rush to kill the boss, exit the map, re-enter the same map and extra map 
+This means you can rush to kill the boss, exit the map, re-enter the same map and complete extra map 
 content with a paused timer. (alternative policy below)
 
 Maps runs have several end point definitions:
