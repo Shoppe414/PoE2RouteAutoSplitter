@@ -1,11 +1,11 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Drawing;
 
 namespace PoE2BossWatcher;
 
 internal static class Program
 {
-    private const string Version = "0.3.1-map-context";
+    private const string Version = "0.3.7-height-relative-boss-geometry";
 
     [STAThread]
     private static async Task<int> Main(string[] args)
@@ -13,39 +13,65 @@ internal static class Program
         var devConsole = args.Any(a => string.Equals(a, "--dev-console", StringComparison.OrdinalIgnoreCase) || string.Equals(a, "--dev", StringComparison.OrdinalIgnoreCase));
         var eventFileOverride = GetArgValue(args, "--event-file");
         var contextFileOverride = GetArgValue(args, "--context-file");
-        Console.Title = devConsole ? "PoE2 BossWatcher 0.3.1 - DEV" : "PoE2 BossWatcher 0.3.1";
+        var settingsFile = GetArgValue(args, "--settings");
+        var mapDatabaseOverride = GetArgValue(args, "--map-db");
+        var localizationDatabaseOverride = GetArgValue(args, "--localization-db");
+        var diagnosticDirectoryOverride = GetArgValue(args, "--diagnostic-dir");
+        Console.Title = devConsole ? "PoE2 BossWatcher 0.3.7 - DEV" : "PoE2 BossWatcher 0.3.7";
         var baseDir = AppContext.BaseDirectory;
         var configPath = Path.Combine(baseDir, "config.json");
 
         try
         {
             var config = AppConfig.Load(configPath);
+            var settingsStatus = RuntimeSettingsOverlay.Apply(config, settingsFile);
             var bossListPath = Path.GetFullPath(Path.IsPathRooted(config.BossListFile)
                 ? config.BossListFile
                 : Path.Combine(baseDir, config.BossListFile));
             var bosses = BossDefinitionLoader.Load(bossListPath);
-            var matcher = new BossNameMatcher(bosses);
+
+            var localizationDatabasePath = string.IsNullOrWhiteSpace(localizationDatabaseOverride)
+                ? Path.GetFullPath(Path.IsPathRooted(config.BossLocalizationDatabaseFile)
+                    ? config.BossLocalizationDatabaseFile
+                    : Path.Combine(baseDir, config.BossLocalizationDatabaseFile))
+                : Path.GetFullPath(localizationDatabaseOverride);
+            var localizations = BossLocalizationDatabase.Load(localizationDatabasePath);
+            var localizedBosses = localizations.LocalizeAll(bosses, config.GameLanguage);
+            var matcher = new BossNameMatcher(localizedBosses);
+
+            var mapDatabasePath = string.IsNullOrWhiteSpace(mapDatabaseOverride)
+                ? Path.GetFullPath(Path.IsPathRooted(config.MapBossDatabaseFile)
+                    ? config.MapBossDatabaseFile
+                    : Path.Combine(baseDir, config.MapBossDatabaseFile))
+                : Path.GetFullPath(mapDatabaseOverride);
+            var mapDatabase = MapBossDatabase.Load(mapDatabasePath);
 
             var tessParent = Path.GetFullPath(Path.IsPathRooted(config.TessdataParent)
                 ? config.TessdataParent
                 : Path.Combine(baseDir, config.TessdataParent));
-            using var ocr = new OcrService(tessParent);
+            using var ocr = new OcrService(tessParent, config.GameLanguage);
 
             var eventPath = string.IsNullOrWhiteSpace(eventFileOverride)
                 ? PathResolver.ResolveEventFile(config, baseDir)
                 : Path.GetFullPath(eventFileOverride);
-            var events = new EventWriter(eventPath, devConsole);
+            var diagnosticDirectory = string.IsNullOrWhiteSpace(diagnosticDirectoryOverride)
+                ? null
+                : Path.GetFullPath(diagnosticDirectoryOverride);
+            if (diagnosticDirectory is not null) Directory.CreateDirectory(diagnosticDirectory);
+            var events = new EventWriter(eventPath, devConsole, diagnosticDirectory);
             var contextPath = string.IsNullOrWhiteSpace(contextFileOverride)
                 ? Path.Combine(Path.GetDirectoryName(eventPath)!, "poe2_boss_context.txt")
                 : Path.GetFullPath(contextFileOverride);
             var contextReader = new BossContextReader(contextPath);
             var currentContext = contextReader.Read();
-            var debugDir = Path.GetFullPath(Path.IsPathRooted(config.DebugDirectory)
-                ? config.DebugDirectory
-                : Path.Combine(baseDir, config.DebugDirectory));
+            var debugDir = diagnosticDirectory is not null
+                ? Path.Combine(diagnosticDirectory, "images")
+                : Path.GetFullPath(Path.IsPathRooted(config.DebugDirectory)
+                    ? config.DebugDirectory
+                    : Path.Combine(baseDir, config.DebugDirectory));
             var imageWriter = new DebugImageWriter(debugDir);
             var tracker = new BossEncounterTracker(config, events, imageWriter, ocr, matcher);
-            var mapTracker = new GenericMapBossTracker(config, events, imageWriter);
+            var mapTracker = new GenericMapBossTracker(config, events, imageWriter, ocr, mapDatabase, localizations, config.GameLanguage);
             var finder = new GameWindowFinder(config.ProcessNames);
             var capture = new ScreenCapture();
 
@@ -53,13 +79,19 @@ internal static class Program
             {
                 Console.WriteLine($"PoE2 BossWatcher {Version}");
                 Console.WriteLine("Console mode: DEVELOPMENT (verbose frame diagnostics)");
-                Console.WriteLine($"Boss definitions: {bosses.Count}");
+                Console.WriteLine($"Boss definitions: {bosses.Count} canonical | {localizedBosses.Count} OCR-eligible for {ocr.Language.DisplayName}");
+                Console.WriteLine($"PoE2 game language: {ocr.Language.DisplayName} ({ocr.Language.Code}) | Tesseract={ocr.Language.TesseractCode}");
+                Console.WriteLine($"Boss localization database: {localizations.DatabaseVersion} | entries={localizations.Bosses.Count} | path={localizationDatabasePath}");
+                Console.WriteLine($"Map boss database: {mapDatabase.DatabaseVersion} | entries={mapDatabase.Maps.Count} | path={mapDatabasePath}");
                 Console.WriteLine($"Event file: {eventPath}");
+                Console.WriteLine($"Debug log: {events.DebugPath}");
                 Console.WriteLine($"Context file: {contextPath}");
+                Console.WriteLine($"Runtime settings: {settingsStatus}");
                 Console.WriteLine($"Detection context: {currentContext.Summary}");
-                Console.WriteLine("Map context: structural boss-bar tracking only; OCR/catalog matching is bypassed.");
-                Console.WriteLine("Identity context: existing OCR boss identification remains unchanged (used by campaign/trials/Pinnacles).");
-                Console.WriteLine($"ROI: X={config.BossRoi.X:P1}, Y={config.BossRoi.Y:P1}, W={config.BossRoi.Width:P1}, H={config.BossRoi.Height:P1}");
+                Console.WriteLine("Map context: authoritative database OCR identity is required. Unknown or special maps do not arm until a dedicated completion policy is available.");
+                Console.WriteLine("Identity context: OCR uses the selected PoE2 game language and only verified localized names. Missing localization coverage is not guessed.");
+                Console.WriteLine($"Boss capture: centered X; width={config.BossCaptureWidthHeightRatio:F4} x client-height; Y={config.BossRoi.Y:P1}, H={config.BossRoi.Height:P1}");
+                Console.WriteLine("Window capture: PoE2 CLIENT AREA only (title bar, borders, taskbar, and the rest of the desktop are excluded).");
                 Console.WriteLine($"Single OCR gate: redRun>={config.OcrTriggerRedRunFraction:P0}, name>={config.OcrMinNameGoldPixelFraction:P1}, frames={config.OcrCandidateConsecutiveFrames}");
                 Console.WriteLine($"Dual topology: lane anchors>={config.DualLayoutMinLaneNameGoldFraction:P1}, center gap<={config.DualLayoutMaxCenterNameGoldFraction:P1}, lane health>={config.DualLayoutMinLaneHealthRunFraction:P0}, initial frames={config.DualLayoutConfirmFrames}");
                 Console.WriteLine($"Dual add hardening: run>={config.DualAddMinCombinedHealthRunFraction:P0}, frames={config.DualAddConfirmFrames}");
@@ -67,6 +99,7 @@ internal static class Program
                 Console.WriteLine($"OCR acquisition: fresh-frame cycle={config.OcrAcquisitionCycleMs}ms; gold -> broad -> temporal({config.OcrTemporalFrameCount} frames after {config.OcrTemporalFallbackAfterFailedCycles} failed cycles)");
                 Console.WriteLine($"OCR burst window={config.OcrBurstDurationMs}ms, retry cooldown={config.OcrRetryCooldownMs}ms; failed-input diagnostics after {config.OcrFailureDiagnosticAfterCycles} cycles");
                 Console.WriteLine($"Single gone confirmation: learned boss-name UI template only; health/run metrics diagnostic, confirm={config.DisappearConfirmMs}ms");
+                Console.WriteLine($"Map gone confirmation: in-map={config.MapDisappearConfirmMs}ms; trusted external-exit assist after >={config.MapExitAssistMinMissingMs}ms already missing; first-missing timestamp is preserved for backdating");
                 Console.WriteLine("Topology is evaluated before disappearance logic, but SINGLE->DUAL requires a strong persistent health structure.");
                 Console.WriteLine("Dual names are OCRed independently from LEFT/RIGHT half-lanes; resolved lanes stop OCR immediately.");
                 Console.WriteLine("Live OCR uses narrow gold first, broader lane-local text second, then short temporal composites only after repeated failures.");
@@ -78,7 +111,10 @@ internal static class Program
                 Console.WriteLine($"[{DateTimeOffset.Now:HH:mm:ss.fff}] BossWatcher started. Press [Q] to quit.");
             }
             if (devConsole) Console.WriteLine();
-            events.Debug($"READY | v={Version} | bosses={bosses.Count} | eventFile={eventPath} | contextFile={contextPath} | context={currentContext.Summary}");
+            events.Debug($"SETTINGS | {settingsStatus}");
+            events.Debug($"OCR_LANGUAGE | gameLanguage={ocr.Language.Code} | display={ocr.Language.DisplayName} | tesseract={ocr.Language.TesseractCode}" +
+                $" | canonicalBosses={bosses.Count} | localizedCoverage={localizedBosses.Count} | localizationDb={localizations.DatabaseVersion}");
+            events.Debug($"READY | v={Version} | bosses={bosses.Count} | ocrBosses={localizedBosses.Count} | gameLanguage={ocr.Language.Code} | tesseract={ocr.Language.TesseractCode} | mapDbVersion={mapDatabase.DatabaseVersion} | mapDbEntries={mapDatabase.Maps.Count} | eventFile={eventPath} | contextFile={contextPath} | context={currentContext.Summary} | goneConfirmMs={config.DisappearConfirmMs} | mapGoneConfirmMs={config.MapDisappearConfirmMs} | mapExitAssistMinMissingMs={config.MapExitAssistMinMissingMs}");
 
             GameWindowInfo? game = null;
             Bitmap? lastRaw = null;
@@ -93,6 +129,8 @@ internal static class Program
             long hzWindowFrames = 0;
             double measuredCaptureHz = 0;
             double sampleDtMs = 0;
+            var lastGeometryClientWidth = -1;
+            var lastGeometryClientHeight = -1;
 
             using var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
@@ -107,7 +145,7 @@ internal static class Program
                 {
                     events.Debug($"BOSS_CONTEXT_CHANGE | from={currentContext.Summary} | to={nextContext.Summary}");
                     tracker.ResetTracking("boss context changed");
-                    mapTracker.ResetTracking("boss context changed");
+                    mapTracker.HandleContextChange(now, nextContext);
                     currentContext = nextContext;
                 }
 
@@ -143,7 +181,7 @@ internal static class Program
                     continue;
                 }
 
-                using var result = capture.CaptureBossRoi(game, config.BossRoi, config.RequireGameForeground);
+                using var result = capture.CaptureBossRoi(game, config, config.RequireGameForeground);
                 if (result is null)
                 {
                     tracker.SuspendCapture();
@@ -155,6 +193,19 @@ internal static class Program
                     }
                     await DelayRemaining(loopStart, frameDelay, cts.Token);
                     continue;
+                }
+
+                if (devConsole &&
+                    (result.ClientWidth != lastGeometryClientWidth || result.ClientHeight != lastGeometryClientHeight))
+                {
+                    lastGeometryClientWidth = result.ClientWidth;
+                    lastGeometryClientHeight = result.ClientHeight;
+                    var gcd = GreatestCommonDivisor(result.ClientWidth, result.ClientHeight);
+                    var leftLane = ScreenCapture.ToPixelRect(result.Bitmap.Width, result.Bitmap.Height, ScreenCapture.GetBossNameLaneRoi(config, BossLane.Left));
+                    var rightLane = ScreenCapture.ToPixelRect(result.Bitmap.Width, result.Bitmap.Height, ScreenCapture.GetBossNameLaneRoi(config, BossLane.Right));
+                    Console.WriteLine();
+                    Console.WriteLine($"DISPLAY_GEOMETRY | client={result.ClientWidth}x{result.ClientHeight} | aspect={result.ClientWidth / gcd}:{result.ClientHeight / gcd} | bossCapture={result.Bitmap.Width}x{result.Bitmap.Height} centered | dualLeft=x{leftLane.Left}-{leftLane.Right} | dualRight=x{rightLane.Left}-{rightLane.Right}");
+                    events.Debug($"DISPLAY_GEOMETRY | client={result.ClientWidth}x{result.ClientHeight} | aspect={result.ClientWidth / gcd}:{result.ClientHeight / gcd} | bossCapture={result.Bitmap.Width}x{result.Bitmap.Height} | dualLeft={leftLane.X},{leftLane.Y},{leftLane.Width},{leftLane.Height} | dualRight={rightLane.X},{rightLane.Y},{rightLane.Width},{rightLane.Height}");
                 }
 
                 // Timestamp the pixels immediately after capture.
@@ -200,7 +251,7 @@ internal static class Program
                     var recentMatch = !mapMode && (now - tracker.LastOcrAt).TotalSeconds <= 3 ? Trim(tracker.LastMatch, 20) : "-";
                     var recentSource = !mapMode && (now - tracker.LastOcrAt).TotalSeconds <= 3 ? Trim(tracker.LastOcrSource, 14) : "-";
                     var tracked = mapMode
-                        ? (mapTracker.IsTracking ? $"Map Boss #{currentContext.MapBossNumber}" : "-")
+                        ? (mapTracker.IsTracking ? (mapTracker.TrackedBossName.Length > 0 ? mapTracker.TrackedBossName : $"Map Boss #{currentContext.MapBossNumber}") : "-")
                         : Trim(tracker.TrackedSummary, 34);
                     var template = mapMode
                         ? (mapTracker.IsDual ? "dual-ui" : mapTracker.IsTracking ? "structural" : "-")
@@ -246,7 +297,15 @@ internal static class Program
         catch (Exception ex)
         {
             Console.Error.WriteLine("FATAL: " + ex);
-            try { File.WriteAllText(Path.Combine(baseDir, "poe2_boss_watcher_fatal.log"), ex.ToString()); } catch { }
+            try
+            {
+                var fatalDirectory = string.IsNullOrWhiteSpace(diagnosticDirectoryOverride)
+                    ? baseDir
+                    : Path.GetFullPath(diagnosticDirectoryOverride);
+                Directory.CreateDirectory(fatalDirectory);
+                File.WriteAllText(Path.Combine(fatalDirectory, "poe2_boss_watcher_fatal.log"), ex.ToString());
+            }
+            catch { }
             Console.Error.WriteLine();
             Console.Error.WriteLine("Press any key to close...");
             try { Console.ReadKey(true); } catch { }
@@ -280,6 +339,19 @@ internal static class Program
         var elapsed = Stopwatch.GetElapsedTime(startTimestamp);
         var remaining = target - elapsed;
         if (remaining > TimeSpan.Zero) await Task.Delay(remaining, token);
+    }
+
+    private static int GreatestCommonDivisor(int a, int b)
+    {
+        a = Math.Abs(a);
+        b = Math.Abs(b);
+        while (b != 0)
+        {
+            var t = a % b;
+            a = b;
+            b = t;
+        }
+        return Math.Max(1, a);
     }
 
     private static string? GetArgValue(string[] args, string name)

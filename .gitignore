@@ -11,7 +11,7 @@
 1 - User Setup/PoE2RouteAutoSplitter-v*-Setup.exe
 1 - User Setup/LiveSplit Target/*
 !1 - User Setup/LiveSplit Target/.gitkeep
-1 - User Setup/PoE2AS-v2.2.1-Setup.exe
+1 - User Setup/PoE2AS-v3.0.0-Setup.exe
 
 # Release staging/artifacts
 artifacts/
@@ -26,3 +26,15 @@ artifacts/
 **/poe2_manual_pause_state.txt
 **/poe2_gametimewatcher.log
 **/poe2_gametime_debug.log
+
+# v3 centralized run verification output
+3 - verification files/RUNTIME-SHA256SUMS.txt
+3 - verification files/poe2_setup_validation.sha256
+3 - verification files/poe2_run_*
+3 - verification files/RUN_VALIDATION_README.txt
+3 - verification files/Verify-RunValidation.ps1
+
+# v3 centralized diagnostic runtime output
+4-README's_and_Diagnostics/Diagnostics/*.log
+4-README's_and_Diagnostics/Diagnostics/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-*
+4-README's_and_Diagnostics/Diagnostics/images/*.png

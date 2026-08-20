@@ -1,0 +1,320 @@
+{
+    "schemaVersion":  3,
+    "generatedUtc":  "2026-08-20T05:08:32.0132010Z",
+    "source":  "PoE2DB multilingual autocomplete catalogs plus localized campaign/map area and Pinnacle boss entry pages",
+    "homepage":  "https://poe2db.tw/us/",
+    "headerScript":  "https://cdn.poe2db.tw/js/poedb_header.24467ff783e4d3e5.js",
+    "autocomplete":  {
+                         "us":  "https://cdn.poe2db.tw/json/autocompletecb_us.bbb616d184eb8a85.json",
+                         "fr":  "https://cdn.poe2db.tw/json/autocompletecb_fr.d3aa7e7dcfa3a676.json",
+                         "de":  "https://cdn.poe2db.tw/json/autocompletecb_de.de3960314e6f67df.json",
+                         "sp":  "https://cdn.poe2db.tw/json/autocompletecb_sp.79750101cb577b67.json",
+                         "jp":  "https://cdn.poe2db.tw/json/autocompletecb_jp.263d6303384dc869.json",
+                         "kr":  "https://cdn.poe2db.tw/json/autocompletecb_kr.7f6d572aca4cd739.json",
+                         "pt":  "https://cdn.poe2db.tw/json/autocompletecb_pt.d1d49afea0688f9a.json",
+                         "ru":  "https://cdn.poe2db.tw/json/autocompletecb_ru.06b698d66a869fdf.json",
+                         "th":  "https://cdn.poe2db.tw/json/autocompletecb_th.62e441e5246753ff.json"
+                     },
+    "canonicalTargetCount":  354,
+    "campaignAndMapAreaPageFallbackTargetCount":  214,
+    "pinnacleBossPagePreferredTargetCount":  10,
+    "canonicalEnglishPathCount":  247,
+    "languages":  {
+                      "fr":  {
+                                 "poe2dbLanguage":  "fr",
+                                 "resolved":  338,
+                                 "totalTargets":  354,
+                                 "missing":  15,
+                                 "ambiguous":  1,
+                                 "areaPageFallbackAttempted":  127,
+                                 "areaPageFallbackResolved":  123,
+                                 "pinnaclePagePreferredAttempted":  10,
+                                 "pinnaclePagePreferredResolved":  10
+                             },
+                      "de":  {
+                                 "poe2dbLanguage":  "de",
+                                 "resolved":  333,
+                                 "totalTargets":  354,
+                                 "missing":  17,
+                                 "ambiguous":  4,
+                                 "areaPageFallbackAttempted":  116,
+                                 "areaPageFallbackResolved":  112,
+                                 "pinnaclePagePreferredAttempted":  10,
+                                 "pinnaclePagePreferredResolved":  10
+                             },
+                      "es-ES":  {
+                                    "poe2dbLanguage":  "sp",
+                                    "resolved":  336,
+                                    "totalTargets":  354,
+                                    "missing":  16,
+                                    "ambiguous":  2,
+                                    "areaPageFallbackAttempted":  119,
+                                    "areaPageFallbackResolved":  115,
+                                    "pinnaclePagePreferredAttempted":  10,
+                                    "pinnaclePagePreferredResolved":  10
+                                },
+                      "ja":  {
+                                 "poe2dbLanguage":  "jp",
+                                 "resolved":  336,
+                                 "totalTargets":  354,
+                                 "missing":  15,
+                                 "ambiguous":  3,
+                                 "areaPageFallbackAttempted":  116,
+                                 "areaPageFallbackResolved":  112,
+                                 "pinnaclePagePreferredAttempted":  10,
+                                 "pinnaclePagePreferredResolved":  10
+                             },
+                      "ko":  {
+                                 "poe2dbLanguage":  "kr",
+                                 "resolved":  340,
+                                 "totalTargets":  354,
+                                 "missing":  14,
+                                 "ambiguous":  0,
+                                 "areaPageFallbackAttempted":  115,
+                                 "areaPageFallbackResolved":  111,
+                                 "pinnaclePagePreferredAttempted":  10,
+                                 "pinnaclePagePreferredResolved":  10
+                             },
+                      "pt-BR":  {
+                                    "poe2dbLanguage":  "pt",
+                                    "resolved":  330,
+                                    "totalTargets":  354,
+                                    "missing":  15,
+                                    "ambiguous":  9,
+                                    "areaPageFallbackAttempted":  115,
+                                    "areaPageFallbackResolved":  111,
+                                    "pinnaclePagePreferredAttempted":  10,
+                                    "pinnaclePagePreferredResolved":  10
+                                },
+                      "ru":  {
+                                 "poe2dbLanguage":  "ru",
+                                 "resolved":  339,
+                                 "totalTargets":  354,
+                                 "missing":  14,
+                                 "ambiguous":  1,
+                                 "areaPageFallbackAttempted":  115,
+                                 "areaPageFallbackResolved":  111,
+                                 "pinnaclePagePreferredAttempted":  10,
+                                 "pinnaclePagePreferredResolved":  10
+                             },
+                      "th":  {
+                                 "poe2dbLanguage":  "th",
+                                 "resolved":  340,
+                                 "totalTargets":  354,
+                                 "missing":  14,
+                                 "ambiguous":  0,
+                                 "areaPageFallbackAttempted":  196,
+                                 "areaPageFallbackResolved":  192,
+                                 "pinnaclePagePreferredAttempted":  10,
+                                 "pinnaclePagePreferredResolved":  10
+                             }
+                  },
+    "unresolved":  {
+                       "fr":  {
+                                  "missing":  [
+                                                  "Arastas (pre-progression state)",
+                                                  "Atziri",
+                                                  "Atziri\u0027s Temple",
+                                                  "Gothic City",
+                                                  "Grudgelash, Vile Ent",
+                                                  "Iktab, the Deathlord",
+                                                  "Kosis, the Revelation",
+                                                  "Ngakanu (pre-progression state)",
+                                                  "Omniphobia, Fear Manifest",
+                                                  "Royal Architect",
+                                                  "Sel Khari Sanctuary",
+                                                  "Stormgore",
+                                                  "Thane Wulfric",
+                                                  "The Plagueling",
+                                                  "The Trial of Chaos"
+                                              ],
+                                  "ambiguous":  [
+                                                    "Scourge of the Skies"
+                                                ]
+                              },
+                       "de":  {
+                                  "missing":  [
+                                                  "Arastas (pre-progression state)",
+                                                  "Atziri",
+                                                  "Atziri\u0027s Temple",
+                                                  "Gothic City",
+                                                  "Grudgelash, Vile Ent",
+                                                  "Iktab, the Deathlord",
+                                                  "Kosis, the Revelation",
+                                                  "Lady Elswyth",
+                                                  "Ngakanu (pre-progression state)",
+                                                  "Omniphobia, Fear Manifest",
+                                                  "Royal Architect",
+                                                  "Sel Khari Sanctuary",
+                                                  "Stormgore",
+                                                  "Thane Wulfric",
+                                                  "The Plagueling",
+                                                  "The Trial of Chaos",
+                                                  "Viper Napuatzi"
+                                              ],
+                                  "ambiguous":  [
+                                                    "Bahlak, the Sky Seer",
+                                                    "Saphira, The Dread Consort",
+                                                    "The Devourer",
+                                                    "Xyclucian, the Chimera"
+                                                ]
+                              },
+                       "es-ES":  {
+                                     "missing":  [
+                                                     "Arastas (pre-progression state)",
+                                                     "Atziri",
+                                                     "Atziri\u0027s Temple",
+                                                     "Gothic City",
+                                                     "Grudgelash, Vile Ent",
+                                                     "Iktab, the Deathlord",
+                                                     "Kosis, the Revelation",
+                                                     "Lady Elswyth",
+                                                     "Ngakanu (pre-progression state)",
+                                                     "Omniphobia, Fear Manifest",
+                                                     "Royal Architect",
+                                                     "Sel Khari Sanctuary",
+                                                     "Stormgore",
+                                                     "Thane Wulfric",
+                                                     "The Plagueling",
+                                                     "The Trial of Chaos"
+                                                 ],
+                                     "ambiguous":  [
+                                                       "Lord of the Pit",
+                                                       "Scourge of the Skies"
+                                                   ]
+                                 },
+                       "ja":  {
+                                  "missing":  [
+                                                  "Arastas (pre-progression state)",
+                                                  "Atziri",
+                                                  "Atziri\u0027s Temple",
+                                                  "Gothic City",
+                                                  "Grudgelash, Vile Ent",
+                                                  "Iktab, the Deathlord",
+                                                  "Kosis, the Revelation",
+                                                  "Ngakanu (pre-progression state)",
+                                                  "Omniphobia, Fear Manifest",
+                                                  "Oswin, the Dread Warden",
+                                                  "Royal Architect",
+                                                  "Sel Khari Sanctuary",
+                                                  "Stormgore",
+                                                  "The Plagueling",
+                                                  "The Trial of Chaos"
+                                              ],
+                                  "ambiguous":  [
+                                                    "Lord of the Pit",
+                                                    "Rupture",
+                                                    "Veynar, the Frostbane"
+                                                ]
+                              },
+                       "ko":  {
+                                  "missing":  [
+                                                  "Arastas (pre-progression state)",
+                                                  "Atziri",
+                                                  "Atziri\u0027s Temple",
+                                                  "Gothic City",
+                                                  "Grudgelash, Vile Ent",
+                                                  "Iktab, the Deathlord",
+                                                  "Kosis, the Revelation",
+                                                  "Ngakanu (pre-progression state)",
+                                                  "Omniphobia, Fear Manifest",
+                                                  "Royal Architect",
+                                                  "Sel Khari Sanctuary",
+                                                  "Stormgore",
+                                                  "The Plagueling",
+                                                  "The Trial of Chaos"
+                                              ],
+                                  "ambiguous":  [
+
+                                                ]
+                              },
+                       "pt-BR":  {
+                                     "missing":  [
+                                                     "Arastas (pre-progression state)",
+                                                     "Atziri",
+                                                     "Atziri\u0027s Temple",
+                                                     "Gothic City",
+                                                     "Grudgelash, Vile Ent",
+                                                     "Iktab, the Deathlord",
+                                                     "Kosis, the Revelation",
+                                                     "Ngakanu (pre-progression state)",
+                                                     "Omniphobia, Fear Manifest",
+                                                     "Royal Architect",
+                                                     "Sel Khari Sanctuary",
+                                                     "Stormgore",
+                                                     "Thane Wulfric",
+                                                     "The Plagueling",
+                                                     "The Trial of Chaos"
+                                                 ],
+                                     "ambiguous":  [
+                                                       "Asinia, the Praetor\u0027s Consort",
+                                                       "Beira of the Rotten Pack",
+                                                       "Draven, the Eternal Praetor",
+                                                       "Rupture",
+                                                       "Saphira, The Dread Consort",
+                                                       "The Bloated Miller",
+                                                       "The Devourer",
+                                                       "The Rotten Druid",
+                                                       "Xyclucian, the Chimera"
+                                                   ]
+                                 },
+                       "ru":  {
+                                  "missing":  [
+                                                  "Arastas (pre-progression state)",
+                                                  "Atziri",
+                                                  "Atziri\u0027s Temple",
+                                                  "Gothic City",
+                                                  "Grudgelash, Vile Ent",
+                                                  "Iktab, the Deathlord",
+                                                  "Kosis, the Revelation",
+                                                  "Ngakanu (pre-progression state)",
+                                                  "Omniphobia, Fear Manifest",
+                                                  "Royal Architect",
+                                                  "Sel Khari Sanctuary",
+                                                  "Stormgore",
+                                                  "The Plagueling",
+                                                  "The Trial of Chaos"
+                                              ],
+                                  "ambiguous":  [
+                                                    "Rupture"
+                                                ]
+                              },
+                       "th":  {
+                                  "missing":  [
+                                                  "Arastas (pre-progression state)",
+                                                  "Atziri",
+                                                  "Atziri\u0027s Temple",
+                                                  "Gothic City",
+                                                  "Grudgelash, Vile Ent",
+                                                  "Iktab, the Deathlord",
+                                                  "Kosis, the Revelation",
+                                                  "Ngakanu (pre-progression state)",
+                                                  "Omniphobia, Fear Manifest",
+                                                  "Royal Architect",
+                                                  "Sel Khari Sanctuary",
+                                                  "Stormgore",
+                                                  "The Plagueling",
+                                                  "The Trial of Chaos"
+                                              ],
+                                  "ambiguous":  [
+
+                                                ]
+                              }
+                   },
+    "bossWatcher":  {
+                        "sourceBossCount":  85,
+                        "localizedEntryCount":  82,
+                        "coverage":  {
+                                         "fr":  80,
+                                         "de":  76,
+                                         "es-ES":  79,
+                                         "ja":  81,
+                                         "ko":  82,
+                                         "pt-BR":  74,
+                                         "ru":  82,
+                                         "th":  82
+                                     },
+                        "output":  "D:\\TEST\\PoE2AS-v3.0.0-RC-buildfix4\\PoE2AS-v3.0.0-RC\\2 - Support Files\\BossWatcher\\boss-localizations.json"
+                    },
+    "policy":  "Canonical English target -\u003e exact English label or canonical URL slug -\u003e normalized same PoE2DB entry path. Campaign/map area names missing from autocomplete may use the localized title from the same canonical PoE2DB page slug. Known Pinnacle boss identities prefer that localized page title because non-English autocomplete catalogs can retain the English boss label. Missing/ambiguous names remain English in SetupUI and unavailable to non-English BossWatcher OCR; no game proper noun is machine-translated."
+}

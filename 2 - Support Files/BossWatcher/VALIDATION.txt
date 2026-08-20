@@ -1,3 +1,58 @@
+PoE2BossWatcher v0.3.7 height-relative boss geometry development validation
+- Live boss capture uses GetClientRect + ClientToScreen and captures only the centered boss ROI inside the PoE2 client. Window title bars, borders, taskbar, and unrelated desktop regions are not part of the ROI.
+- Horizontal boss capture width is derived from client height at 8/9 height. This is exactly equivalent to the historical 50%-client-width crop on 16:9, while 21:9 and 32:9 no longer stretch the boss ROI horizontally.
+- Dual OCR lanes are independent wide midpoint-anchored lanes: LEFT 10%-50%, RIGHT 50%-90% of the centered boss capture.
+- Supplied 2560x1440 Hadi/Rafiq debug sample: old OCR crops were x=384..640 and x=640..896 of the 1280px ROI; new crops are x=128..640 and x=640..1152. Offline Tesseract broad-mask sanity changed from truncated names to full "HADI OF THE FLAMING RIVER" and "RAFIQ OF THE FROZEN SPRING".
+- Dev console logs live client dimensions/aspect ratio, centered boss-capture size, and dual-lane rectangles when client dimensions change.
+- No user-facing resolution/aspect-ratio setting was added.
+- No Windows/.NET compile performed in this environment; source/static and offline image validation only.
+
+PoE2BossWatcher v0.3.6 map-exit-assist development validation
+- Deterministic map acquisition remains fail-closed and requires database-backed OCR identity.
+- Normal in-map MapDisappearConfirmMs remains 5500 ms.
+- Trusted external-exit assist requires an already-armed database-ocr boss, an active missing window, at least 500 ms of pre-exit missing time, and ASL classification premature-exit-unresolved.
+- Recognized map-child-area transitions suppress the exit assist.
+- MAP_GONE records confirmation=timer or confirmation=exit-assist.
+- MapSavanna resolves to Savannah / Caedron, the Hyena Lord through the explicit AreaIds mapping.
+- Runtime settings overlay reads MapExitAssistMinMissingMs when present; older settings files safely use the validated 500 ms config/default.
+- Static validation: all 44 C# source files passed lexical string/comment/delimiter checks; all package JSON parsed; MapSavanna resolution and exit-assist trust-gate cases passed.
+- GameTimeWatcher support directory remains byte-identical to the preceding map-premature-exit hotfix; Client.txt timing-parser changes are ASL-side.
+- No Windows/.NET compile performed in this environment.
+
+PoE2BossWatcher v0.3.5 map-identity-safe development validation
+- Unknown/special map IDs fail closed; no structural MAP_SEEN/MAP_GONE acquisition.
+- MapPort resolves to Malgor, the Nautilord.
+- Developer debug log is created at EventWriter startup.
+- No Windows/.NET compile performed in this environment.
+
+v0.3.4-localized-ocr development validation
+--------------------------------------------
+Static source/package validation passed for the multilingual OCR foundation. No Windows/.NET compile was performed here. Verified game-language catalog consistency, selected-language OCR model mapping, localized-name -> invariant-ID flow, conservative missing-localization behavior, JSON integrity, and source lexical structure. Live multilingual OCR requires Windows build/testing after Setup-OCR.ps1 provisions the selected Tesseract data.
+
+PoE2 BossWatcher v0.3.3 - Map Boss Database / 5.5 s Grace Static Validation
+==========================================================================
+
+Development validation date: 2026-08-17
+
+New v0.3.3 checks:
+- Default identity single-boss DisappearConfirmMs is 5500 ms.
+- Default map MapDisappearConfirmMs is 5500 ms for both single and dual map-objective layouts. It remains separately user-configurable as BossWatcher.MapGoneConfirmMs for field testing.
+- Existing identity dual-lane resolver defaults remain DualRemovalConfirmMs=350 ms and DualBothGoneConfirmMs=700 ms. They remain topology-specific because the current identity dual resolver shares one firstMissing timestamp; extending those values requires a per-lane timestamp refactor to preserve per-boss backdating.
+- Added versioned `map-bosses.json` and database-preferred map-boss OCR identity gating.
+- Deterministic map entries must OCR-match the expected completion boss before MAP_SEEN/MAP_GONE can arm/qualify the map.
+- A nonmatching boss in a deterministic map is ignored and logged as MAP_UNEXPECTED_BOSS_IGNORED; known event-boss identities can be labeled MAP_EVENT_BOSS_IGNORED.
+- Unknown/special/random-boss maps retain structural fallback during development and emit MAP_DATABASE_MISS / MAP_DATABASE_SPECIAL diagnostics.
+- SetupUI snapshots the exact database to `LiveSplit Target\poe2_map_bosses.json`; BossWatcher accepts `--map-db <path>` and SetupUI launches it against that generated copy.
+- `poe2_run_settings.json` records the database version and SHA-256; both the settings snapshot and generated database snapshot are covered by the setup SHA-256 manifest.
+- `--settings <path>` continues to read BossWatcher.GoneConfirmMs and BossWatcher.MapGoneConfirmMs from the generated poe2_run_settings.json snapshot.
+- Existing firstMissing backdating remains unchanged: GONE confirmation is delayed, but recorded completion time remains the first valid missing signal.
+- Missing-window cancellation / RETURNED behavior remains armed throughout the grace period.
+- All 14 base ASL templates are byte-identical to the preceding shared-settings development build; map policy changes are injected by SetupUI at generation time.
+- GameTimeWatcher is byte-identical to the preceding shared-settings development build.
+- No Windows/.NET compilation was attempted in this environment, per project test workflow; rebuild and live validation are performed by the user on Windows.
+
+--- Prior validation baseline follows ---
+
 PoE2 BossWatcher v0.3.1 - Validation
 ============================================================
 

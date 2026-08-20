@@ -11,13 +11,17 @@ public sealed class EventWriter
     public string EventPath { get; }
     public string DebugPath { get; }
 
-    public EventWriter(string eventPath, bool devConsole = false)
+    public EventWriter(string eventPath, bool devConsole = false, string? diagnosticDirectory = null)
     {
         _devConsole = devConsole;
         EventPath = eventPath;
         Directory.CreateDirectory(Path.GetDirectoryName(eventPath)!);
-        DebugPath = Path.Combine(Path.GetDirectoryName(eventPath)!, "poe2_boss_watcher_debug.log");
-        AppendShared(EventPath, $"# PoE2BossWatcher session {DateTimeOffset.Now:O}{Environment.NewLine}");
+        var debugDirectory = string.IsNullOrWhiteSpace(diagnosticDirectory) ? Path.GetDirectoryName(eventPath)! : Path.GetFullPath(diagnosticDirectory);
+        Directory.CreateDirectory(debugDirectory);
+        DebugPath = Path.Combine(debugDirectory, "poe2_boss_watcher_debug.log");
+        var session = DateTimeOffset.Now;
+        AppendShared(EventPath, $"# PoE2BossWatcher session {session:O}{Environment.NewLine}");
+        AppendShared(DebugPath, $"# PoE2BossWatcher debug session {session:O} | devConsole={devConsole}{Environment.NewLine}");
     }
 
     public void BossSeen(BossDefinition boss, DateTimeOffset when, OcrRead ocr, BossBarMetrics metrics, double match, BossLane lane = BossLane.Single)
@@ -60,24 +64,43 @@ public sealed class EventWriter
     public void BossReturned(BossDefinition boss, DateTimeOffset when)
         => WriteEvent(when, "RETURNED", boss, "missingWindowCancelled=true", printToUserConsole: false);
 
-    public void MapBossSeen(DateTimeOffset when, BossContextState context, BossBarMetrics metrics, string layout)
+    public void MapBossSeen(
+        DateTimeOffset when,
+        BossContextState context,
+        BossBarMetrics metrics,
+        string layout,
+        string bossId = "",
+        string bossName = "",
+        string detector = "structural-fallback")
     {
-        WriteRawEvent(when, "MAP_SEEN", "mapboss", "Map Boss",
-            $"area={Clean(context.AreaId)}|areaLevel={context.AreaLevel}|mapBossNumber={context.MapBossNumber}|classification={Clean(context.Classification)}|layout={layout}|detector=structural-only|redRun={metrics.HealthRedRunFraction:F4}|nameGold={metrics.NameGoldFraction:F4}",
+        var displayBoss = string.IsNullOrWhiteSpace(bossName) ? "Map Boss" : bossName;
+        WriteRawEvent(when, "MAP_SEEN", "mapboss", displayBoss,
+            $"area={Clean(context.AreaId)}|areaLevel={context.AreaLevel}|mapBossNumber={context.MapBossNumber}|classification={Clean(context.Classification)}|layout={layout}|detector={Clean(detector)}|bossId={Clean(bossId)}|bossName={Clean(bossName)}|redRun={metrics.HealthRedRunFraction:F4}|nameGold={metrics.NameGoldFraction:F4}",
             userMessage: context.MapBossNumber > 0
-                ? $"Map boss encounter #{context.MapBossNumber} started (Level {context.AreaLevel})."
-                : $"Map boss encounter started (Level {context.AreaLevel}).");
+                ? $"Map boss encounter #{context.MapBossNumber} started: {displayBoss} (Level {context.AreaLevel})."
+                : $"Map boss encounter started: {displayBoss} (Level {context.AreaLevel}).");
     }
 
-    public void MapBossGone(DateTimeOffset firstMissing, DateTimeOffset verifyStarted, DateTimeOffset confirmed, int confirmMs, BossContextState context, string layout)
+    public void MapBossGone(
+        DateTimeOffset firstMissing,
+        DateTimeOffset verifyStarted,
+        DateTimeOffset confirmed,
+        int confirmMs,
+        BossContextState context,
+        string layout,
+        string bossId = "",
+        string bossName = "",
+        string detector = "structural-fallback",
+        string confirmation = "timer")
     {
         var preVerifyBackdateMs = Math.Max(0, (verifyStarted - firstMissing).TotalMilliseconds);
-        WriteRawEvent(confirmed, "MAP_GONE", "mapboss", "Map Boss",
-            $"firstMissing={firstMissing:O}|verifyStarted={verifyStarted:O}|confirmMs={confirmMs}|preVerifyBackdateMs={preVerifyBackdateMs:F1}|area={Clean(context.AreaId)}|areaLevel={context.AreaLevel}|mapBossNumber={context.MapBossNumber}|classification={Clean(context.Classification)}|layout={layout}",
+        var displayBoss = string.IsNullOrWhiteSpace(bossName) ? "Map Boss" : bossName;
+        WriteRawEvent(confirmed, "MAP_GONE", "mapboss", displayBoss,
+            $"firstMissing={firstMissing:O}|verifyStarted={verifyStarted:O}|confirmMs={confirmMs}|preVerifyBackdateMs={preVerifyBackdateMs:F1}|confirmation={Clean(confirmation)}|area={Clean(context.AreaId)}|areaLevel={context.AreaLevel}|mapBossNumber={context.MapBossNumber}|classification={Clean(context.Classification)}|layout={layout}|detector={Clean(detector)}|bossId={Clean(bossId)}|bossName={Clean(bossName)}",
             displayWhen: firstMissing,
             userMessage: context.MapBossNumber > 0
-                ? $"Map boss bar cleared for Boss #{context.MapBossNumber}. LiveSplit may split; Undo Split if the attempt failed."
-                : "Map boss bar cleared. LiveSplit may split; Undo Split if the attempt failed.");
+                ? $"{displayBoss} cleared for Boss #{context.MapBossNumber}. Map qualified; LiveSplit completes it when the player exits."
+                : $"{displayBoss} cleared. Map qualified; LiveSplit completes it when the player exits.");
     }
 
     public void Debug(string message)

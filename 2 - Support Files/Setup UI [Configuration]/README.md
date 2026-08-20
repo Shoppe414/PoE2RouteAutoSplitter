@@ -1,10 +1,24 @@
-# PoE2 Route AutoSplitter Setup UI — v2.2.1 Release Candidate
+# PoE2 Route AutoSplitter Setup UI — v3.0.0 Release Candidate
 
 This is the Windows configuration tool for the Route AutoSplitter package.
 
+## Shared user settings
+
+The action panel now includes **Settings**. It edits `1 - User Setup\PoE2AS-Settings.json`, the supported user-facing configuration shared by SetupUI, BossWatcher, and GameTimeWatcher. SetupUI window size/default diagnostic-console behavior, BossWatcher's boss-disappearance grace, and selected GameTimeWatcher diagnostic thresholds can be adjusted without rebuilding.
+
+Generate / Deploy writes the effective values into `LiveSplit Target\poe2_run_settings.json`. Watchers started from SetupUI read that immutable per-setup snapshot, and `3 - verification files\poe2_setup_validation.sha256` includes it. Hand-editing the master settings after generation therefore does not silently alter an already-generated run. Malformed/out-of-range master settings are backed up and replaced with defaults.
+
+Identity/single-boss and Maps disappearance confirmation both default to **5.5 seconds** in this development build. The grace delays only confirmation; BossWatcher retains `firstMissing` so accepted completion remains backdated to the original disappearance signal. The settings remain independently adjustable.
+
+## SetupUI languages
+
+SetupUI now supports a selectable startup language from **Settings**. Saving a new language applies it immediately to the open SetupUI and saves it as the default for future launches. SetupUI Language and PoE2 Game Language intentionally expose the same current PoE2-supported set: English, French, German, Spanish (Spain), Japanese, Korean, Portuguese (Brazil), Russian, and Thai.
+
+The Windows installer asks for the application's default SetupUI language, with English preselected. Existing supported language settings are preserved/preselected during upgrades. SetupUI chrome, controls, help text, and policy descriptions use the selected UI locale. Area and boss display names use verified game-localized proper nouns when available, while canonical English runtime identities/IDs remain unchanged. BossWatcher OCR continues to use the independently selected PoE2 Game Language.
+
 ## Normal users
 
-Install the ready-to-run `PoE2AS-v2.2.1-Setup.exe` GitHub Release asset.
+Install the ready-to-run `PoE2AS-v3.0.0-Setup.exe` GitHub Release asset.
 
 The installed launcher is:
 
@@ -80,21 +94,35 @@ Each rule group includes a short description of its current selection. The right
 
 ## Maps
 
-The **Maps** tab generates a functional Dynamic/unordered ordinary-map boss run while keeping map classification under diagnostic validation.
+The **Maps** tab now uses the development **Maps lifecycle policy v2**. Ordinary map identity comes from the authoritative Client.txt generated area ID + seed (`Map<name>|seed`). Scene names are supplemental display text only. **The timer will automatically start when first entering the map. A valid run is from first entry to first exit after the area boss kill.**
 
-Current policy:
+Game Time policy:
 
-- **Map boss encounters:** 1–100, default 100.
-- **Ordinary map completion:** BossWatcher structural boss-UI disappearance. Boss names are not read and ordinary map rows are never renamed to boss identities.
-- **Dynamic row name:** `Map Level X - Boss #Y`, using the generated area level observed on entry.
-- **Failed attempt:** if the boss UI disappears because the runner dies/leaves before completing the boss, use LiveSplit **Undo Split**. The ASL restores that map objective and re-arms BossWatcher for the retry.
-- **Optional Pinnacles:** individually selectable. They keep the normal BossWatcher OCR/identity path because the correct selected Pinnacle objective must be credited.
-- **Map objective / random quest clear:** visible but disabled as **NON-FUNCTIONAL — Needs diagnostics**.
-- **Unique modifier count:** diagnostic only; it is not added unless a reliable Client.txt signal is proven.
+- **PoE2 Map Completion (default):** after the first exit following the area-boss kill, Game Time pauses between completed maps and resumes on the next new map entry. This mirrors PoE2's map-completion boundary.
+- **Continuous Game Time:** all non-loading time after the run starts counts. Only loading-screen exclusion and the configured Manual Pause policy may pause Game Time. Re-entering a completed map or doing side objectives after map completion therefore continues to consume Game Time.
 
-The ASL writes `poe2_boss_context.txt`. `mode=map` activates BossWatcher's identity-free structural tracker; `mode=identity` uses the existing OCR tracker; `mode=off` is written after a committed ordinary-map split so another bar in the same map cannot consume a second map slot. BossWatcher is launched by SetupUI with both `--event-file` and `--context-file`.
+Run endpoints:
 
-The current candidate heuristic is a transition from **The Ziggurat Refuge** or a scene containing **Hideout** into an unknown generated level-65+ area. Candidates remain labeled `unconfirmed-map-or-special`; this intentionally exposes false positives such as special/Pinnacle endgame spaces for later exclusion. Preserve `Client.txt`, `poe2_mixed_route_debug.log`, `poe2_boss_events.log`, `poe2_boss_watcher_debug.log`, and `poe2_boss_context.txt` during map diagnostics.
+- **Fixed number of maps:** 1–100 finalized map instances.
+- **Until first death:** requires Character Name and forces End on first death.
+- **Manual finish:** Maps still auto-starts on map entry; use LiveSplit Start/Split when the self-selected endpoint is reached.
+- **Specific Pinnacle boss defeat:** select one Pinnacle identity; BossWatcher `SEEN` releases setup pause and `GONE` creates the final Pinnacle split.
+
+Death policy:
+
+- **No death tracking (default):** does not parse/store death messages and requires no Character Name.
+- **End on first death:** exact tracked-character death creates the final `Death [1]` split.
+- **Track deaths:** exact tracked-character deaths insert `Death [x]` LiveSplit rows while Game Time continues.
+
+Character Name accepts Unicode letters plus `_` only. Runtime death matching extracts `<name>` from the exact Client.txt `'<name> has been slain.'` notification and compares it directly to the configured character, so party-member deaths are ignored.
+
+Ordinary map completion is two-stage: BossWatcher `MAP_GONE` **qualifies** the active Map+seed, but LiveSplit does not split until Client.txt confirms the **first exit after the area-boss kill**. A premature exit saves the exit boundary and continues timing provisionally. Same-seed re-entry continues the attempt with no map completion. Entering a different map seed confirms the prior map `FAILED`. Under the default PoE2 Map Completion policy, intervening setup time is removed; under Continuous Game Time, it remains counted.
+
+After successful exit, setup Game Time pauses until the next map entry. Re-entering a previously finalized Map+seed is ignored and remains setup-paused. No maximum-attempt count is hard-coded in this development iteration.
+
+`poe2_boss_context.txt` remains the handoff between the ASL and BossWatcher: `mode=map` uses the identity-free structural ordinary-map tracker, `mode=identity` preserves the OCR/catalog path (including Pinnacle endpoints), and `mode=off` is used after an ordinary map is qualified while waiting for exit.
+
+See the package-root `MAPS-POLICY-TEST-NOTES.md` for the focused test matrix and run-audit events.
 
 ## Start policy
 
@@ -177,7 +205,7 @@ selected. It writes `poe2_manual_pause_state.txt` into the active target.
 GameTimeWatcher it instead launches the external crash watchdog, which captures
 stdout/stderr, process memory/handle/thread samples, the watcher internal log,
 and matching Windows Application crash events under the GameTimeWatcher
-`diagnostics\YYYYMMDD-HHMMSS` folder.
+`4-README's_and_Diagnostics\Diagnostics` folder, with PNG captures in its `images` subfolder.
 
 ## Developer build
 
@@ -198,7 +226,12 @@ To build all user tools without creating an installer:
 To create the distributable installer and portable ZIP:
 
 ```powershell
-.\..\Build-Release.ps1 -Version 2.2.1
+.\..\Build-Release.ps1 -Version 3.0.0
 ```
 
 > **Manual-pause protocol note:** v0.4.3 GameTimeWatcher requires an ASL generated from the same package. Re-run the Setup UI after updating and re-browse LiveSplit's Scriptable Auto Splitter component to the newly generated `.asl`.
+
+
+## PoE2 game language
+
+Settings includes a PoE2 **game language** selector independent from the SetupUI display language. Generate / Deploy writes the selected code into `poe2_run_settings.json`, copies the current boss-localization database into `poe2_boss_localizations.json`, and includes its version/SHA-256 in the generated settings snapshot. BossWatcher is launched with that exact localization snapshot. GameTimeWatcher reads the same game-language value but uses structure-first pause detection.

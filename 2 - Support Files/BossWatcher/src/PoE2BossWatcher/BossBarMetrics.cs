@@ -19,9 +19,9 @@ public sealed record BossBarMetrics(
 {
     /// <summary>
     /// Single-pass ROI analysis. v0.1.9 adds lane-aware measurements for PoE2's horizontal
-    /// dual-boss UI. Dual names occupy the left/right half-lanes of the same fixed-width boss
-    /// container. We therefore measure name-colored anchor bands around ~25% and ~75% of the
-    /// normal boss-name ROI, plus red-health runs in each half of BossHealthRoi.
+    /// dual-boss UI. Live capture is centered and height-scaled, so the boss container remains
+    /// physically comparable across aspect ratios. We measure name-colored anchor bands around
+    /// ~25% and ~75% of the normal boss-name ROI, plus red-health runs in each half of BossHealthRoi.
     /// </summary>
     public static BossBarMetrics Analyze(Bitmap bitmap, AppConfig config, bool includeDiagnostics = true)
     {

@@ -1,0 +1,25 @@
+{
+  "SchemaVersion": 1,
+  "SetupUI": {
+    "WindowWidthPercent": 50,
+    "WindowHeightPercent": 100,
+    "DeveloperConsoleDefault": false,
+    "DefaultLanguage": "en"
+  },
+  "PoE2": {
+    "Language": "en"
+  },
+  "BossWatcher": {
+    "GoneConfirmMs": 5500,
+    "MapGoneConfirmMs": 5500,
+    "MapExitAssistMinMissingMs": 500
+  },
+  "GameTimeWatcher": {
+    "ProvisionalTimeoutMs": 1200,
+    "PauseStackThreshold": 0.62,
+    "ResumeGameThreshold": 0.58,
+    "PauseBannerThreshold": 0.4,
+    "ExitPathOfExileThreshold": 0.5,
+    "MtxShopThreshold": 0.7
+  }
+}

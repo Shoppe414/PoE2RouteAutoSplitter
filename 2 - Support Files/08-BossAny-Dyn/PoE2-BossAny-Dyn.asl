@@ -137,13 +137,19 @@ startup
     vars.gtManualLastGoodStateSequence = 0L;
     vars.gtManualReadGraceActive = false;
     vars.gtNextPausePollUtc = System.DateTime.MinValue;
+    // Prefer the Client.txt load-start message-site family (2d8e*). The English text
+    // remains a compatibility fallback for older/current logs, but load detection no longer
+    // depends on the human-readable sentence being English.
     vars.gtLoadStartRegex = new System.Text.RegularExpressions.Regex(
-        "^[^ ]+ [^ ]+ (\\d+).*Got Instance Details",
-        System.Text.RegularExpressions.RegexOptions.Compiled
+        "^[^ ]+ [^ ]+ (\\d+)(?=.*(?:\\s2d8e[0-9A-Fa-f]{4}\\s|Got Instance Details))",
+        System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase
     );
+    // The 4cba* message-site family identifies loading-screen completion. Capture the
+    // parenthesized display name only for diagnostics and the trailing numeric duration for
+    // timing; translated labels such as "LOADING SCREEN", "Duration", or "seconds" are not required.
     vars.gtLoadEndRegex = new System.Text.RegularExpressions.Regex(
-        "^[^ ]+ [^ ]+ (\\d+).*\\[LOADING SCREEN\\] \\((.*?)\\) Duration = ([0-9]+(?:\\.[0-9]+)?) seconds",
-        System.Text.RegularExpressions.RegexOptions.Compiled
+        "^[^ ]+ [^ ]+ (\\d+)(?=.*(?:\\s4cba[0-9A-Fa-f]{4}\\s|\\[LOADING SCREEN\\])).*?\\((.*?)\\).*?([0-9]+(?:\\.[0-9]+)?)\\D*$",
+        System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase
     );
 }
 
@@ -614,7 +620,8 @@ update
             while ((clientLine = vars.clientReader.ReadLine()) != null)
             {
                 bool riverbankInternal = clientLine.IndexOf("area \"G1_1\"", System.StringComparison.OrdinalIgnoreCase) >= 0
-                    && clientLine.IndexOf("Generating level", System.StringComparison.OrdinalIgnoreCase) >= 0;
+                    && (System.Text.RegularExpressions.Regex.IsMatch(clientLine, @"\s2caa[0-9A-Fa-f]{4}\s")
+                        || clientLine.IndexOf("Generating level", System.StringComparison.OrdinalIgnoreCase) >= 0);
                 bool riverbankEntered = clientLine.IndexOf("You have entered The Riverbank.", System.StringComparison.OrdinalIgnoreCase) >= 0;
 
                 if (riverbankInternal || riverbankEntered)

@@ -16,7 +16,15 @@ public sealed class AppConfig
     // Region captured from the PoE2 client. Coordinates are normalized to the game client.
     public NormalizedRect BossRoi { get; set; } = new(0.25, 0.015, 0.50, 0.115);
 
-    // Sub-region INSIDE BossRoi used only for OCR/name-pixel analysis.
+    // Horizontal boss-UI geometry is centered and scaled from CLIENT HEIGHT, not client width.
+    // 8/9 reproduces the historical 50%-wide capture on a 16:9 client:
+    //   0.5 * (16/9) = 8/9 client-heights.
+    // Keeping this height-relative prevents the capture/name lanes from stretching apart on
+    // 21:9 and 32:9 displays while still adapting automatically to 1080p/1440p/2160p UI scale.
+    // This is an internal calibration value, not a user resolution setting.
+    public double BossCaptureWidthHeightRatio { get; set; } = 8.0 / 9.0;
+
+    // Sub-region INSIDE the centered BossRoi capture used only for OCR/name-pixel analysis.
     public NormalizedRect BossNameRoi { get; set; } = new(0.25, 0.235, 0.50, 0.245);
 
     // Legacy broad-gold diagnostic region INSIDE BossRoi. This is intentionally NOT used as
@@ -157,7 +165,13 @@ public sealed class AppConfig
     // The watcher still confirms disappearance to reject one-frame UI flicker. The bridge can
     // backdate the recorded LiveSplit Real Time to firstMissing, so this confirmation does not
     // need to become timing error.
-    public int DisappearConfirmMs { get; set; } = 350;
+    public int DisappearConfirmMs { get; set; } = 5500;
+    // Ordinary-map disappearance keeps the conservative long confirmation while the player
+    // remains in the map. If the expected boss has already been continuously missing before
+    // a real map-exit context arrives, the shorter exit-assist window can safely finalize the
+    // pending disappearance without making all in-map disappearances permissive.
+    public int MapDisappearConfirmMs { get; set; } = 5500;
+    public int MapExitAssistMinMissingMs { get; set; } = 500;
     public int ReacquireCooldownMs { get; set; } = 900;
 
     // Retained as diagnostics.
@@ -169,6 +183,9 @@ public sealed class AppConfig
     public int SaveDebugFrameEverySeconds { get; set; } = 0;
     public bool LogRejectedOcr { get; set; } = false;
     public string BossListFile { get; set; } = "bosses.txt";
+    public string MapBossDatabaseFile { get; set; } = "map-bosses.json";
+    public string BossLocalizationDatabaseFile { get; set; } = "boss-localizations.json";
+    public string GameLanguage { get; set; } = "en";
     public string TessdataParent { get; set; } = ".";
     public string EventFile { get; set; } = "";
     public string DebugDirectory { get; set; } = "debug";
@@ -199,6 +216,7 @@ public sealed class AppConfig
 
     public void Validate()
     {
+        GameLanguage = GameLanguageCatalog.Normalize(GameLanguage);
         if (ProcessNames.Length == 0) throw new InvalidOperationException("ProcessNames must contain at least one process name.");
         if (CaptureFps < 1 || CaptureFps > 60) throw new InvalidOperationException("CaptureFps must be 1-60.");
         if (OcrUpscale < 1 || OcrUpscale > 8) throw new InvalidOperationException("OcrUpscale must be 1-8.");
@@ -289,7 +307,9 @@ public sealed class AppConfig
         if (FrameReturnedGoldPixelFraction is < 0 or > 1) throw new InvalidOperationException("FrameReturnedGoldPixelFraction must be 0-1.");
         if (FrameReturnedGoldPixelFraction <= FrameMissingGoldPixelFraction)
             throw new InvalidOperationException("FrameReturnedGoldPixelFraction must be greater than FrameMissingGoldPixelFraction.");
-        if (DisappearConfirmMs < 100) throw new InvalidOperationException("DisappearConfirmMs must be >= 100.");
+        if (DisappearConfirmMs < 100 || DisappearConfirmMs > 30000) throw new InvalidOperationException("DisappearConfirmMs must be 100-30000.");
+        if (MapDisappearConfirmMs < 100 || MapDisappearConfirmMs > 30000) throw new InvalidOperationException("MapDisappearConfirmMs must be 100-30000.");
+        if (MapExitAssistMinMissingMs < 100 || MapExitAssistMinMissingMs > 5000) throw new InvalidOperationException("MapExitAssistMinMissingMs must be 100-5000.");
         if (ReacquireCooldownMs < 0) throw new InvalidOperationException("ReacquireCooldownMs must be >= 0.");
         if (AcquireConsecutiveMatches < 1 || AcquireConsecutiveMatches > 5)
             throw new InvalidOperationException("AcquireConsecutiveMatches must be 1-5.");
@@ -301,6 +321,8 @@ public sealed class AppConfig
             throw new InvalidOperationException("Broad OCR channel-difference thresholds must be -255 to 255.");
         if (OcrBroadLuminanceMin is < 0 or > 255)
             throw new InvalidOperationException("OcrBroadLuminanceMin must be 0-255.");
+        if (BossCaptureWidthHeightRatio is < 0.40 or > 2.00)
+            throw new InvalidOperationException("BossCaptureWidthHeightRatio must be between 0.40 and 2.00.");
         BossRoi.Validate("BossRoi");
         BossNameRoi.Validate("BossNameRoi");
         BossFrameRoi.Validate("BossFrameRoi");

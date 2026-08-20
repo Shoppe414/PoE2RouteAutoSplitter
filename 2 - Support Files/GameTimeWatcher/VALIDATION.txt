@@ -1,3 +1,22 @@
+v0.4.5-structure-first development validation
+---------------------------------------------
+Static source/package validation passed for the structure-first multilingual pause detector. No Windows/.NET compile was performed here. Verified source lexical structure, structure/banner/text evidence weights (68/24/4/4), non-English skipping of English Resume/Exit text searches, JSON integrity, and shared game-language propagation. The new masked structure score requires live threshold calibration across languages/resolutions.
+
+PoE2 GameTimeWatcher v0.4.4 - Shared Settings Static Validation
+=================================================================
+
+Development validation date: 2026-08-17
+
+New v0.4.4 checks:
+- `--settings <path>` reads the GameTimeWatcher section of poe2_run_settings.json.
+- User-facing overrides cover ProvisionalTimeoutMs and the five pause/MTX template thresholds.
+- Default values remain the v0.4.3 tested values.
+- Invalid/missing shared settings fall back to the validated component config.json.
+- Run-Diagnostic.ps1 accepts -SettingsFile, includes its SHA-256 in the diagnostic summary, passes it to the watcher, and copies the snapshot into the diagnostic folder.
+- No Windows/.NET compilation was attempted in this environment, per project test workflow; rebuild and live validation are performed by the user on Windows.
+
+--- Prior validation baseline follows ---
+
 PoE2 GameTimeWatcher v0.4.3 source validation
 
 - State protocol v2: RUNNING / PAUSED / PENDING_PAUSE / PENDING_RUN.

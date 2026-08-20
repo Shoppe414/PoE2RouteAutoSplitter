@@ -11,6 +11,7 @@
     "Width": 0.5,
     "Height": 0.115
   },
+  "BossCaptureWidthHeightRatio": 0.8888888888888888,
   "BossNameRoi": {
     "X": 0.25,
     "Y": 0.235,
@@ -51,7 +52,8 @@
   "TrackedNameReturnedRelativeFraction": 0.4,
   "FrameMissingGoldPixelFraction": 0.008,
   "FrameReturnedGoldPixelFraction": 0.015,
-  "DisappearConfirmMs": 350,
+  "DisappearConfirmMs": 5500,
+  "MapDisappearConfirmMs": 5500,
   "ReacquireCooldownMs": 900,
   "MinRedPixelFraction": 0.004,
   "MinLightPixelFraction": 0.01,
@@ -60,6 +62,9 @@
   "SaveDebugFrameEverySeconds": 0,
   "LogRejectedOcr": false,
   "BossListFile": "bosses.txt",
+  "MapBossDatabaseFile": "map-bosses.json",
+  "BossLocalizationDatabaseFile": "boss-localizations.json",
+  "GameLanguage": "en",
   "TessdataParent": ".",
   "EventFile": "",
   "DebugDirectory": "debug",
@@ -105,5 +110,6 @@
   "DualInitialConfirmFrames": 4,
   "DualInitialMinCombinedHealthRunFraction": 0.2,
   "SingleOcrWeakCenterConfirmFrames": 8,
-  "DualInitialLowHealthConfirmFrames": 8
+  "DualInitialLowHealthConfirmFrames": 8,
+  "MapExitAssistMinMissingMs": 500
 }

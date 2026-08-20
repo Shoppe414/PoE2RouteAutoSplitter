@@ -1,36 +1,57 @@
-$ErrorActionPreference = 'Stop'
+param(
+    [string[]]$Language = @('all'),
+    [switch]$Force
+)
 
+$ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $tess = Join-Path $root 'tessdata'
-$out = Join-Path $tess 'eng.traineddata'
-$url = 'https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/eng.traineddata'
+New-Item -ItemType Directory -Force -Path $tess | Out-Null
 
-# Use .NET filesystem/network APIs here instead of Invoke-WebRequest -OutFile.
-# PowerShell treats '[' and ']' in paths as wildcard characters in some cmdlets,
-# and this project intentionally uses a folder named "BossWatcher".
-[System.IO.Directory]::CreateDirectory($tess) | Out-Null
+# PoE2 authoritative game-client languages supported by this development build.
+# App code -> Tesseract tessdata_fast model.
+$models = @(
+    [pscustomobject]@{ Code='en';    Tess='eng'; Name='English' },
+    [pscustomobject]@{ Code='fr';    Tess='fra'; Name='Français' },
+    [pscustomobject]@{ Code='de';    Tess='deu'; Name='Deutsch' },
+    [pscustomobject]@{ Code='es-ES'; Tess='spa'; Name='Español (España)' },
+    [pscustomobject]@{ Code='ja';    Tess='jpn'; Name='日本語' },
+    [pscustomobject]@{ Code='ko';    Tess='kor'; Name='한국어' },
+    [pscustomobject]@{ Code='pt-BR'; Tess='por'; Name='Português (Brasil)' },
+    [pscustomobject]@{ Code='ru';    Tess='rus'; Name='Русский' },
+    [pscustomobject]@{ Code='th';    Tess='tha'; Name='ไทย' }
+)
 
-Write-Host "Downloading Tesseract English trained data..."
-
-$webClient = New-Object System.Net.WebClient
-try {
-    # GitHub requires modern TLS. This is safe on supported Windows/.NET versions.
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
-    $webClient.DownloadFile($url, $out)
+$requested = @($Language | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+$installAll = $requested.Count -eq 0 -or ($requested | Where-Object { $_ -ieq 'all' }).Count -gt 0
+$selected = if ($installAll) {
+    $models
+} else {
+    $found = New-Object System.Collections.Generic.List[object]
+    foreach ($code in $requested) {
+        $match = $models | Where-Object { $_.Code -ieq $code -or $_.Tess -ieq $code } | Select-Object -First 1
+        if (-not $match) {
+            throw "Unsupported OCR language '$code'. Supported PoE2 language codes: $($models.Code -join ', ')"
+        }
+        $found.Add($match)
+    }
+    @($found | Sort-Object Code -Unique)
 }
-finally {
-    $webClient.Dispose()
+
+foreach ($model in $selected) {
+    $out = Join-Path $tess ($model.Tess + '.traineddata')
+    if ((Test-Path -LiteralPath $out -PathType Leaf) -and -not $Force) {
+        Write-Host "OCR data already present: $($model.Name) [$($model.Tess)]"
+        continue
+    }
+
+    $url = "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/$($model.Tess).traineddata"
+    Write-Host "Downloading $($model.Name) OCR data [$($model.Tess)]..."
+    Invoke-WebRequest -Uri $url -OutFile $out
+    if (-not (Test-Path -LiteralPath $out -PathType Leaf) -or (Get-Item -LiteralPath $out).Length -le 0) {
+        throw "OCR download failed or produced an empty file: $out"
+    }
 }
 
-if (-not [System.IO.File]::Exists($out)) {
-    throw "OCR download did not create the expected file: $out"
-}
-
-$fileInfo = New-Object System.IO.FileInfo($out)
-if ($fileInfo.Length -le 0) {
-    throw "OCR download created an empty file: $out"
-}
-
-Write-Host "Saved: $out"
-Write-Host "OCR data setup complete."
-Write-Host "Note: TesseractOCR also requires the Microsoft Visual C++ 2015-2022 x64 runtime."
+Write-Host ''
+Write-Host "OCR setup complete. Installed models: $(@($selected).Tess -join ', ')"

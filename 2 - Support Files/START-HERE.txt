@@ -1,4 +1,4 @@
-PATH OF EXILE 2 ROUTE AUTOSPLITTER v2.2.1 RELEASE CANDIDATE
+PATH OF EXILE 2 ROUTE AUTOSPLITTER v3.0.0 RELEASE CANDIDATE
 
 NORMAL USERS
 ============
@@ -6,7 +6,7 @@ NORMAL USERS
 Do not compile the application and do not run PowerShell setup scripts.
 
 1. Download from the GitHub Release:
-     PoE2AS-v2.2.1-Setup.exe
+     PoE2AS-v3.0.0-Setup.exe
 
 2. Run the installer.
 
@@ -33,7 +33,8 @@ Do not compile the application and do not run PowerShell setup scripts.
 
 10. If manual-pause removal was enabled, press Start GameTimeWatcher.
     For crash investigation, also enable Developer console diagnostics first;
-    this runs the external crash watchdog and saves a timestamped diagnostic folder.
+    this runs the external crash watchdog and stores diagnostic logs under
+    4-README's_and_Diagnostics\Diagnostics and PNG captures under its images folder.
 
 CAMPAIGN START POLICY
 =====================
@@ -63,6 +64,14 @@ PoE2 unpauses while those interfaces are open.
 
 No .lsl layout file is generated or included.
 
+RUN VERIFICATION
+================
+
+Setup validation manifests, per-run SHA-256 manifests, audit logs, and run summaries are stored under:
+  3 - verification files
+
+Generating a new route does not delete prior per-run audit files.
+
 
 DEVELOPERS
 ==========
@@ -71,12 +80,12 @@ The Git repository intentionally does not contain compiled .exe files.
 
 To build the complete Windows release locally, run from 2 - Support Files:
 
-  .\Build-Release.ps1 -Version 2.2.1
+  .\Build-Release.ps1 -Version 3.0.0
 
 This creates the installer, portable ZIP, and checksums under the repository's
 artifacts directory. The installer is also copied into 1 - User Setup for local
 testing, but is ignored by Git.
 
-Creating/pushing a v2.2.1 tag triggers .github\workflows\build-release.yml,
+Creating/pushing a v3.0.0 tag triggers .github\workflows\build-release.yml,
 which performs the Windows build and attaches the installer/ZIP/checksums to
 the GitHub Release automatically.

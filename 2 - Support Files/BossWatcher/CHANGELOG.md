@@ -1,4 +1,61 @@
+## 0.3.7 - Height-relative boss UI geometry
+
+- BossWatcher now derives the horizontal boss capture width from the PoE2 **client height** and keeps it centered on the game client. This preserves comparable boss-UI geometry across 16:9, ultrawide, and super-ultrawide clients instead of stretching the OCR region with total client width.
+- Dual-boss OCR lanes are now independent wide left/right regions split at the capture midpoint rather than narrow children of the single-boss name ROI. This prevents long dual-boss names such as Hadi of the Flaming River / Rafiq of the Frozen Spring from being truncated before OCR.
+- Development diagnostics now log detected client resolution/aspect ratio, boss-capture dimensions, and the left/right OCR rectangles whenever the game client size changes.
+- Capture continues to use the PoE2 client rectangle only; window title bars, borders, taskbar, and unrelated desktop pixels are outside the captured ROI.
+
+## 0.3.6-map-exit-assist (development)
+- Preserved the conservative 5500 ms in-map disappearance confirmation for ordinary deterministic map bosses.
+- Added a guarded external-exit assist: a boss already armed by `database-ocr` and continuously missing for at least 500 ms can emit trusted `MAP_GONE` when ASL context confirms a real external map exit.
+- The assist cannot arm a boss, cannot use structural fallback, and is explicitly suppressed for recognized map-child transitions.
+- `MAP_GONE` now records `confirmation=timer` or `confirmation=exit-assist`.
+- Added `MapExitAssistMinMissingMs` (default 500 ms) to BossWatcher config and generated run-settings snapshots.
+- Added the observed `MapSavanna` -> Savannah mapping so Caedron, the Hyena Lord can be resolved by the deterministic map database.
+- Client.txt parsing changes live in the generated ASLs; BossWatcher consumes only the resulting canonical context and remains independent of localized area display names.
+
+## 0.3.5-map-identity-safe (development)
+- Map mode now fails closed when the current map is missing from the map-boss database or uses a special completion type. Structural fallback no longer emits MAP_SEEN/MAP_GONE for unknown/special maps.
+- Added deterministic `MapPort` -> `Malgor, the Nautilord` mapping from current PoE2DB data.
+- BossWatcher now creates `poe2_boss_watcher_debug.log` immediately when the event writer starts and prints its path in developer console mode.
+
+# v0.3.4-localized-ocr — development
+
+- Added a separate PoE2 game-language setting for boss-name OCR.
+- BossWatcher selects the matching Tesseract model for English, French, German, Spanish (Spain), Japanese, Korean, Portuguese (Brazil), Russian, or Thai.
+- Added `boss-localizations.json`, keyed by invariant boss ID. Runtime OCR resolves a verified localized name back to the same canonical boss ID.
+- Added `--localization-db` and generated-run localization database snapshots with SHA-256 validation metadata.
+- Non-English missing-name coverage is conservative: no guessed or silent English-name fallback; deterministic maps log `MAP_LOCALIZATION_UNAVAILABLE` and do not arm from an unrelated boss.
+- `Setup-OCR.ps1` can install one language or all supported language models; build/release scripts verify the complete model set.
+- Existing 5.5-second disappearance policy and structural tracking remain unchanged.
+
 # Changelog
+
+## 0.3.3 - 5.5-second global development grace + deterministic map-boss database
+
+- Set both user-facing disappearance defaults to **5500 ms**:
+  - `BossWatcher.GoneConfirmMs=5500`
+  - `BossWatcher.MapGoneConfirmMs=5500`
+- Preserved first-missing backdating: the longer confirmation window delays acceptance only and does not add 5.5 seconds to recorded completion time.
+- Added `map-bosses.json`, a versioned map -> expected completion-boss database seeded from the current Path of Exile 2 Wiki map list.
+- Deterministic Maps mode now uses a narrow OCR identity gate before arming a structural map-boss encounter.
+- Non-matching Unique/event bosses no longer qualify a deterministic map. Known event identities are logged as `MAP_EVENT_BOSS_IGNORED`; other non-matches are logged as `MAP_UNEXPECTED_BOSS_IGNORED`.
+- Added initial Delirium event-boss exclusions for Omniphobia, Fear Manifest and Kosis, the Revelation.
+- Unknown and special/random-completion map entries retain structural fallback during development and are explicitly logged.
+- `MAP_SEEN` / `MAP_GONE` now include the matched map-boss identity and detector source when database OCR is used.
+- SetupUI records the map-boss database version and SHA-256 inside each generated `poe2_run_settings.json` audit snapshot.
+- `Build.ps1` now copies `map-bosses.json` into the BossWatcher publish directory.
+- Identity dual-lane resolver windows remain separately calibrated pending a dedicated per-lane long-grace refactor.
+
+## 0.3.2 - Configurable GONE confirmation grace
+
+- Raised the default identity/single-boss disappearance confirmation grace from 350 ms to 8000 ms.
+- The original `firstMissing` timestamp remains authoritative, so confirmation delay does not inflate recorded completion time.
+- Added `--settings <path>` support for the generated shared `poe2_run_settings.json` snapshot.
+- Added separate user-facing `BossWatcher.MapGoneConfirmMs` for structural Maps mode (default 700 ms). It is intentionally independent because map qualification must occur before exit.
+- Identity dual-lane resolver windows remain separately calibrated at 350/700 ms.
+- Valid shared-setting ranges are GoneConfirmMs=500-30000 ms and MapGoneConfirmMs=100-30000 ms; invalid/missing overlays fall back to validated `config.json`.
+- Pending missing diagnostics now include the active confirmation window.
 
 ## 0.3.1 - Map context / structural ordinary-map bosses
 

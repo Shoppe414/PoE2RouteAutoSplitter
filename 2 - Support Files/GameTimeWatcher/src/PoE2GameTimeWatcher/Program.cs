@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.Text;
@@ -7,7 +7,7 @@ namespace PoE2GameTimeWatcher;
 
 internal static class Program
 {
-    private const string Version = "0.4.3";
+    private const string Version = "0.4.5-structure-first";
 
     [STAThread]
     private static int Main(string[] args)
@@ -19,25 +19,32 @@ internal static class Program
         {
             var baseDir = AppContext.BaseDirectory;
             var configPath = ResolveConfigPath(baseDir, GetArg(args, "--config"));
+            var settingsFile = GetArg(args, "--settings");
             var stateFile = GetArg(args, "--state-file");
             startupStateFile = stateFile;
             var testImage = GetArg(args, "--test-image");
             var diagnosticDir = GetArg(args, "--diagnostic-dir");
+            var diagnosticImageDir = GetArg(args, "--diagnostic-image-dir");
             var devConsole = args.Any(a => a.Equals("--dev-console", StringComparison.OrdinalIgnoreCase));
 
             diagnostics = new DiagnosticLogger(diagnosticDir);
             diagnostics.InstallGlobalHandlers();
+            var diagnosticImageDirectory = string.IsNullOrWhiteSpace(diagnosticImageDir) ? diagnostics.DirectoryPath : Path.GetFullPath(diagnosticImageDir);
+            if (!string.IsNullOrWhiteSpace(diagnosticImageDirectory)) Directory.CreateDirectory(diagnosticImageDirectory);
             diagnostics.Log("STARTUP",
                 $"version={Version} pid={Environment.ProcessId} baseDir={baseDir} " +
                 $"os={Environment.OSVersion} process64={Environment.Is64BitProcess} args={string.Join(" ", args)}");
 
             var config = AppConfig.Load(configPath);
+            var settingsStatus = RuntimeSettingsOverlay.Apply(config, settingsFile);
+            diagnostics.Log("SETTINGS_OVERLAY", settingsStatus);
             var configDir = Path.GetDirectoryName(Path.GetFullPath(configPath)) ?? baseDir;
             diagnostics.Log("CONFIG_LOADED",
                 $"path={Path.GetFullPath(configPath)} fps={config.CaptureFps} fastFps={config.FastCaptureFps} " +
                 $"inputFastMs={config.InputFastModeMs} inputHintMs={config.InputHintWindowMs} heartbeatMs={config.HeartbeatMs} provisionalTimeoutMs={config.ProvisionalTimeoutMs} " +
                 $"stackThreshold={config.PauseStackThreshold:F4} resumeThreshold={config.ResumeGameThreshold:F4} bannerThreshold={config.PauseBannerThreshold:F4} " +
                 $"exitThreshold={config.ExitPathOfExileThreshold:F4} mtxThreshold={config.MtxShopThreshold:F4} " +
+                $"gameLanguage={config.GameLanguage} detectorPolicy=structure-first/banner-second/text-low-weight " +
                 $"foregroundRequired={config.RequireForegroundForNewDetection}");
 
             using var matcher = new TemplateMatcher(config, configDir);
@@ -65,15 +72,26 @@ internal static class Program
                 return 2;
             }
 
-            var writer = new StateWriter(stateFile);
+            var statePath = Path.GetFullPath(stateFile);
+            var stateDirectory = Path.GetDirectoryName(statePath)!;
+            var userSetupDirectory = Directory.GetParent(stateDirectory)?.FullName;
+            var releaseRoot = userSetupDirectory is null ? null : Directory.GetParent(userSetupDirectory)?.FullName;
+            var runtimeDiagnosticDirectory = !string.IsNullOrWhiteSpace(diagnosticDir)
+                ? Path.GetFullPath(diagnosticDir)
+                : releaseRoot is null
+                    ? stateDirectory
+                    : Path.Combine(releaseRoot, "4-README's_and_Diagnostics", "Diagnostics");
+            var writer = new StateWriter(stateFile, runtimeDiagnosticDirectory);
             var finder = new GameWindowFinder(config.ProcessNames);
             var capture = new ScreenCapture();
 
             Console.WriteLine($"PoE2 GameTimeWatcher v{Version} - optional manual-pause helper");
-            Console.WriteLine("Detects manual pause / MTX state with input-assisted low-latency visual confirmation.");
+            Console.WriteLine("Detects manual pause / MTX state with structure-first visual confirmation.");
             Console.WriteLine("Loading-screen Game Time is handled directly by the ASL from Client.txt.");
             Console.WriteLine($"State file: {Path.GetFullPath(stateFile)}");
-            if (diagnostics.Enabled) Console.WriteLine($"Diagnostic directory: {diagnostics.DirectoryPath}");
+            Console.WriteLine($"Runtime settings: {settingsStatus}");
+            Console.WriteLine($"PoE2 game language: {config.GameLanguage} (pause structure is primary; paused-state banner is secondary; English text templates are low-weight only)");
+            if (diagnostics.Enabled) Console.WriteLine($"Diagnostic directory: {diagnostics.DirectoryPath} | images: {diagnosticImageDirectory}");
             if (!devConsole) Console.WriteLine("Use --dev-console to show detector scores continuously.");
 
             ManualPauseVisualState stableState = ManualPauseVisualState.Running;
@@ -338,7 +356,7 @@ internal static class Program
                                 // This gives us the exact frame the watcher saw, not a separately
                                 // captured screenshot from Windows/Steam.
                                 var candidateNow = DateTime.UtcNow;
-                                if (diagnostics.Enabled && diagnostics.DirectoryPath is not null &&
+                                if (diagnostics.Enabled && diagnosticImageDirectory is not null &&
                                     candidateNow >= nextCandidateScreenshot &&
                                     stableState == ManualPauseVisualState.Running &&
                                     rawState == ManualPauseVisualState.Running &&
@@ -355,8 +373,8 @@ internal static class Program
                                         using var candidateBitmap = cap.Bitmap.Clone(
                                             new Rectangle(cropX, 0, cropWidth, cap.Bitmap.Height),
                                             System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-                                        var candidatePath = Path.Combine(diagnostics.DirectoryPath,
-                                            $"candidate-{DateTime.Now:HHmmss-fff}-r{lastResumeScore:F3}-b{lastBannerScore:F3}-e{lastExitScore:F3}-m{lastMtxScore:F3}.png");
+                                        var candidatePath = Path.Combine(diagnosticImageDirectory!,
+                                            $"candidate-{DateTime.Now:yyyyMMdd-HHmmss-fff}-r{lastResumeScore:F3}-b{lastBannerScore:F3}-e{lastExitScore:F3}-m{lastMtxScore:F3}.png");
                                         candidateBitmap.Save(candidatePath, System.Drawing.Imaging.ImageFormat.Png);
                                         diagnostics.Log("CANDIDATE_SCREENSHOT",
                                             $"path={candidatePath} analyzeMs={lastAnalyzeMs:F1} client={cap.ClientWidth}x{cap.ClientHeight} " +
@@ -456,14 +474,14 @@ internal static class Program
                                         $"| reason={reason} | pause={lastPauseScore:F3} | stack={lastStackScore:F3} | resume={lastResumeScore:F3} " +
                                         $"| banner={lastBannerScore:F3} | exit={lastExitScore:F3} | mtx={lastMtxScore:F3}");
 
-                                    if (diagnostics.Enabled && diagnostics.DirectoryPath is not null)
+                                    if (diagnostics.Enabled && diagnosticImageDirectory is not null)
                                     {
                                         try
                                         {
                                             var safeOld = old.ToString();
                                             var safeNew = stableState.ToString();
-                                            var shot = Path.Combine(diagnostics.DirectoryPath,
-                                                $"state-{DateTime.Now:HHmmss-fff}-{safeOld}-to-{safeNew}.png");
+                                            var shot = Path.Combine(diagnosticImageDirectory!,
+                                                $"state-{DateTime.Now:yyyyMMdd-HHmmss-fff}-{safeOld}-to-{safeNew}.png");
                                             cap.Bitmap.Save(shot, System.Drawing.Imaging.ImageFormat.Png);
                                             diagnostics.Log("STATE_SCREENSHOT", $"path={shot}");
                                         }
@@ -474,14 +492,14 @@ internal static class Program
                                 // Diagnostic screenshots are intentionally last. They may take
                                 // hundreds of milliseconds to PNG-encode at 5120x1440, but by this
                                 // point provisional/confirmed wire state has already been published.
-                                if (diagnostics.Enabled && diagnostics.DirectoryPath is not null &&
+                                if (diagnostics.Enabled && diagnosticImageDirectory is not null &&
                                     menuProbeIndex >= 0 && menuProbeIndex < menuProbeDelaysMs.Length &&
                                     DateTime.UtcNow >= menuProbeStart.AddMilliseconds(menuProbeDelaysMs[menuProbeIndex]))
                                 {
                                     try
                                     {
-                                        var probePath = Path.Combine(diagnostics.DirectoryPath,
-                                            $"menu-probe-{DateTime.Now:HHmmss-fff}-{menuProbeDelaysMs[menuProbeIndex]}ms-" +
+                                        var probePath = Path.Combine(diagnosticImageDirectory!,
+                                            $"menu-probe-{DateTime.Now:yyyyMMdd-HHmmss-fff}-{menuProbeDelaysMs[menuProbeIndex]}ms-" +
                                             $"s{lastStackScore:F3}-r{lastResumeScore:F3}-b{lastBannerScore:F3}-e{lastExitScore:F3}-m{lastMtxScore:F3}.png");
                                         cap.Bitmap.Save(probePath, System.Drawing.Imaging.ImageFormat.Png);
                                         diagnostics.Log("MENU_PROBE_SCREENSHOT",
@@ -593,8 +611,17 @@ internal static class Program
         {
             var stateDir = Path.GetDirectoryName(Path.GetFullPath(stateFile));
             if (string.IsNullOrWhiteSpace(stateDir)) return;
-            Directory.CreateDirectory(stateDir);
-            var path = Path.Combine(stateDir, "poe2_gametimewatcher_startup_error.log");
+
+            // Normal SetupUI deployments place the state file under:
+            // <release>\1 - User Setup\LiveSplit Target. Keep fatal startup logs with
+            // the rest of the centralized diagnostics instead of polluting LiveSplit Target.
+            var userSetupDir = Directory.GetParent(stateDir)?.FullName;
+            var releaseRoot = userSetupDir is null ? null : Directory.GetParent(userSetupDir)?.FullName;
+            var errorDir = releaseRoot is null
+                ? stateDir
+                : Path.Combine(releaseRoot, "4-README's_and_Diagnostics", "Diagnostics");
+            Directory.CreateDirectory(errorDir);
+            var path = Path.Combine(errorDir, "poe2_gametimewatcher_startup_error.log");
             File.AppendAllText(path,
                 DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture) +
                 " FATAL STARTUP ERROR" + Environment.NewLine +

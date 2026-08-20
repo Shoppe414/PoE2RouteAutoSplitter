@@ -10,6 +10,11 @@ $publishedExe = Join-Path $publish 'PoE2RouteSetup.exe'
 $userExe = Join-Path $userRoot 'PoE2RouteSetup.exe'
 $tempArtifacts = Join-Path $env:TEMP ('PoE2UI-' + [Guid]::NewGuid().ToString('N').Substring(0, 8))
 
+$properNounRefresh = Join-Path $root 'Refresh-ProperNouns.ps1'
+
+Write-Host 'Refreshing authoritative PoE2 boss/campaign/map area display names...'
+& $properNounRefresh
+
 try {
     Write-Host "Using short build-artifact path: $tempArtifacts"
     New-Item -ItemType Directory -Force -Path $tempArtifacts | Out-Null

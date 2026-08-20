@@ -8,11 +8,17 @@ public sealed class StateWriter
     private readonly string _path;
     private readonly string _logPath;
 
-    public StateWriter(string path)
+    public StateWriter(string path, string? logDirectory = null)
     {
         _path = Path.GetFullPath(path);
-        Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
-        _logPath = Path.Combine(Path.GetDirectoryName(_path)!, "poe2_gametimewatcher.log");
+        var stateDirectory = Path.GetDirectoryName(_path)!;
+        Directory.CreateDirectory(stateDirectory);
+
+        var resolvedLogDirectory = string.IsNullOrWhiteSpace(logDirectory)
+            ? stateDirectory
+            : Path.GetFullPath(logDirectory);
+        Directory.CreateDirectory(resolvedLogDirectory);
+        _logPath = Path.Combine(resolvedLogDirectory, "poe2_gametimewatcher.log");
     }
 
     public void Write(string state, string reason, long stateSequence, long originUtcTicks, double pauseScore, double mtxScore)

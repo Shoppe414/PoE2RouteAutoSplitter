@@ -13,7 +13,7 @@ try {
     }
     New-Item -ItemType Directory -Force -Path $publish | Out-Null
 
-    Write-Host 'Publishing self-contained PoE2 GameTimeWatcher v0.4.3...'
+    Write-Host 'Publishing self-contained PoE2 GameTimeWatcher v0.4.4...'
     & dotnet restore $project -r win-x64 --artifacts-path $tempArtifacts --disable-build-servers
     if ($LASTEXITCODE -ne 0) { throw "dotnet restore failed with exit code $LASTEXITCODE." }
 

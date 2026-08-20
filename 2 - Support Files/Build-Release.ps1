@@ -1,5 +1,5 @@
-param(
-    [string]$Version = '2.2.1',
+﻿param(
+    [string]$Version = '3.0.0',
     [switch]$SkipInstaller,
     [switch]$SkipPortableZip
 )
@@ -8,7 +8,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 if ($Version -notmatch '^\d+\.\d+\.\d+$') {
-    throw "Version must look like 2.2.1. Received: $Version"
+    throw "Version must look like 3.0.0. Received: $Version"
 }
 
 $supportRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -18,6 +18,8 @@ $setupUiRoot = Join-Path $supportRoot 'Setup UI [Configuration]'
 $bossRoot = Join-Path $supportRoot 'BossWatcher'
 $gameTimeRoot = Join-Path $supportRoot 'GameTimeWatcher'
 $installerRoot = Join-Path $supportRoot 'Installer'
+$verificationRoot = Join-Path $releaseRoot '3 - verification files'
+$documentationRoot = Join-Path $releaseRoot "4-README's_and_Diagnostics"
 $artifactsRoot = Join-Path $releaseRoot 'artifacts'
 $portableName = "PoE2AS-v$Version"
 # Stage the expanded portable runtime under the Windows temp directory. Keeping
@@ -28,6 +30,10 @@ $stageBase = Join-Path ([IO.Path]::GetTempPath()) ("PoE2RA-{0}" -f ([Guid]::NewG
 $portableRoot = Join-Path $stageBase $portableName
 $portableUserRoot = Join-Path $portableRoot '1 - User Setup'
 $portableSupportRoot = Join-Path $portableRoot '2 - Support Files'
+$portableVerificationRoot = Join-Path $portableRoot '3 - verification files'
+$portableDocumentationRoot = Join-Path $portableRoot "4-README's_and_Diagnostics"
+$portableDiagnosticsRoot = Join-Path $portableDocumentationRoot 'Diagnostics'
+$portableDiagnosticImagesRoot = Join-Path $portableDiagnosticsRoot 'images'
 $portableTarget = Join-Path $portableUserRoot 'LiveSplit Target'
 $portableZip = Join-Path $artifactsRoot "$portableName.zip"
 $installerOutput = $artifactsRoot
@@ -130,14 +136,17 @@ function Resolve-Iscc {
 
 Write-Host "Building PoE2 Route AutoSplitter v$Version release..."
 
-# The OCR language model is intentionally generated/downloaded rather than stored in Git.
-$trainedData = Join-Path $bossRoot 'tessdata\eng.traineddata'
-if (-not (Test-Path -LiteralPath $trainedData)) {
-    Write-Host 'OCR language data is missing; downloading it...'
+# BossWatcher can switch among the authoritative PoE2 game-client languages,
+# so release builds require every corresponding tessdata_fast model.
+$requiredTessCodes = @('eng','fra','deu','spa','jpn','kor','por','rus','tha')
+$missingTess = @($requiredTessCodes | Where-Object { -not (Test-Path -LiteralPath (Join-Path $bossRoot ("tessdata\$_.traineddata")) -PathType Leaf) })
+if ($missingTess.Count -gt 0) {
+    Write-Host "OCR language data is missing ($($missingTess -join ', ')); downloading supported models..."
     & (Join-Path $bossRoot 'Setup-OCR.ps1')
 }
-if (-not (Test-Path -LiteralPath $trainedData)) {
-    throw "OCR setup did not create: $trainedData"
+$missingTess = @($requiredTessCodes | Where-Object { -not (Test-Path -LiteralPath (Join-Path $bossRoot ("tessdata\$_.traineddata")) -PathType Leaf) })
+if ($missingTess.Count -gt 0) {
+    throw "OCR setup did not create required models: $($missingTess -join ', ')"
 }
 
 Write-Host 'Building self-contained Setup UI...'
@@ -163,11 +172,17 @@ if (-not (Test-Path -LiteralPath $gameTimeExe)) { throw "Missing built GameTimeW
 
 if (Test-Path -LiteralPath $artifactsRoot) { Remove-DirectoryTreeSafe -Path $artifactsRoot }
 if (Test-Path -LiteralPath $stageBase) { Remove-DirectoryTreeSafe -Path $stageBase }
-New-Item -ItemType Directory -Force -Path $artifactsRoot, $portableUserRoot, $portableSupportRoot, $portableTarget | Out-Null
+New-Item -ItemType Directory -Force -Path $artifactsRoot, $portableUserRoot, $portableSupportRoot, $portableVerificationRoot, $portableDocumentationRoot, $portableDiagnosticsRoot, $portableDiagnosticImagesRoot, $portableTarget | Out-Null
 Write-Host "Using short release staging path: $portableRoot"
 
-# User launcher.
+# User launcher and supported user-facing settings.
 Copy-Item -LiteralPath $setupExe -Destination (Join-Path $portableUserRoot 'PoE2RouteSetup.exe') -Force
+foreach ($userFileName in @('PoE2AS-Settings.json', 'SETTINGS-README.txt')) {
+    $userFile = Join-Path $userRoot $userFileName
+    if (Test-Path -LiteralPath $userFile -PathType Leaf) {
+        Copy-Item -LiteralPath $userFile -Destination (Join-Path $portableUserRoot $userFileName) -Force
+    }
+}
 
 # Runtime-only Setup UI data. Source/build files stay in Git and are not installed.
 $runtimeUi = Join-Path $portableSupportRoot 'Setup UI [Configuration]'
@@ -190,6 +205,8 @@ $runtimeBoss = Join-Path $portableSupportRoot 'BossWatcher'
 New-Item -ItemType Directory -Force -Path $runtimeBoss | Out-Null
 Copy-DirectoryContents -Source $bossPublish -Destination (Join-Path $runtimeBoss 'publish')
 Copy-Item -LiteralPath (Join-Path $bossRoot 'bosses.txt') -Destination $runtimeBoss -Force
+Copy-Item -LiteralPath (Join-Path $bossRoot 'map-bosses.json') -Destination $runtimeBoss -Force
+Copy-Item -LiteralPath (Join-Path $bossRoot 'boss-localizations.json') -Destination $runtimeBoss -Force
 New-Item -ItemType Directory -Force -Path (Join-Path $runtimeBoss 'BossLists') | Out-Null
 Copy-Item -LiteralPath (Join-Path $bossRoot 'BossLists\support-only.txt') -Destination (Join-Path $runtimeBoss 'BossLists\support-only.txt') -Force
 
@@ -200,6 +217,17 @@ New-Item -ItemType Directory -Force -Path $runtimeGameTime | Out-Null
 Copy-DirectoryContents -Source $gameTimePublish -Destination (Join-Path $runtimeGameTime 'publish')
 Copy-Item -LiteralPath (Join-Path $gameTimeRoot 'Run-Diagnostic.ps1') -Destination $runtimeGameTime -Force
 Copy-Item -LiteralPath (Join-Path $gameTimeRoot 'Run-Diagnostic.cmd') -Destination $runtimeGameTime -Force
+
+# User-facing verification helper and localized documentation. Runtime hashes are
+# generated after the staged package has been fully assembled.
+$verifyHelper = Join-Path $verificationRoot 'Verify-SHA256.ps1'
+if (Test-Path -LiteralPath $verifyHelper -PathType Leaf) {
+    Copy-Item -LiteralPath $verifyHelper -Destination (Join-Path $portableVerificationRoot 'Verify-SHA256.ps1') -Force
+}
+if (Test-Path -LiteralPath $documentationRoot -PathType Container) {
+    Copy-DirectoryContents -Source $documentationRoot -Destination $portableDocumentationRoot
+}
+New-Item -ItemType Directory -Force -Path $portableDiagnosticsRoot, $portableDiagnosticImagesRoot | Out-Null
 
 @"
 PoE2 Route AutoSplitter v$Version - Installed Runtime
@@ -224,7 +252,7 @@ for Boss Rush / mixed modes. GameTimeWatcher is also installed there, but is onl
 needed when the user enables the optional setting to pause LiveSplit Game Time while
 PoE2 is manually paused (pause menu / MTX Shop). If Developer console diagnostics
 is enabled, Start GameTimeWatcher launches the external crash watchdog and stores
-a timestamped diagnostics folder beside the GameTimeWatcher runtime.
+diagnostic logs under 4-README's_and_Diagnostics\Diagnostics and PNG captures under its images subfolder.
 
 The installed runtime is self-contained for normal use; users do not need the .NET SDK.
 The optional external crash diagnostic uses Windows PowerShell.
@@ -258,8 +286,37 @@ if (Get-ChildItem -LiteralPath $portableRoot -Recurse -File -Filter '*.lsl') {
     throw 'Staged runtime unexpectedly contains a LiveSplit .lsl layout.'
 }
 if (-not (Test-Path -LiteralPath (Join-Path $portableUserRoot 'PoE2RouteSetup.exe') -PathType Leaf)) { throw 'Staged Setup UI executable is missing.' }
+if (-not (Test-Path -LiteralPath (Join-Path $portableUserRoot 'PoE2AS-Settings.json') -PathType Leaf)) { throw 'Staged user settings file is missing.' }
+if (-not (Test-Path -LiteralPath (Join-Path $portableUserRoot 'SETTINGS-README.txt') -PathType Leaf)) { throw 'Staged settings README is missing.' }
 if (-not (Test-Path -LiteralPath (Join-Path $runtimeBoss 'publish\PoE2BossWatcher.exe') -PathType Leaf)) { throw 'Staged BossWatcher executable is missing.' }
 if (-not (Test-Path -LiteralPath (Join-Path $runtimeGameTime 'publish\PoE2GameTimeWatcher.exe') -PathType Leaf)) { throw 'Staged GameTimeWatcher executable is missing.' }
+if (-not (Test-Path -LiteralPath $portableVerificationRoot -PathType Container)) { throw 'Staged verification directory is missing.' }
+if (-not (Test-Path -LiteralPath $portableDocumentationRoot -PathType Container)) { throw 'Staged README/diagnostics directory is missing.' }
+if (-not (Test-Path -LiteralPath $portableDiagnosticImagesRoot -PathType Container)) { throw 'Staged diagnostic images directory is missing.' }
+
+# Create an internal runtime verification manifest. Mutable user settings, generated
+# LiveSplit Target files, and diagnostic output are intentionally excluded.
+$runtimeHashManifest = Join-Path $portableVerificationRoot 'RUNTIME-SHA256SUMS.txt'
+$runtimeHashFiles = New-Object System.Collections.Generic.List[System.IO.FileInfo]
+foreach ($hashRoot in @($portableUserRoot, $portableSupportRoot, $portableDocumentationRoot)) {
+    Get-ChildItem -LiteralPath $hashRoot -Recurse -File | ForEach-Object {
+        $relative = $_.FullName.Substring($portableRoot.Length).TrimStart([char[]]@([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)).Replace([IO.Path]::DirectorySeparatorChar, [char]'/')
+        $isMutable = $relative -like '1 - User Setup/LiveSplit Target/*' `
+            -or $relative -eq '1 - User Setup/PoE2AS-Settings.json' `
+            -or $relative -like "4-README's_and_Diagnostics/Diagnostics/*"
+        if (-not $isMutable) {
+            $runtimeHashFiles.Add($_)
+        }
+    }
+}
+$runtimeHashLines = foreach ($file in @($runtimeHashFiles | Sort-Object FullName)) {
+    $relative = $file.FullName.Substring($portableRoot.Length).TrimStart([char[]]@([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)).Replace([IO.Path]::DirectorySeparatorChar, [char]'/')
+    $hash = Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256
+    "{0}  {1}" -f $hash.Hash.ToLowerInvariant(), $relative
+}
+$runtimeHashLines | Set-Content -LiteralPath $runtimeHashManifest -Encoding ASCII
+Write-Host "Runtime verification manifest: $runtimeHashManifest"
+
 Write-Host 'Assembled runtime validation passed.'
 
 if (-not $SkipPortableZip) {

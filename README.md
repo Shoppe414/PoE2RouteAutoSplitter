@@ -2,6 +2,8 @@
 
 A setup tool and LiveSplit autosplitter for **Path of Exile 2 campaign speedrunning**.
 
+Current release: **v3.0.0 Release Candidate**.
+
 PoE2 Route AutoSplitter provides premade and custom routes for:
 
 * Exploration / area completion
@@ -14,14 +16,14 @@ PoE2 Route AutoSplitter provides premade and custom routes for:
 * Temple of Chaos
 * Sekhemas Trials
 * Custom user-defined routes
-* IN DEVELOPMENT - Maps
+* Maps (Important information here)
 
 The included **PoE2RouteSetup** application handles most of the setup for you.
 
 Allows for synchronous pausing of the game and LiveSplit timer when opening the pause menu.
 Game Time option in LiveSplit will exclude loading times and pause timer (when option is active).
 
-Screen shots found here: https://imgur.com/a/bmdGpsR
+Screen shots found here: https://imgur.com/a/VgiRn6o
 
 ---
 # Run Policies
@@ -40,11 +42,12 @@ even if you are are starting in a different zone.
 
 Because of the length of the game, I've developed the GameTimeWatcher which is a simple program that
 will tell LiveSplit to pause its Game Time while the Pause Game menu and microtransaction menu are open.
-This was intended to allow people to take breaks or address situations that may arise that require their full attention.
-Other menus will not pause the timer since you have control of your character.
+This was intended to allow people to take breaks or address situations that may arise that 
+require their full attention.
 
-The timer will run during in game cut scenes since you will have access to your inventory during these moments
-which can be used for inventory management for run optimization. The timer currently only pauses during loading screens,
+Other menus will not pause the timer since you have control of your character. The timer will run during in
+game cut scenes since you will have access to your inventory during these moments which can be 
+used for inventory management for run optimization. The timer currently only pauses during loading screens, 
 the pause menu, and microtransaction shop.
 
 ---
@@ -62,8 +65,8 @@ Go to the **Releases** section of this GitHub repository and download the latest
 For most users, the installer is the recommended method.
 
 A portable ZIP may also be available for users who prefer not to use the installer.
-This will require using powershell to run the \Setup-UI[Configuration]\Build.ps1 file
-to generate the RouteSetup.exe
+This will require using powershell to run the 2 - Support Files\Build-tools.ps1 file
+to generate the necessary executable files.
 
 ---
 
@@ -155,13 +158,16 @@ In LiveSplit:
 
    **Control → Scriptable Auto Splitter**
 
-5. Select the new **Scriptable Auto Splitter** component.
+5. Click "Layout Settings"
 
-6. Browse to the `.asl` file inside your **LiveSplit Target** folder.
+6. Select the new **Scriptable Auto Splitter** component.
 
-7. Save your layout.
+7. Browse to the `.asl` file inside your **LiveSplit Target** folder.
 
-You only need to change this path when you move the generated files or switch to a setup using a different ASL file.
+8. Save your layout.
+
+You only need to change this path when you move the generated files or switch to a setup
+using a different ASL file.
 
 > PoE2 Route AutoSplitter does **not** generate or replace your LiveSplit layout.
 
@@ -238,6 +244,7 @@ You can include:
 * Areas
 * Bosses
 * Both areas and bosses
+* Levels
 
 Add the objectives you want and arrange them in the desired order.
 
@@ -252,6 +259,72 @@ The application will create the custom:
 inside **LiveSplit Target**.
 
 Load these files using the same LiveSplit instructions above.
+
+---
+
+# Trials
+
+Intended for Trial of the Sekhemas and Temple of Chaos.
+
+Start condition is when you first enter the trial itself. The foyer where you perform setup is not tracked.
+
+There are 2 end conditions:
+
+1. You select how deep into the trial you want to go, and when you kill the boss at the defined depth, 
+the trial ends successfully. Failing to complete the trial is considered a failed run and a 
+manual restart is needed.
+
+2. Exiting the trial marks it complete. This option is available for those who what to treat exiting the 
+trial arena as the end condition. This means that collecting loot, caches, merchant shop, 
+and acendency selection will be part of the run.
+
+---
+
+# Vaal Ruins
+
+The foyer is considered a boundry zone for transition reasons. 
+This means entering the console room from a map will treat it as exiting the map, 
+and not a sub-area of that map.
+
+Vaal ruins are still under development
+
+---
+
+# Maps
+
+Setup of a map is not time while in a hideout or other type of map hub. Upon entry into the map, 
+the timer starts automatically, and will split on the first exit after the area boss is defeated. 
+If exiting the map before the area boss is defeated, the timer will continue to run. 
+This means you can rush to kill the boss, exit the map, re-enter the same map and extra map 
+content with a paused timer. (alternative policy below)
+
+Maps runs have several end point definitions:
+
+* Fixed number of map runs
+* Until first death (Deathless Run)
+* Manual finish
+* Defeating a specific Pinnacle Boss
+
+You can also activate death tracking with 3 opitons:
+* no death tracking
+* First Death Only
+* Track Deaths
+
+When selecting either first death or tracked deaths, you will need to input your character's name 
+exactly as it appears in game. This is because it reads the client logs to identify your character's death.
+
+There are 2 pausing policies:
+
+* Using the defeat of a boss as the defined map completion event and the split ends upon first exit after
+boss defeat. Similar to PoE2's map completion policy.
+* Alternative policy: The timer will only pause in loading screens, during a manual pause, or in the
+microtransaction menu (if enabled). All other times, including map setup, inventory management, and loot parsing.
+
+**VERY IMPORTANT: Exiting a map, regardless of map state, a snapshot of the time upon exit will be saved.** 
+**Even though the GAME TIMER WILL REMAIN RUNNING, setup time after a failed map run attempt WILL NOT be tracked.**
+ Upon entry to a new map instance, LiveSplit will be back dated to the time you first exited the original map,
+ split, and the timer will start on the new map. Should you choose to manually end the split early, 
+ it should also use that backdated time when you first left the failed map.
 
 ---
 
@@ -418,8 +491,37 @@ This makes problems significantly easier to reproduce and fix.
 
 ---
 
+# Package Verification and Diagnostics
+
+SHA-256 manifests used to verify release/runtime files are stored in:
+
+`3 - verification files`
+
+Run setup-validation manifests, per-run SHA-256 manifests, audit logs, and readable run summaries are also stored
+there. They are kept outside `LiveSplit Target` so generating a new route does not delete previous 
+per-run audit files.
+
+Verification files can be zipped and included when submitting an official speedrun attempt. 
+These files should not be considered authoratative in confirming a valid speed run. 
+A video recording along side these files provide a written record of events that happened 
+during a speedrun and the settings used for that specific speedrun. 
+
+Verification files should be used in conjunction of video files, not a replacement for video confirmation.
+
+Diagnostic logs from SetupUI, BossWatcher, and GameTimeWatcher are centralized under:
+
+`4-README's_and_Diagnostics\Diagnostics`
+
+Diagnostic PNG captures are stored under:
+
+`4-README's_and_Diagnostics\Diagnostics\images`
+
+---
+
 # Current Major Version
 
-**PoE2 Route AutoSplitter 2.x**
+**PoE2 Route AutoSplitter 3.x**
 
-Version 2 introduced the graphical route setup application and installer-based distribution, allowing normal users to configure the autosplitter without compiling the project or running PowerShell commands.
+Version 3 adds multilingual SetupUI/game-language support, authoritative localized boss and area display names,
+expanded Campaign/Trials/Vaal Ruins/Maps route policies, centralized diagnostics and verification files, and
+adaptive height-relative BossWatcher capture geometry for standard, ultrawide, and super-ultrawide game clients.

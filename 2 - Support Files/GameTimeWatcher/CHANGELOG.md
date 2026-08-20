@@ -1,4 +1,20 @@
+# v0.4.5-structure-first — development
+
+- Added the shared PoE2 game-language setting to runtime diagnostics.
+- Reworked pause detection to prioritize language-neutral pause-menu geometry.
+- Added a second-weight paused-banner detector that looks for the dark banner plus centered bright title shape instead of exact English `GAME PAUSED` text.
+- English `Resume Game` and `Exit Path of Exile` templates are now low-weight corroborators only and are skipped on non-English game clients.
+- Pause evidence weighting is structure 68%, banner 24%, Resume text 4%, Exit text 4%.
+- MTX Shop detection and the existing manual-pause state protocol remain unchanged.
+
 # Changelog
+
+## v0.4.4
+- Added `--settings <path>` support for SetupUI's generated shared run-settings snapshot.
+- User-facing overrides cover ProvisionalTimeoutMs and the pause-stack, Resume Game, pause-banner, Exit Path of Exile, and MTX template thresholds.
+- Invalid or missing shared settings fall back to the existing validated component `config.json`.
+- External diagnostic launcher now records/hashes/copies the run-settings snapshot.
+- Visual detection logic and tested default threshold values are otherwise unchanged from v0.4.3.
 
 
 ## v0.4.3

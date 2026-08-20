@@ -3,9 +3,10 @@ $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $releaseRoot = Split-Path -Parent $root
 
 $bossRoot = Join-Path $root 'BossWatcher'
-$trainedData = Join-Path $bossRoot 'tessdata\eng.traineddata'
-if (-not (Test-Path -LiteralPath $trainedData)) {
-    Write-Host 'OCR language data is missing; downloading it...'
+$requiredTessCodes = @('eng','fra','deu','spa','jpn','kor','por','rus','tha')
+$missingTess = @($requiredTessCodes | Where-Object { -not (Test-Path -LiteralPath (Join-Path $bossRoot ("tessdata\$_.traineddata")) -PathType Leaf) })
+if ($missingTess.Count -gt 0) {
+    Write-Host "OCR language data is missing ($($missingTess -join ', ')); downloading supported models..."
     & (Join-Path $bossRoot 'Setup-OCR.ps1')
 }
 

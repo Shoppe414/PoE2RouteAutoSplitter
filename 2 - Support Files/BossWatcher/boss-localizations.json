@@ -1,0 +1,2325 @@
+{
+    "SchemaVersion":  1,
+    "DatabaseVersion":  "poe2db-20260820T050832Z",
+    "Purpose":  "Authoritative PoE2 game-client boss names for multilingual BossWatcher OCR, refreshed from PoE2DB by canonical English entry identity. Missing names are omitted; no machine translation.",
+    "Bosses":  [
+                   {
+                       "Id":  "the_bloated_miller",
+                       "Names":  {
+                                     "fr":  [
+                                                "Le Meunier boursouflé"
+                                            ],
+                                     "de":  [
+                                                "Der Aufgedunsene Müller"
+                                            ],
+                                     "es-ES":  [
+                                                   "El molinero hinchado"
+                                               ],
+                                     "ja":  [
+                                                "腐乱した粉屋"
+                                            ],
+                                     "ko":  [
+                                                "불어 터진 방아꾼"
+                                            ],
+                                     "ru":  [
+                                                "Раздувшийся мельник"
+                                            ],
+                                     "th":  [
+                                                "เจ้าของโรงสีขึ้นอืด"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "beira_of_the_rotten_pack",
+                       "Names":  {
+                                     "fr":  [
+                                                "Beira de la Meute pourrie"
+                                            ],
+                                     "de":  [
+                                                "Beira des Verrotteten Rudels"
+                                            ],
+                                     "es-ES":  [
+                                                   "Beira, de la manada putrefacta"
+                                               ],
+                                     "ja":  [
+                                                "腐りし群れのベイラ"
+                                            ],
+                                     "ko":  [
+                                                "썩은 무리의 베이라"
+                                            ],
+                                     "ru":  [
+                                                "Бейра из Гнилой стаи"
+                                            ],
+                                     "th":  [
+                                                "เบย์ร่าแห่งฝูงหมาป่าสามานย์"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "the_devourer",
+                       "Names":  {
+                                     "fr":  [
+                                                "Le Dévoreur"
+                                            ],
+                                     "es-ES":  [
+                                                   "El devorador"
+                                               ],
+                                     "ja":  [
+                                                "デヴァウラー"
+                                            ],
+                                     "ko":  [
+                                                "포식자"
+                                            ],
+                                     "ru":  [
+                                                "Пожиратель"
+                                            ],
+                                     "th":  [
+                                                "ตัวสวาปาม"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "the_brambleghast",
+                       "Names":  {
+                                     "fr":  [
+                                                "Le Phantasmagoronce"
+                                            ],
+                                     "de":  [
+                                                "Der Dornengeist"
+                                            ],
+                                     "es-ES":  [
+                                                   "El Horror de espinas"
+                                               ],
+                                     "ja":  [
+                                                "ブランブルガスト"
+                                            ],
+                                     "ko":  [
+                                                "가시나무망령"
+                                            ],
+                                     "pt-BR":  [
+                                                   "O Sarça-espectral"
+                                               ],
+                                     "ru":  [
+                                                "Жуткий колючник"
+                                            ],
+                                     "th":  [
+                                                "ภูติไม้หนาม"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "the_rust_king",
+                       "Names":  {
+                                     "fr":  [
+                                                "Le Roi de la Rouille"
+                                            ],
+                                     "de":  [
+                                                "Der Rostkönig"
+                                            ],
+                                     "es-ES":  [
+                                                   "El rey del óxido"
+                                               ],
+                                     "ja":  [
+                                                "錆の王"
+                                            ],
+                                     "ko":  [
+                                                "녹왕"
+                                            ],
+                                     "pt-BR":  [
+                                                   "O Rei da Ferrugem"
+                                               ],
+                                     "ru":  [
+                                                "Ржавый король"
+                                            ],
+                                     "th":  [
+                                                "กษัตริย์สนิม"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "the_rotten_druid",
+                       "Names":  {
+                                     "fr":  [
+                                                "Le Druide pourri"
+                                            ],
+                                     "de":  [
+                                                "Der verfaulte Druide"
+                                            ],
+                                     "es-ES":  [
+                                                   "El Druida putrefacto"
+                                               ],
+                                     "ja":  [
+                                                "腐ったドルイド"
+                                            ],
+                                     "ko":  [
+                                                "썩은 드루이드"
+                                            ],
+                                     "ru":  [
+                                                "Сгнивший друид"
+                                            ],
+                                     "th":  [
+                                                "ดรูอิดกายเปื่อย"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "asinia",
+                       "Names":  {
+                                     "fr":  [
+                                                "Asinia, la Consort du Préteur"
+                                            ],
+                                     "de":  [
+                                                "Asinia, Gemahlin des Prätors"
+                                            ],
+                                     "es-ES":  [
+                                                   "Asinia, la consorte del pretor"
+                                               ],
+                                     "ja":  [
+                                                "法務官の妻、アシニア"
+                                            ],
+                                     "ko":  [
+                                                "집정관의 배우자 아시니아"
+                                            ],
+                                     "ru":  [
+                                                "Азиния, супруга претора"
+                                            ],
+                                     "th":  [
+                                                "อะซีเนีย ภริยาข้าหลวง"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "lachlann",
+                       "Names":  {
+                                     "fr":  [
+                                                "Lachlann, l\u0027éternelle lamentation"
+                                            ],
+                                     "de":  [
+                                                "Lachlann der endlosen Wehklage"
+                                            ],
+                                     "es-ES":  [
+                                                   "Lachlann del lamento eterno"
+                                               ],
+                                     "ja":  [
+                                                "終わりなき悲嘆のラクラン"
+                                            ],
+                                     "ko":  [
+                                                "끝없는 한탄의 라클란"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Lachlann do Lamento Eterno"
+                                               ],
+                                     "ru":  [
+                                                "Лакланн вечностенающий"
+                                            ],
+                                     "th":  [
+                                                "ลาคแลนน์ ผู้ไม่สิ้นโศกา"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "draven",
+                       "Names":  {
+                                     "fr":  [
+                                                "Draven, le Préteur éternel"
+                                            ],
+                                     "de":  [
+                                                "Draven, der ewige Prätor"
+                                            ],
+                                     "es-ES":  [
+                                                   "Draven, el Pretor eterno"
+                                               ],
+                                     "ja":  [
+                                                "永遠なる法務官、ドレイヴン"
+                                            ],
+                                     "ko":  [
+                                                "영원의 집정관 드레이븐"
+                                            ],
+                                     "ru":  [
+                                                "Дрейвен, претор Вечных"
+                                            ],
+                                     "th":  [
+                                                "เดรเวน ข้าหลวงนิรันดร์"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "crowbell",
+                       "Names":  {
+                                     "fr":  [
+                                                "Le Clochebeau"
+                                            ],
+                                     "de":  [
+                                                "Die Glockenkrähe"
+                                            ],
+                                     "es-ES":  [
+                                                   "El cuervo repicador"
+                                               ],
+                                     "ja":  [
+                                                "クロウベル"
+                                            ],
+                                     "ko":  [
+                                                "까마귀종"
+                                            ],
+                                     "pt-BR":  [
+                                                   "O Sinorvo"
+                                               ],
+                                     "ru":  [
+                                                "Колокольщик"
+                                            ],
+                                     "th":  [
+                                                "โครวเบลล์"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "king_in_the_mists",
+                       "Names":  {
+                                     "fr":  [
+                                                "Le Roi dans les Brumes"
+                                            ],
+                                     "de":  [
+                                                "Der König in den Nebeln"
+                                            ],
+                                     "es-ES":  [
+                                                   "El Rey de las nieblas"
+                                               ],
+                                     "ja":  [
+                                                "霧の王"
+                                            ],
+                                     "ko":  [
+                                                "연무 속의 왕"
+                                            ],
+                                     "pt-BR":  [
+                                                   "O Rei nas Brumas"
+                                               ],
+                                     "ru":  [
+                                                "Хозяин в Туманах"
+                                            ],
+                                     "th":  [
+                                                "ราชันในม่านหมอก"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "the_executioner",
+                       "Names":  {
+                                     "fr":  [
+                                                "Le Bourreau"
+                                            ],
+                                     "de":  [
+                                                "Der Henker"
+                                            ],
+                                     "es-ES":  [
+                                                   "El verdugo"
+                                               ],
+                                     "ja":  [
+                                                "処刑人"
+                                            ],
+                                     "ko":  [
+                                                "사형 집행자"
+                                            ],
+                                     "pt-BR":  [
+                                                   "O Carrasco"
+                                               ],
+                                     "ru":  [
+                                                "Палач"
+                                            ],
+                                     "th":  [
+                                                "เพชฌฆาต"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "candlemass",
+                       "Names":  {
+                                     "fr":  [
+                                                "Moultecierge, le Rituel vivant"
+                                            ],
+                                     "de":  [
+                                                "Lichtmess, Lebendiger Ritus"
+                                            ],
+                                     "es-ES":  [
+                                                   "Cirio, el Ritual viviente"
+                                               ],
+                                     "ja":  [
+                                                "生ける儀式、キャンドルマス"
+                                            ],
+                                     "ko":  [
+                                                "살아있는 의례 양초덩어리"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Candelário, o Ritual Vivo"
+                                               ],
+                                     "ru":  [
+                                                "Сретение, оживший ритуал"
+                                            ],
+                                     "th":  [
+                                                "แคนเดิลแมส พิธีกรรมเดินดิน"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "count_geonor",
+                       "Names":  {
+                                     "fr":  [
+                                                "Comte Géonor"
+                                            ],
+                                     "de":  [
+                                                "Graf Geonor"
+                                            ],
+                                     "es-ES":  [
+                                                   "El conde Geonor"
+                                               ],
+                                     "ja":  [
+                                                "ジオノール伯爵"
+                                            ],
+                                     "ko":  [
+                                                "지오너 백작"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Conde Geonor"
+                                               ],
+                                     "ru":  [
+                                                "Граф Жеонор"
+                                            ],
+                                     "th":  [
+                                                "เคานต์จีโอนอร์"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "rathbreaker",
+                       "Names":  {
+                                     "fr":  [
+                                                "Brise-muraille"
+                                            ],
+                                     "de":  [
+                                                "Erdbrecher"
+                                            ],
+                                     "es-ES":  [
+                                                   "Matajefes"
+                                               ],
+                                     "ja":  [
+                                                "ラスブレイカー"
+                                            ],
+                                     "ko":  [
+                                                "토성파괴자"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Rompe-fortes"
+                                               ],
+                                     "ru":  [
+                                                "Бурголом"
+                                            ],
+                                     "th":  [
+                                                "แรธเบรกเกอร์"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "rudja_the_dread_engineer",
+                       "Names":  {
+                                     "fr":  [
+                                                "Rudja, l\u0027Ingénieur de la terreur"
+                                            ],
+                                     "de":  [
+                                                "Rudja, die Schreckensingenieurin"
+                                            ],
+                                     "es-ES":  [
+                                                   "Rudja, la Ingeniera del terror"
+                                               ],
+                                     "ja":  [
+                                                "恐怖の技師、ルジャ"
+                                            ],
+                                     "ko":  [
+                                                "공포의 기술자 룻자"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Rudja, Engenheira Pavorosa"
+                                               ],
+                                     "ru":  [
+                                                "Руджа, инженер ужаса"
+                                            ],
+                                     "th":  [
+                                                "รุดจา วิศวกรเขย่าขวัญ"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "balbala",
+                       "Names":  {
+                                     "fr":  [
+                                                "Balbala, la traîtresse"
+                                            ],
+                                     "de":  [
+                                                "Balbala, die Verräterin"
+                                            ],
+                                     "es-ES":  [
+                                                   "Balbala, la Traidora"
+                                               ],
+                                     "ja":  [
+                                                "裏切り者、バルバラ"
+                                            ],
+                                     "ko":  [
+                                                "배반자 발바라"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Balbala, a Traidora"
+                                               ],
+                                     "ru":  [
+                                                "Балбала Изменница"
+                                            ],
+                                     "th":  [
+                                                "บัลบาล่า ผู้ทรยศ"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "jamanra_risen_king",
+                       "Names":  {
+                                     "fr":  [
+                                                "Jamanra, le Roi ressuscité"
+                                            ],
+                                     "de":  [
+                                                "Jamanra, der Auferstandene König"
+                                            ],
+                                     "es-ES":  [
+                                                   "Jamanra, el Rey ascendido"
+                                               ],
+                                     "ja":  [
+                                                "復活した王、ジャマンラ"
+                                            ],
+                                     "ko":  [
+                                                "일어난 왕 자만라"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Jamanra, o Rei Renascido"
+                                               ],
+                                     "ru":  [
+                                                "Яманра, Восставший Царь"
+                                            ],
+                                     "th":  [
+                                                "จามันรา กษัตริย์คืนชีพ"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "kabala_constrictor_queen",
+                       "Names":  {
+                                     "fr":  [
+                                                "Kabala, Reine de la constriction"
+                                            ],
+                                     "de":  [
+                                                "Kabala, Würgekönigin"
+                                            ],
+                                     "es-ES":  [
+                                                   "Kabala, Reina constrictora"
+                                               ],
+                                     "ja":  [
+                                                "大蛇の女王、カバラ"
+                                            ],
+                                     "ko":  [
+                                                "위압자 여왕 카발라"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Kabala, Rainha Constritora"
+                                               ],
+                                     "ru":  [
+                                                "Царица угнетателей Кабала"
+                                            ],
+                                     "th":  [
+                                                "คาบาล่า ราชินีงูยักษ์"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "azarian_forsaken_son",
+                       "Names":  {
+                                     "fr":  [
+                                                "Azarian, le Fils abandonné"
+                                            ],
+                                     "de":  [
+                                                "Azarian, der verstoßene Sohn"
+                                            ],
+                                     "es-ES":  [
+                                                   "Azarian, el Hijo abandonado"
+                                               ],
+                                     "ja":  [
+                                                "見捨てられた息子、アザリアン"
+                                            ],
+                                     "ko":  [
+                                                "버림받은 아들 아자리안"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Azarian, o Filho Esquecido"
+                                               ],
+                                     "ru":  [
+                                                "Азариан, Брошенный сын"
+                                            ],
+                                     "th":  [
+                                                "แอซาเรียน บุตรผู้ถูกทอดทิ้ง"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "ekbab_ancient_steed",
+                       "Names":  {
+                                     "fr":  [
+                                                "Ekbab, monture antique"
+                                            ],
+                                     "de":  [
+                                                "Ekbab, das uralte Ross"
+                                            ],
+                                     "es-ES":  [
+                                                   "Ekbab, Montura ancestral"
+                                               ],
+                                     "ja":  [
+                                                "古代の戦象、エクバブ"
+                                            ],
+                                     "ko":  [
+                                                "고대의 군상 에크밥"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Ekbab, Corcel Ancestral"
+                                               ],
+                                     "ru":  [
+                                                "Экбаб, древний скакун"
+                                            ],
+                                     "th":  [
+                                                "เอ็คบาบ ไอยราโบราณ"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "zalmarath_the_colossus",
+                       "Names":  {
+                                     "fr":  [
+                                                "Zalmarath, le Colosse"
+                                            ],
+                                     "de":  [
+                                                "Zalmarath der Koloss"
+                                            ],
+                                     "es-ES":  [
+                                                   "Zalmarath, el Coloso"
+                                               ],
+                                     "ja":  [
+                                                "巨像、ザルマラス"
+                                            ],
+                                     "ko":  [
+                                                "거상 잘마라트"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Zalmarath, o Colosso"
+                                               ],
+                                     "ru":  [
+                                                "Залмарат, Колосс"
+                                            ],
+                                     "th":  [
+                                                "ซัลมาแรธ หุ่นมหึมา"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "tor_gul_the_defiler",
+                       "Names":  {
+                                     "fr":  [
+                                                "Tor Gul, le Profanateur"
+                                            ],
+                                     "de":  [
+                                                "Tor Gul, der Schänder"
+                                            ],
+                                     "es-ES":  [
+                                                   "Tor Gul, el Profanador"
+                                               ],
+                                     "ja":  [
+                                                "冒涜者、トール・ガル"
+                                            ],
+                                     "ko":  [
+                                                "모독자 토르 굴"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Tor Gul, o Profanador"
+                                               ],
+                                     "ru":  [
+                                                "Тор Гул, Осквернитель"
+                                            ],
+                                     "th":  [
+                                                "ทอร์ กัล ผู้เสื่อมทราม"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "jamanra_abomination",
+                       "Names":  {
+                                     "fr":  [
+                                                "Jamanra, l\u0027Abomination"
+                                            ],
+                                     "de":  [
+                                                "Jamanra, die Abscheulichkeit"
+                                            ],
+                                     "es-ES":  [
+                                                   "Jamanra, la Abominación"
+                                               ],
+                                     "ja":  [
+                                                "アボミネーション、ジャマンラ"
+                                            ],
+                                     "ko":  [
+                                                "흉물 자만라"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Jamanra, a Abominação"
+                                               ],
+                                     "ru":  [
+                                                "Яманра, Чудовище"
+                                            ],
+                                     "th":  [
+                                                "จามันรา อสุรกายคืนร่าง"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "rootdredge",
+                       "Names":  {
+                                     "fr":  [
+                                                "Fangeracine"
+                                            ],
+                                     "de":  [
+                                                "Wurzelholz"
+                                            ],
+                                     "es-ES":  [
+                                                   "Dregaraíces"
+                                               ],
+                                     "ja":  [
+                                                "ルートドレッジ"
+                                            ],
+                                     "ko":  [
+                                                "뿌리준설자"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Dragaraiz"
+                                               ],
+                                     "ru":  [
+                                                "Древокорень"
+                                            ],
+                                     "th":  [
+                                                "รูทเดรดจ์"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "mighty_silverfist",
+                       "Names":  {
+                                     "fr":  [
+                                                "Poing d\u0027argent, le Puissant"
+                                            ],
+                                     "de":  [
+                                                "Mächtige Silberfaust"
+                                            ],
+                                     "es-ES":  [
+                                                   "Puñoplateado poderoso"
+                                               ],
+                                     "ja":  [
+                                                "マイティ・シルバーフィスト"
+                                            ],
+                                     "ko":  [
+                                                "강력한 은빛주먹"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Punho de Prata Poderoso"
+                                               ],
+                                     "ru":  [
+                                                "Могучий Седой кулак"
+                                            ],
+                                     "th":  [
+                                                "ซิลเวอร์ฟิสต์ผู้ยิ่งใหญ่"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "xyclucian_the_chimera",
+                       "Names":  {
+                                     "fr":  [
+                                                "Xyclucian, la Chimère"
+                                            ],
+                                     "es-ES":  [
+                                                   "Xyclucian, la Quimera"
+                                               ],
+                                     "ja":  [
+                                                "キメラ、ザイクルシアン"
+                                            ],
+                                     "ko":  [
+                                                "키메라 자이클루시언"
+                                            ],
+                                     "ru":  [
+                                                "Шйклусиан, химера"
+                                            ],
+                                     "th":  [
+                                                "ไซคลูเซียน ไคมีรา"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "blackjaw_the_remnant",
+                       "Names":  {
+                                     "fr":  [
+                                                "Mâchenoire, le Vestige"
+                                            ],
+                                     "de":  [
+                                                "Schwarzkiefer, das Überbleibsel"
+                                            ],
+                                     "es-ES":  [
+                                                   "Quijada negra, el Remanente"
+                                               ],
+                                     "ja":  [
+                                                "亡霊、黒き顎"
+                                            ],
+                                     "ko":  [
+                                                "잔류하는 검은턱"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Bocarra Negra, o Remanescente"
+                                               ],
+                                     "ru":  [
+                                                "Чёрнозев, реликт"
+                                            ],
+                                     "th":  [
+                                                "แบล็คจอว์ ผู้เหลือรอด"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "zicoatl_warden_core",
+                       "Names":  {
+                                     "fr":  [
+                                                "Zicoatl, Gardien du Noyau"
+                                            ],
+                                     "de":  [
+                                                "Zicoatl, Wächter des Kerns"
+                                            ],
+                                     "es-ES":  [
+                                                   "Zicoatl, Guardián del núcleo"
+                                               ],
+                                     "ja":  [
+                                                "コアの番人、ジコアトル"
+                                            ],
+                                     "ko":  [
+                                                "핵의 간수 지코아틀"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Zicoatl, Guardião do Núcleo"
+                                               ],
+                                     "ru":  [
+                                                "Зикоатль, Страж ядра"
+                                            ],
+                                     "th":  [
+                                                "ซีคัวทัล ผู้พิทักษ์แกนวิญญาณ"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "ignagduk",
+                       "Names":  {
+                                     "fr":  [
+                                                "Ignagduk, la Sorcière de la Tourbière"
+                                            ],
+                                     "de":  [
+                                                "Ignagduk, die Moorhexe"
+                                            ],
+                                     "es-ES":  [
+                                                   "Ignagduk, la Bruja del pantano"
+                                               ],
+                                     "ja":  [
+                                                "沼地の魔女、イグナグドゥク"
+                                            ],
+                                     "ko":  [
+                                                "습지대 마녀 이그나그두크"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Ignagduk, a Bruxa do Pântano"
+                                               ],
+                                     "ru":  [
+                                                "Игнагдук, Ведьма из трясин"
+                                            ],
+                                     "th":  [
+                                                "อิ๊กนักดุ๊ก แม่มดพรุ"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "mektul_forgemaster",
+                       "Names":  {
+                                     "fr":  [
+                                                "Mektul, le Maître de la forge"
+                                            ],
+                                     "de":  [
+                                                "Mektul, der Schmiedemeister"
+                                            ],
+                                     "es-ES":  [
+                                                   "Mektul, el Maestro de la forja"
+                                               ],
+                                     "ja":  [
+                                                "鍛造場主、メクトゥル"
+                                            ],
+                                     "ko":  [
+                                                "제련 장인 메크툴"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Mektul, o Mestre da Forja"
+                                               ],
+                                     "ru":  [
+                                                "Мектул, главный кузнец"
+                                            ],
+                                     "th":  [
+                                                "เมคทุล ผู้คุมโรงหลอม"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "queen_of_filth",
+                       "Names":  {
+                                     "fr":  [
+                                                "La Reine des immondices"
+                                            ],
+                                     "de":  [
+                                                "Die Königin des Unflats"
+                                            ],
+                                     "es-ES":  [
+                                                   "La reina de la inmundicia"
+                                               ],
+                                     "ja":  [
+                                                "汚物の女王"
+                                            ],
+                                     "ko":  [
+                                                "오물의 여왕"
+                                            ],
+                                     "pt-BR":  [
+                                                   "A Rainha da Imundície"
+                                               ],
+                                     "ru":  [
+                                                "Царица мерзости"
+                                            ],
+                                     "th":  [
+                                                "ราชินีแห่งความโสมม"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "ketzuli_high_priest_sun",
+                       "Names":  {
+                                     "fr":  [
+                                                "Ketzuli, Grand prêtre du Soleil"
+                                            ],
+                                     "de":  [
+                                                "Ketzuli, Hohepriester der Sonne"
+                                            ],
+                                     "es-ES":  [
+                                                   "Ketzuli, Sumo sacerdote del sol"
+                                               ],
+                                     "ja":  [
+                                                "太陽の大祭司、ケツーリ"
+                                            ],
+                                     "ko":  [
+                                                "태양의 고위 사제 케출리"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Ketzuli, Sumo Sacerdote do Sol"
+                                               ],
+                                     "ru":  [
+                                                "Кетцули, старший жрец Солнца"
+                                            ],
+                                     "th":  [
+                                                "เค็ทซูลี นักบวชระดับสูงแห่งตะวัน"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "viper_napuatzi",
+                       "Names":  {
+                                     "fr":  [
+                                                "Vipère Napuatzi"
+                                            ],
+                                     "es-ES":  [
+                                                   "Napuatzi la Víbora"
+                                               ],
+                                     "ja":  [
+                                                "ヴァイパー・ナプアツィ"
+                                            ],
+                                     "ko":  [
+                                                "바이퍼 나푸앗지"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Víbora Napuatzi"
+                                               ],
+                                     "ru":  [
+                                                "Гадюка Напуаци"
+                                            ],
+                                     "th":  [
+                                                "อสรพิษนาปวดซี"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "doryani_royal_thaumaturge",
+                       "Names":  {
+                                     "fr":  [
+                                                "Doryani, Thaumaturge royal"
+                                            ],
+                                     "de":  [
+                                                "Doryani, Königlicher Thaumaturg"
+                                            ],
+                                     "es-ES":  [
+                                                   "Doryani, Taumaturgo real"
+                                               ],
+                                     "ja":  [
+                                                "宮廷魔術師、ドリヤニ"
+                                            ],
+                                     "ko":  [
+                                                "왕실 마석학자 도리아니"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Doryani, o Taumaturgo Real"
+                                               ],
+                                     "ru":  [
+                                                "Дориани, царский волшебник"
+                                            ],
+                                     "th":  [
+                                                "ดอร์ยานี จอมเวทมณีราชสำนัก"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "captain_hartlin",
+                       "Names":  {
+                                     "fr":  [
+                                                "Capitaine Hartlin"
+                                            ],
+                                     "de":  [
+                                                "Kapitän Hartlin"
+                                            ],
+                                     "es-ES":  [
+                                                   "Capitán Hartlin"
+                                               ],
+                                     "ja":  [
+                                                "ハートリン船長"
+                                            ],
+                                     "ko":  [
+                                                "하틀린 선장"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Capitão Hartlin"
+                                               ],
+                                     "ru":  [
+                                                "Капитан Хартлин"
+                                            ],
+                                     "th":  [
+                                                "กัปตันฮาร์ทลิน"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "great_white_one",
+                       "Names":  {
+                                     "fr":  [
+                                                "Le Grand Blanc"
+                                            ],
+                                     "de":  [
+                                                "Großer Weißer Hai"
+                                            ],
+                                     "es-ES":  [
+                                                   "El gran blanco"
+                                               ],
+                                     "ja":  [
+                                                "ホホジロザメ"
+                                            ],
+                                     "ko":  [
+                                                "거대한 백색 괴수"
+                                            ],
+                                     "pt-BR":  [
+                                                   "O Grande Branco"
+                                               ],
+                                     "ru":  [
+                                                "Великая белая туша"
+                                            ],
+                                     "th":  [
+                                                "มหาฉลามขาว"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "diamora_song_of_death",
+                       "Names":  {
+                                     "fr":  [
+                                                "Diamora, la Mélodie de la Mort"
+                                            ],
+                                     "de":  [
+                                                "Diamora, Lied des Todes"
+                                            ],
+                                     "es-ES":  [
+                                                   "Diamora, Canción de muerte"
+                                               ],
+                                     "ja":  [
+                                                "死の歌、ディアモラ"
+                                            ],
+                                     "ko":  [
+                                                "죽음의 노래 디아모라"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Diamora, Canção da Morte"
+                                               ],
+                                     "ru":  [
+                                                "Диамора, Песнь смерти"
+                                            ],
+                                     "th":  [
+                                                "เดียมอร่า เพลงมรณะ"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "the_prisoner",
+                       "Names":  {
+                                     "fr":  [
+                                                "Le Prisonnier"
+                                            ],
+                                     "de":  [
+                                                "Der Gefangene"
+                                            ],
+                                     "es-ES":  [
+                                                   "El prisionero"
+                                               ],
+                                     "ja":  [
+                                                "プリズナー"
+                                            ],
+                                     "ko":  [
+                                                "포로"
+                                            ],
+                                     "pt-BR":  [
+                                                   "O Prisioneiro"
+                                               ],
+                                     "ru":  [
+                                                "Узник"
+                                            ],
+                                     "th":  [
+                                                "นักโทษฉกรรจ์"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "the_blind_beast",
+                       "Names":  {
+                                     "fr":  [
+                                                "La Bête aveugle"
+                                            ],
+                                     "de":  [
+                                                "Die blinde Bestie"
+                                            ],
+                                     "es-ES":  [
+                                                   "La bestia ciega"
+                                               ],
+                                     "ja":  [
+                                                "盲目の獣"
+                                            ],
+                                     "ko":  [
+                                                "눈먼 짐승"
+                                            ],
+                                     "pt-BR":  [
+                                                   "A Fera Cega"
+                                               ],
+                                     "ru":  [
+                                                "Слепой зверь"
+                                            ],
+                                     "th":  [
+                                                "สัตว์ร้ายตาบอด"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "krutog_lord_of_kin",
+                       "Names":  {
+                                     "fr":  [
+                                                "Krutog, Seigneur de la Marmaille"
+                                            ],
+                                     "de":  [
+                                                "Krutog, Herrscher der Kin"
+                                            ],
+                                     "es-ES":  [
+                                                   "Krutog, Señor del clan"
+                                               ],
+                                     "ja":  [
+                                                "キンの領主、クルトォグ"
+                                            ],
+                                     "ko":  [
+                                                "혈족의 군주 크루톡"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Krutog, o Senhor da Família"
+                                               ],
+                                     "ru":  [
+                                                "Крутог, хозяин Рода"
+                                            ],
+                                     "th":  [
+                                                "ครูท็อก ลอร์ดแห่งคิน"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "scourge_of_the_sky",
+                       "Names":  {
+                                     "de":  [
+                                                "Geißel des Himmels"
+                                            ],
+                                     "ja":  [
+                                                "空のスカージ"
+                                            ],
+                                     "ko":  [
+                                                "하늘의 재앙"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Flagelo dos Céus"
+                                               ],
+                                     "ru":  [
+                                                "Бич небес"
+                                            ],
+                                     "th":  [
+                                                "หายนะแห่งฟากฟ้า"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "yama_the_white",
+                       "Names":  {
+                                     "fr":  [
+                                                "Yama le Blanc"
+                                            ],
+                                     "de":  [
+                                                "Yama, der Weiße"
+                                            ],
+                                     "es-ES":  [
+                                                   "Yama, el Blanco"
+                                               ],
+                                     "ja":  [
+                                                "白猿のヤマ"
+                                            ],
+                                     "ko":  [
+                                                "하얀 야마"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Yama, o Branco"
+                                               ],
+                                     "ru":  [
+                                                "Белый Яма"
+                                            ],
+                                     "th":  [
+                                                "ยามา วานรขาว"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "torvian_hand_saviour",
+                       "Names":  {
+                                     "fr":  [
+                                                "Torvian, la Main du Sauveur"
+                                            ],
+                                     "de":  [
+                                                "Torvian, Hand des Erlösers"
+                                            ],
+                                     "es-ES":  [
+                                                   "Torvian, la Mano del Salvador"
+                                               ],
+                                     "ja":  [
+                                                "救世主の片腕、トーヴィアン"
+                                            ],
+                                     "ko":  [
+                                                "구원자의 손 토르비안"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Torvian, a Mão do Salvador"
+                                               ],
+                                     "ru":  [
+                                                "Торвиан, Длань Спасителя"
+                                            ],
+                                     "th":  [
+                                                "ทอร์เวียน หัตถ์ผู้กอบกู้"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "benedictus_first_herald",
+                       "Names":  {
+                                     "fr":  [
+                                                "Bénédictus, Premier héraut d\u0027Utopie"
+                                            ],
+                                     "de":  [
+                                                "Benedictus, Erster Herold von Utopia"
+                                            ],
+                                     "es-ES":  [
+                                                   "Benedictus, Primer heraldo de Utopía"
+                                               ],
+                                     "ja":  [
+                                                "ユートピアの第一の使者、ベネディクタス"
+                                            ],
+                                     "ko":  [
+                                                "유토피아의 첫 번째 전령, 베네딕투스"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Benedictus, Arauto Primevo da Utopia"
+                                               ],
+                                     "ru":  [
+                                                "Бенедиктус, Первый вестник утопии"
+                                            ],
+                                     "th":  [
+                                                "เบเนดิกตัส ผู้แทนคนแรกแห่งแดนสุขาวดี"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "tavakai_the_chieftain",
+                       "Names":  {
+                                     "fr":  [
+                                                "Tavakai, le Chef de tribu"
+                                            ],
+                                     "de":  [
+                                                "Tavakai, der Stammesführer"
+                                            ],
+                                     "es-ES":  [
+                                                   "Tavakai, el Jefe de guerra"
+                                               ],
+                                     "ja":  [
+                                                "族長、タヴァカイ"
+                                            ],
+                                     "ko":  [
+                                                "부족장 타바카이"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Tavakai, o Caudilho"
+                                               ],
+                                     "ru":  [
+                                                "Тавакаи, вождь"
+                                            ],
+                                     "th":  [
+                                                "ทาวาไค หัวหน้าเผ่า"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "isolde_white_shroud",
+                       "Names":  {
+                                     "fr":  [
+                                                "Isolde du Linceul blanc"
+                                            ],
+                                     "de":  [
+                                                "Isolde des Weißen Schleiers"
+                                            ],
+                                     "es-ES":  [
+                                                   "Isolde, del velo blanco"
+                                               ],
+                                     "ja":  [
+                                                "白き死衣のイゾルデ"
+                                            ],
+                                     "ko":  [
+                                                "하얀 수의의 이졸데"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Isolde da Mortalha Branca"
+                                               ],
+                                     "ru":  [
+                                                "Изольда, Белое покрывало"
+                                            ],
+                                     "th":  [
+                                                "อิโซลด์ หมอกเหมันต์"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "heldra_black_pyre",
+                       "Names":  {
+                                     "fr":  [
+                                                "Heldra du Bûcher noir"
+                                            ],
+                                     "de":  [
+                                                "Heldra des Schwarzen Scheiterhaufens"
+                                            ],
+                                     "es-ES":  [
+                                                   "Heldra, de la pira negra"
+                                               ],
+                                     "ja":  [
+                                                "黒き火葬のヘルドラ"
+                                            ],
+                                     "ko":  [
+                                                "검은 화염의 헬드라"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Heldra da Pira Negra"
+                                               ],
+                                     "ru":  [
+                                                "Хельдра, Чёрный костёр"
+                                            ],
+                                     "th":  [
+                                                "เฮลดรา เชิงตะกอนสีดำ"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "siora_blade_mists",
+                       "Names":  {
+                                     "fr":  [
+                                                "Siora, Lame des Brumes"
+                                            ],
+                                     "de":  [
+                                                "Siora, Klinge der Nebel"
+                                            ],
+                                     "es-ES":  [
+                                                   "Siora, la Cuchilla de las nieblas"
+                                               ],
+                                     "ja":  [
+                                                "霧の刃、シオラ"
+                                            ],
+                                     "ko":  [
+                                                "연무의 칼날 시오라"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Siora, Lâmina das Névoas"
+                                               ],
+                                     "ru":  [
+                                                "Сиора, Клинок туманов"
+                                            ],
+                                     "th":  [
+                                                "ซิโอรา เคียวม่านหมอก"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "sigbert_sullied_oath",
+                       "Names":  {
+                                     "fr":  [
+                                                "Sigbert, au Serment souillé"
+                                            ],
+                                     "de":  [
+                                                "Sigbert des besudelten Schwurs"
+                                            ],
+                                     "es-ES":  [
+                                                   "Sigbert, del Juramento manchado"
+                                               ],
+                                     "ja":  [
+                                                "汚された誓いのシグベルト"
+                                            ],
+                                     "ko":  [
+                                                "더럽혀진 서약의 시그버트"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Sigbert do Juramento Maculado"
+                                               ],
+                                     "ru":  [
+                                                "Зигберт, запятнавший клятву"
+                                            ],
+                                     "th":  [
+                                                "ซิกเบิร์ทแห่งผู้สิ้นสาบาน"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "godwin_shattered_creed",
+                       "Names":  {
+                                     "fr":  [
+                                                "Godwin, du Credo brisé"
+                                            ],
+                                     "de":  [
+                                                "Godwin des zersplitterten Credos"
+                                            ],
+                                     "es-ES":  [
+                                                   "Godwin, del Credo destrozado"
+                                               ],
+                                     "ja":  [
+                                                "打ち砕かれた信条のゴッドウィン"
+                                            ],
+                                     "ko":  [
+                                                "산산이 조각난 신념의 고드윈"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Godwin do Credo Estilhaçado"
+                                               ],
+                                     "ru":  [
+                                                "Годвин, разбивший кредо"
+                                            ],
+                                     "th":  [
+                                                "ก็อดวินแห่งผู้เสียคติ"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "oswin_dread_warden",
+                       "Names":  {
+                                     "fr":  [
+                                                "Oswin, le Gardien de l\u0027effroi"
+                                            ],
+                                     "de":  [
+                                                "Oswin, der Schreckenswächter"
+                                            ],
+                                     "es-ES":  [
+                                                   "Oswin, el Guardián de temor"
+                                               ],
+                                     "ko":  [
+                                                "죽음의 간수 오스윈"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Oswin, o Vigilante Pavoroso"
+                                               ],
+                                     "ru":  [
+                                                "Освин, Ужасный соглядатай"
+                                            ],
+                                     "th":  [
+                                                "ออสวิน ผู้คุมสยดสยอง"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "thane_wulfric",
+                       "Names":  {
+                                     "ja":  [
+                                                "ウルフリック族長"
+                                            ],
+                                     "ko":  [
+                                                "테인 울프릭"
+                                            ],
+                                     "ru":  [
+                                                "Тан Вульфрик"
+                                            ],
+                                     "th":  [
+                                                "เธนวัลฟริก"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "lady_elswyth",
+                       "Names":  {
+                                     "fr":  [
+                                                "Dame Elswyth"
+                                            ],
+                                     "ja":  [
+                                                "エルズウィス婦人"
+                                            ],
+                                     "ko":  [
+                                                "여인 엘스위트"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Dama Elswyth"
+                                               ],
+                                     "ru":  [
+                                                "Леди Элсвит"
+                                            ],
+                                     "th":  [
+                                                "คุณหญิงเอลส์วิธ"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "akthi_final_sting",
+                       "Names":  {
+                                     "fr":  [
+                                                "Akthi, l\u0027Ultime piqûre"
+                                            ],
+                                     "de":  [
+                                                "Akthi, der Letzte Stich"
+                                            ],
+                                     "es-ES":  [
+                                                   "Akthi, el Último aguijón"
+                                               ],
+                                     "ja":  [
+                                                "最後の一刺し、アクティ"
+                                            ],
+                                     "ko":  [
+                                                "마지막 독침 아크티"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Akthi, a Ferroada Final"
+                                               ],
+                                     "ru":  [
+                                                "Актхи, Последнее жало"
+                                            ],
+                                     "th":  [
+                                                "อาคตี หางสุดท้าย"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "anundr_sandworm",
+                       "Names":  {
+                                     "fr":  [
+                                                "Anundr, le Ver des sables"
+                                            ],
+                                     "de":  [
+                                                "Anundr, der Sandwurm"
+                                            ],
+                                     "es-ES":  [
+                                                   "Anundr, el Gusano de arena"
+                                               ],
+                                     "ja":  [
+                                                "サンドワーム、アナンドル"
+                                            ],
+                                     "ko":  [
+                                                "모래벌레 아눈드르"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Anundr, o Verme da Areia"
+                                               ],
+                                     "ru":  [
+                                                "Анундр, песчаный червь"
+                                            ],
+                                     "th":  [
+                                                "อนันดร์ หนอนทะเลทราย"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "elzarah_cobra_lord",
+                       "Names":  {
+                                     "fr":  [
+                                                "Elzarah, le Seigneur cobra"
+                                            ],
+                                     "de":  [
+                                                "Elzarah, der Kobrafürst"
+                                            ],
+                                     "es-ES":  [
+                                                   "Elzarah, el Señor de las cobras"
+                                               ],
+                                     "ja":  [
+                                                "コブラの王、エルザラ"
+                                            ],
+                                     "ko":  [
+                                                "코브라 군주 엘자라"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Elzarah, o Senhor das Najas"
+                                               ],
+                                     "ru":  [
+                                                "Элзара, повелитель кобр"
+                                            ],
+                                     "th":  [
+                                                "เอลซาราห์ จ้าวจงอาง"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "vornas_fell_flame",
+                       "Names":  {
+                                     "fr":  [
+                                                "Vornas, la Flamme funeste"
+                                            ],
+                                     "de":  [
+                                                "Vornas, die Höllenflamme"
+                                            ],
+                                     "es-ES":  [
+                                                   "Vornas, la Llama caída"
+                                               ],
+                                     "ja":  [
+                                                "邪悪な炎、ヴォルナス"
+                                            ],
+                                     "ko":  [
+                                                "타락한 불길 보르나스"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Vornas, a Chama Malévola"
+                                               ],
+                                     "ru":  [
+                                                "Ворнас, падшее пламя"
+                                            ],
+                                     "th":  [
+                                                "วอร์นาส เพลิงมหันต์"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "azmadi_faridun_prince",
+                       "Names":  {
+                                     "fr":  [
+                                                "Azmadi, le Prince Faridun"
+                                            ],
+                                     "de":  [
+                                                "Azmadi, Prinz der Faridun"
+                                            ],
+                                     "es-ES":  [
+                                                   "Azmadi, el Príncipe faridun"
+                                               ],
+                                     "ja":  [
+                                                "ファリドゥンの王子、アズマディ"
+                                            ],
+                                     "ko":  [
+                                                "파리둔 왕자 아즈마디"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Azmadi, o Príncipe Faridun"
+                                               ],
+                                     "ru":  [
+                                                "Азмади, фаридунский принц"
+                                            ],
+                                     "th":  [
+                                                "แอสมาดิ เจ้าชายฟาริดัน"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "lythara_wayward_spear",
+                       "Names":  {
+                                     "fr":  [
+                                                "Lythara, la Lance égarée"
+                                            ],
+                                     "de":  [
+                                                "Lythara, der Eigensinnige Speer"
+                                            ],
+                                     "es-ES":  [
+                                                   "Lythara, la lanza descarriada"
+                                               ],
+                                     "ja":  [
+                                                "流浪の槍、リサラ"
+                                            ],
+                                     "ko":  [
+                                                "방황하는 창 라이타라"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Lythara, a Lança Desgarrada"
+                                               ],
+                                     "ru":  [
+                                                "Литара, Буйное копьё"
+                                            ],
+                                     "th":  [
+                                                "ไลธาร่า หอกผ่าเหล่า"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "abominable_yeti",
+                       "Names":  {
+                                     "fr":  [
+                                                "L\u0027Abominable yéti"
+                                            ],
+                                     "de":  [
+                                                "Der abscheuliche Yeti"
+                                            ],
+                                     "es-ES":  [
+                                                   "El abominable yeti"
+                                               ],
+                                     "ja":  [
+                                                "アボミネーションのイエティ"
+                                            ],
+                                     "ko":  [
+                                                "흉물스러운 설인"
+                                            ],
+                                     "pt-BR":  [
+                                                   "O Abominável Yeti"
+                                               ],
+                                     "ru":  [
+                                                "Чудовищный йети"
+                                            ],
+                                     "th":  [
+                                                "เยติต่ำช้า"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "rakkar_frozen_talon",
+                       "Names":  {
+                                     "fr":  [
+                                                "Rakkar, la Serre gelée"
+                                            ],
+                                     "de":  [
+                                                "Rakkar, die Gefrorene Klaue"
+                                            ],
+                                     "es-ES":  [
+                                                   "Rakkar, la Garra helada"
+                                               ],
+                                     "ja":  [
+                                                "凍てつく鉤爪、ラッカー"
+                                            ],
+                                     "ko":  [
+                                                "얼어붙은 발톱 라카르"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Rakkar, a Garra Congelada"
+                                               ],
+                                     "ru":  [
+                                                "Раккар, Мёрзлый коготь"
+                                            ],
+                                     "th":  [
+                                                "แรคคาร์ อุ้งเล็บเยือกแข็ง"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "stormgore_guardian",
+                       "Names":  {
+                                     "fr":  [
+                                                "Carnorage, le Gardien"
+                                            ],
+                                     "de":  [
+                                                "Sturmkeil, der Wächter"
+                                            ],
+                                     "es-ES":  [
+                                                   "Crúor de la tormenta, el Guardián"
+                                               ],
+                                     "ja":  [
+                                                "守護者、ストームゴア"
+                                            ],
+                                     "ko":  [
+                                                "수호자 폭풍선혈"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Sanguinolência Torrencial, o Guardião"
+                                               ],
+                                     "ru":  [
+                                                "Бурекров, Хранитель"
+                                            ],
+                                     "th":  [
+                                                "สตอร์มกอร์ ผู้พิทักษ์"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "zelina_blood_priestess",
+                       "Names":  {
+                                     "fr":  [
+                                                "Zélina, Prêtresse du sang"
+                                            ],
+                                     "de":  [
+                                                "Zelina, Blutpriesterin"
+                                            ],
+                                     "es-ES":  [
+                                                   "Zelina, Sacerdotisa de sangre"
+                                               ],
+                                     "ja":  [
+                                                "血の巫女、ゼリナ"
+                                            ],
+                                     "ko":  [
+                                                "피의 여사제 젤리나"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Zelina, Sacerdotisa de Sangue"
+                                               ],
+                                     "ru":  [
+                                                "Зелина, жрица крови"
+                                            ],
+                                     "th":  [
+                                                "เซลิน่า นักพรตโลหิตหญิง"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "zolin_blood_priest",
+                       "Names":  {
+                                     "fr":  [
+                                                "Zolin, Prêtre du sang"
+                                            ],
+                                     "de":  [
+                                                "Zolin, Blutpriester"
+                                            ],
+                                     "es-ES":  [
+                                                   "Zolin, Sacerdote de sangre"
+                                               ],
+                                     "ja":  [
+                                                "血の司祭、ゾリン"
+                                            ],
+                                     "ko":  [
+                                                "피의 사제 졸린"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Zolin, Sacerdote de Sangue"
+                                               ],
+                                     "ru":  [
+                                                "Золин, жрец крови"
+                                            ],
+                                     "th":  [
+                                                "โซลิน นักพรตโลหิตชาย"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "atziri_red_queen",
+                       "Names":  {
+                                     "fr":  [
+                                                "Atziri, la Reine rouge"
+                                            ],
+                                     "de":  [
+                                                "Atziri, die rote Königin"
+                                            ],
+                                     "es-ES":  [
+                                                   "Atziri, la Reina roja"
+                                               ],
+                                     "ja":  [
+                                                "赤き女王、アッツィリ"
+                                            ],
+                                     "ko":  [
+                                                "붉은 여왕 앗지리"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Atziri, a Rainha Vermelha"
+                                               ],
+                                     "ru":  [
+                                                "Атзири, Красная царица"
+                                            ],
+                                     "th":  [
+                                                "อัถสิริ ราชินีแดง"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "the_aberration",
+                       "Names":  {
+                                     "fr":  [
+                                                "L\u0027Aberration"
+                                            ],
+                                     "de":  [
+                                                "Die Abnormität"
+                                            ],
+                                     "es-ES":  [
+                                                   "La aberración"
+                                               ],
+                                     "ja":  [
+                                                "異形"
+                                            ],
+                                     "ko":  [
+                                                "변이"
+                                            ],
+                                     "pt-BR":  [
+                                                   "A Aberração"
+                                               ],
+                                     "ru":  [
+                                                "Отродье"
+                                            ],
+                                     "th":  [
+                                                "แมงมุมวิกล"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "arbiter_of_ash",
+                       "Names":  {
+                                     "fr":  [
+                                                "L\u0027Arbitre de la Cendre"
+                                            ],
+                                     "de":  [
+                                                "Der Richter der Asche"
+                                            ],
+                                     "es-ES":  [
+                                                   "El árbitro de ceniza"
+                                               ],
+                                     "ja":  [
+                                                "灰のアービター"
+                                            ],
+                                     "ko":  [
+                                                "재의 중재자"
+                                            ],
+                                     "pt-BR":  [
+                                                   "O Árbitro das Cinzas"
+                                               ],
+                                     "ru":  [
+                                                "Арбитр пепла"
+                                            ],
+                                     "th":  [
+                                                "ตุลาการเถ้าธุลี"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "arbiter_of_divinity",
+                       "Names":  {
+                                     "fr":  [
+                                                "L\u0027Arbitre de la Divinité"
+                                            ],
+                                     "de":  [
+                                                "Der Richter der Göttlichkeit"
+                                            ],
+                                     "es-ES":  [
+                                                   "El árbitro de divinidad"
+                                               ],
+                                     "ja":  [
+                                                "神性のアービター"
+                                            ],
+                                     "ko":  [
+                                                "신성의 중재자"
+                                            ],
+                                     "pt-BR":  [
+                                                   "O Árbitro da Divindade"
+                                               ],
+                                     "ru":  [
+                                                "Божественный арбитр"
+                                            ],
+                                     "th":  [
+                                                "ตุลาการเทวา"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "the_bodach",
+                       "Names":  {
+                                     "fr":  [
+                                                "Le Bodach"
+                                            ],
+                                     "de":  [
+                                                "Der Bodach"
+                                            ],
+                                     "es-ES":  [
+                                                   "El bodach"
+                                               ],
+                                     "ja":  [
+                                                "ボダック"
+                                            ],
+                                     "ko":  [
+                                                "보닥"
+                                            ],
+                                     "pt-BR":  [
+                                                   "O Bodach"
+                                               ],
+                                     "ru":  [
+                                                "Бодах"
+                                            ],
+                                     "th":  [
+                                                "โบดัค"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "raven_trickster",
+                       "Names":  {
+                                     "fr":  [
+                                                "Le Corbeau malicieux"
+                                            ],
+                                     "de":  [
+                                                "Der Rabenschwindler"
+                                            ],
+                                     "es-ES":  [
+                                                   "El cuervo embaucador"
+                                               ],
+                                     "ja":  [
+                                                "鴉の欺く者"
+                                            ],
+                                     "ko":  [
+                                                "큰까마귀 협잡꾼"
+                                            ],
+                                     "pt-BR":  [
+                                                   "O Corvo Trapaceiro"
+                                               ],
+                                     "ru":  [
+                                                "Ворон-Плут"
+                                            ],
+                                     "th":  [
+                                                "เทพเรเวนเจ้าเล่ห์"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "vessel_of_kulemak",
+                       "Names":  {
+                                     "fr":  [
+                                                "Réceptacle de Kulemak"
+                                            ],
+                                     "de":  [
+                                                "Gefäß von Kulemak"
+                                            ],
+                                     "es-ES":  [
+                                                   "Recipiente de Kulemak"
+                                               ],
+                                     "ja":  [
+                                                "クーラマクの器"
+                                            ],
+                                     "ko":  [
+                                                "쿨레막의 그릇"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Receptáculo de Kulemak"
+                                               ],
+                                     "ru":  [
+                                                "Сосуд Кулемака"
+                                            ],
+                                     "th":  [
+                                                "กายาแห่งคูเลมาค"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "xesht_we_that_are_one",
+                       "Names":  {
+                                     "fr":  [
+                                                "Xesht, Nous qui ne formons qu\u0027un"
+                                            ],
+                                     "de":  [
+                                                "Xesht, Wir die Eins sind"
+                                            ],
+                                     "es-ES":  [
+                                                   "Xesht, Nosotros, que somos uno"
+                                               ],
+                                     "ja":  [
+                                                "一つの我ら、ゼシュト"
+                                            ],
+                                     "ko":  [
+                                                "하나인 우리, 제쉬트"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Xesht, Somos Um"
+                                               ],
+                                     "ru":  [
+                                                "Ксешт, Мы-Что-Едины"
+                                            ],
+                                     "th":  [
+                                                "เซ็ชท์ เราผู้เป็นหนึ่ง"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "rattlecage_earthbreaker",
+                       "Names":  {
+                                     "fr":  [
+                                                "Grincecage, le Broyeur de terre"
+                                            ],
+                                     "de":  [
+                                                "Klapperkäfig, der Erdreißer"
+                                            ],
+                                     "es-ES":  [
+                                                   "Rompesuelos, el Terremoto"
+                                               ],
+                                     "ja":  [
+                                                "大地を砕く者、ラトルケージ"
+                                            ],
+                                     "ko":  [
+                                                "대지 분쇄자, 덜컹거리는 창살"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Jaularido, o Racha-terra"
+                                               ],
+                                     "ru":  [
+                                                "Громокост, Сотрясатель земли"
+                                            ],
+                                     "th":  [
+                                                "แรทเทิลเคจ ผู้ทลายปฐพี"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "hadi_flaming_river",
+                       "Names":  {
+                                     "fr":  [
+                                                "Hadi, de la Rivière enflammée"
+                                            ],
+                                     "de":  [
+                                                "Hadi des feurigen Flusses"
+                                            ],
+                                     "es-ES":  [
+                                                   "Hadi, del Río ardiente"
+                                               ],
+                                     "ja":  [
+                                                "燃えさかる川のハディ"
+                                            ],
+                                     "ko":  [
+                                                "불타는 강의 하디"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Hadi do Rio Ardente"
+                                               ],
+                                     "ru":  [
+                                                "Хади из Пламенной реки"
+                                            ],
+                                     "th":  [
+                                                "ฮาดิ แม่น้ำอัคคี"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "rafiq_frozen_spring",
+                       "Names":  {
+                                     "fr":  [
+                                                "Rafiq, de la Source gelée"
+                                            ],
+                                     "de":  [
+                                                "Rafiq der gefrorenen Quelle"
+                                            ],
+                                     "es-ES":  [
+                                                   "Rafiq, del Manantial helado"
+                                               ],
+                                     "ja":  [
+                                                "凍った泉のラフィク"
+                                            ],
+                                     "ko":  [
+                                                "얼어붙은 샘의 라피크"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Rafiq da Nascente Congelada"
+                                               ],
+                                     "ru":  [
+                                                "Рафик из Замёрзшего родника"
+                                            ],
+                                     "th":  [
+                                                "ราฟิค ฤดูใบไม้ผลิเยือกแข็ง"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "ashar_sand_mother",
+                       "Names":  {
+                                     "fr":  [
+                                                "Ashar, la Mère des sables"
+                                            ],
+                                     "de":  [
+                                                "Ashar, die Sandmutter"
+                                            ],
+                                     "es-ES":  [
+                                                   "Ashar, la Madre de las arenas"
+                                               ],
+                                     "ja":  [
+                                                "砂漠の母、アシャー"
+                                            ],
+                                     "ko":  [
+                                                "모래 어미 아샤르"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Ashar, a Mãe da Areia"
+                                               ],
+                                     "ru":  [
+                                                "Ашар, Матерь песка"
+                                            ],
+                                     "th":  [
+                                                "แอชาร์ มารดาแห่งผืนทราย"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "zarokh_temporal",
+                       "Names":  {
+                                     "fr":  [
+                                                "Zarokh, le Temporel"
+                                            ],
+                                     "de":  [
+                                                "Zarokh, Meister der Zeit"
+                                            ],
+                                     "es-ES":  [
+                                                   "Zarokh, el Temporal"
+                                               ],
+                                     "ja":  [
+                                                "時のザロク"
+                                            ],
+                                     "ko":  [
+                                                "시간의 자로크"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Zarokh, o Temporal"
+                                               ],
+                                     "ru":  [
+                                                "Зарок, Вечный"
+                                            ],
+                                     "th":  [
+                                                "ซาร็อกห์ ผู้รู้กาล"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "uxmal_beastlord",
+                       "Names":  {
+                                     "fr":  [
+                                                "Uxmal, le Seigneur des bêtes"
+                                            ],
+                                     "de":  [
+                                                "Uxmal der Bestienfürst"
+                                            ],
+                                     "es-ES":  [
+                                                   "Uxmal, el Señor de las bestias"
+                                               ],
+                                     "ja":  [
+                                                "ビーストロード、ウクスマル"
+                                            ],
+                                     "ko":  [
+                                                "야수군주 욱스말"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Uxmal, o Senhor das Feras"
+                                               ],
+                                     "ru":  [
+                                                "Ушмаль, Повелитель Зверей"
+                                            ],
+                                     "th":  [
+                                                "อุกซ์มอล จ้าวแห่งสรรพสัตว์"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "chetza_feathered_plague",
+                       "Names":  {
+                                     "fr":  [
+                                                "Chetza, la Peste à plumes"
+                                            ],
+                                     "de":  [
+                                                "Chetza, die Gefiederte Plage"
+                                            ],
+                                     "es-ES":  [
+                                                   "Chetza, la Plaga emplumada"
+                                               ],
+                                     "ja":  [
+                                                "羽を持つ疫病、チェツァ"
+                                            ],
+                                     "ko":  [
+                                                "깃털 달린 재앙 체차"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Chetza, a Praga Emplumada"
+                                               ],
+                                     "ru":  [
+                                                "Четца, Пернатая Чума"
+                                            ],
+                                     "th":  [
+                                                "เช็ทซ่า ปักษาโรคระบาด"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "bahlak_sky_seer",
+                       "Names":  {
+                                     "fr":  [
+                                                "Bahlak, l\u0027Augure du Ciel"
+                                            ],
+                                     "es-ES":  [
+                                                   "Bahlak, el Profeta alado"
+                                               ],
+                                     "ja":  [
+                                                "空を見る者、バーラク"
+                                            ],
+                                     "ko":  [
+                                                "하늘 예견자 발라크"
+                                            ],
+                                     "pt-BR":  [
+                                                   "Bahlak, o Vidente do Céu"
+                                               ],
+                                     "ru":  [
+                                                "Бахлак, Небесный Провидец"
+                                            ],
+                                     "th":  [
+                                                "บาลาค โหรนภา"
+                                            ]
+                                 }
+                   },
+                   {
+                       "Id":  "the_trialmaster",
+                       "Names":  {
+                                     "fr":  [
+                                                "Le Maître des Épreuves"
+                                            ],
+                                     "de":  [
+                                                "Der Prüfungsmeister"
+                                            ],
+                                     "es-ES":  [
+                                                   "El Maestro de pruebas"
+                                               ],
+                                     "ja":  [
+                                                "トライアルマスター"
+                                            ],
+                                     "ko":  [
+                                                "시련의 대가"
+                                            ],
+                                     "pt-BR":  [
+                                                   "O Mestre das Provações"
+                                               ],
+                                     "ru":  [
+                                                "Мастер испытаний"
+                                            ],
+                                     "th":  [
+                                                "ผู้คุมบททดสอบ"
+                                            ]
+                                 }
+                   }
+               ]
+}

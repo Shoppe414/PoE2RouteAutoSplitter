@@ -2,11 +2,12 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $project = Join-Path $root 'src\PoE2BossWatcher\PoE2BossWatcher.csproj'
 $publish = Join-Path $root 'publish'
-$trainedData = Join-Path $root 'tessdata\eng.traineddata'
+$requiredTessCodes = @('eng','fra','deu','spa','jpn','kor','por','rus','tha')
+$missingTess = @($requiredTessCodes | Where-Object { -not (Test-Path -LiteralPath (Join-Path $root ("tessdata\$_.traineddata")) -PathType Leaf) })
 $tempArtifacts = Join-Path $env:TEMP ('PoE2BW-' + [Guid]::NewGuid().ToString('N').Substring(0, 8))
 
-if (-not (Test-Path -LiteralPath $trainedData)) {
-    throw "Missing tessdata\eng.traineddata. Run .\Setup-OCR.ps1 first, then run .\Build.ps1 again."
+if ($missingTess.Count -gt 0) {
+    throw "Missing OCR tessdata models: $($missingTess -join ', '). Run .\Setup-OCR.ps1 first, then run .\Build.ps1 again."
 }
 
 try {
@@ -48,8 +49,12 @@ try {
 
     Copy-Item -LiteralPath (Join-Path $root 'config.json') -Destination $publish -Force
     Copy-Item -LiteralPath (Join-Path $root 'bosses.txt') -Destination $publish -Force
+    Copy-Item -LiteralPath (Join-Path $root 'map-bosses.json') -Destination $publish -Force
+    Copy-Item -LiteralPath (Join-Path $root 'boss-localizations.json') -Destination $publish -Force
     New-Item -ItemType Directory -Force -Path (Join-Path $publish 'tessdata') | Out-Null
-    Copy-Item -LiteralPath $trainedData -Destination (Join-Path $publish 'tessdata\eng.traineddata') -Force
+    foreach ($tessCode in $requiredTessCodes) {
+        Copy-Item -LiteralPath (Join-Path $root ("tessdata\$tessCode.traineddata")) -Destination (Join-Path $publish ("tessdata\$tessCode.traineddata")) -Force
+    }
 
     Write-Host ''
     Write-Host 'Build succeeded.'

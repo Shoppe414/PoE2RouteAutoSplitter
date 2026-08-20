@@ -13,6 +13,7 @@
   "ConfirmPausedFrames": 2,
   "ConfirmRunningFrames": 2,
   "RequireForegroundForNewDetection": true,
+  "GameLanguage": "en",
   "PauseStackThreshold": 0.62,
   "ResumeGameThreshold": 0.58,
   "PauseBannerThreshold": 0.4,

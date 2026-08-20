@@ -1,0 +1,1491 @@
+{
+  "SchemaVersion": 1,
+  "DatabaseVersion": "2026-08-19-dev3-exit-assist-savanna",
+  "Purpose": "Expected ordinary-map completion boss identities. MAP completion requires authoritative boss identity confirmation. Unknown and special map types fail closed (do not arm) until explicitly supported.",
+  "Source": {
+    "Name": "Path of Exile 2 Wiki - List of maps",
+    "Url": "https://www.poe2wiki.net/wiki/List_of_maps",
+    "Retrieved": "2026-08-18",
+    "Status": "Community-maintained PoE2 Wiki map list with PoE2DB field verification; field verification is still required."
+  },
+  "Maps": [
+    {
+      "MapName": "Alpine Ridge",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "gelida_the_frost_tongue",
+          "Name": "Gelida, the Frost-Tongue",
+          "Aliases": []
+        },
+        {
+          "Id": "ignatia_the_flame_sworn",
+          "Name": "Ignatia, the Flame-Sworn",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current",
+      "Notes": "Current wiki lists both names; treat either as valid until field behavior is confirmed."
+    },
+    {
+      "MapName": "Arid Plains",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "akthi_the_final_sting",
+          "Name": "Akthi, the Final Sting",
+          "Aliases": []
+        },
+        {
+          "Id": "anundr_the_sandworm",
+          "Name": "Anundr, the Sandworm",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current",
+      "Notes": "Current wiki lists both names; treat either as valid until field behavior is confirmed."
+    },
+    {
+      "MapName": "Augury",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "gressor_kul_the_apex",
+          "Name": "Gressor-Kul, the Apex",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Azmerian Ranges",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "morwyn_the_kinslayer",
+          "Name": "Morwyn, the Kinslayer",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Backwash",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "yaota_the_loathsome",
+          "Name": "Yaota, the Loathsome",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Barren Atoll",
+      "AreaIds": [],
+      "CompletionType": "event",
+      "BossRule": "any",
+      "Bosses": [],
+      "SourceStatus": "community-current",
+      "Notes": "Wiki lists Kalguuran Expedition completion instead of a fixed map boss."
+    },
+    {
+      "MapName": "Bastille",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "veynar_the_frostbane",
+          "Name": "Veynar, the Frostbane",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Bazaar",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "viper_napuatzi",
+          "Name": "Viper Napuatzi",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Bloodwood",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "gorian_the_moving_earth",
+          "Name": "Gorian, the Moving Earth",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Blooming Field",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "the_black_crow",
+          "Name": "The Black Crow",
+          "Aliases": [
+            "Black Crow"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Bluff",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "gressor_kul_the_apex",
+          "Name": "Gressor-Kul, the Apex",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Burial Bog",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "grudgelash_vile_ent",
+          "Name": "Grudgelash, Vile Ent",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Caldera",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "the_ravenous_fang",
+          "Name": "The Ravenous Fang",
+          "Aliases": [
+            "Ravenous Fang"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Canyon",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "morvak_the_infernal",
+          "Name": "Morvak, the Infernal",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Castaway",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "torrek_of_the_drowned_fleet",
+          "Name": "Torrek of the Drowned Fleet",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Cenotes",
+      "AreaIds": [
+        "MapCenotes"
+      ],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "bahlak_sky_seer",
+          "Name": "Bahlak, the Sky Seer",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Channel",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "hask_the_fallen_son",
+          "Name": "Hask, the Fallen Son",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Cliffside",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "brakkus_the_juggernaut",
+          "Name": "Brakkus, the Juggernaut",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Confluence",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "manassa_the_serpent_queen",
+          "Name": "Manassa, the Serpent Queen",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Creek",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "tierney_the_hateful",
+          "Name": "Tierney, the Hateful",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Crimson Shores",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "volkhar_the_emberborn",
+          "Name": "Volkhar, the Emberborn",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Crypt",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "meltwax_mockery_of_faith",
+          "Name": "Meltwax, Mockery of Faith",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Decay",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "the_fungus_behemoth",
+          "Name": "The Fungus Behemoth",
+          "Aliases": [
+            "Fungus Behemoth"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Deforestation",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "morwyn_the_kinslayer",
+          "Name": "Morwyn, the Kinslayer",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Deserted",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "lord_of_the_pit",
+          "Name": "Lord of the Pit",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Digsite",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "aurelian_the_grand_adjudicator",
+          "Name": "Aurelian, the Grand Adjudicator",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Epitaph",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "saphira_the_dread_consort",
+          "Name": "Saphira, The Dread Consort",
+          "Aliases": [
+            "Saphira, the Dread Consort"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Flotsam",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "malgor_the_nautilord",
+          "Name": "Malgor, the Nautilord",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Port",
+      "AreaIds": [
+        "MapPort"
+      ],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "malgor_the_nautilord",
+          "Name": "Malgor, the Nautilord",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "poe2db-verified-2026-08-18",
+      "Notes": "Live Client.txt area ID MapPort; PoE2DB lists Malgor, the Nautilord as the Port boss."
+    },
+    {
+      "MapName": "Forge",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "vastweld_the_colossal_guardian",
+          "Name": "Vastweld, the Colossal Guardian",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Fortress",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "pirasha_the_forgotten_prisoner",
+          "Name": "Pirasha, the Forgotten Prisoner",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Frozen Falls",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "thraeven_wing_of_winter",
+          "Name": "Thraeven, Wing of Winter",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Gothic City",
+      "AreaIds": [],
+      "CompletionType": "unknown",
+      "BossRule": "any",
+      "Bosses": [],
+      "SourceStatus": "community-current",
+      "Notes": "Current wiki result does not list a boss."
+    },
+    {
+      "MapName": "Greenhouse",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "rootgrasp_the_hateful_forest",
+          "Name": "Rootgrasp, the Hateful Forest",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Grimhaven",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "saphira_the_dread_consort",
+          "Name": "Saphira, The Dread Consort",
+          "Aliases": [
+            "Saphira, the Dread Consort"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Headland",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "hask_the_fallen_son",
+          "Name": "Hask, the Fallen Son",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Hidden Grotto",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "zar_wali_the_bone_tyrant",
+          "Name": "Zar Wali, the Bone Tyrant",
+          "Aliases": [
+            "Zar Wali, The Bone Tyrant"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Hive",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "the_fungus_behemoth",
+          "Name": "The Fungus Behemoth",
+          "Aliases": [
+            "Fungus Behemoth"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Hive Fortress",
+      "AreaIds": [],
+      "CompletionType": "event",
+      "BossRule": "any",
+      "Bosses": [],
+      "SourceStatus": "community-current",
+      "Notes": "Breach Stronghold; wiki lists 20 waves then escape."
+    },
+    {
+      "MapName": "Ice Cave",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "the_frostborn_fiend",
+          "Name": "The Frostborn Fiend",
+          "Aliases": [
+            "Frostborn Fiend"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Lofty Summit",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "oloton_the_remorseless",
+          "Name": "Oloton, the Remorseless",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Lost Towers",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "chetza_feathered_plague",
+          "Name": "Chetza, the Feathered Plague",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Marrow",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "zar_wali_the_bone_tyrant",
+          "Name": "Zar Wali, the Bone Tyrant",
+          "Aliases": [
+            "Zar Wali, The Bone Tyrant"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Mesa",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "karash_the_dune_dweller",
+          "Name": "Karash, The Dune Dweller",
+          "Aliases": [
+            "Karash, the Dune Dweller"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Mineshaft",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "vorrik_the_infernal_engineer",
+          "Name": "Vorrik, The Infernal Engineer",
+          "Aliases": [
+            "Vorrik, the Infernal Engineer"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Mire",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "riona_winter_s_cackle",
+          "Name": "Riona, Winter's Cackle",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Molten Vault",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "gulzal_the_living_furnace",
+          "Name": "Gulzal, the Living Furnace",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Moment of Zen",
+      "AreaIds": [],
+      "CompletionType": "none",
+      "BossRule": "any",
+      "Bosses": [],
+      "SourceStatus": "community-current",
+      "Notes": "Wiki lists no monsters and the Nameless Seer."
+    },
+    {
+      "MapName": "Necropolis",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "tycho_the_black_praetor",
+          "Name": "Tycho, the Black Praetor",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Oasis",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "ishtaroth_the_perennial",
+          "Name": "Ishtaroth, the Perennial",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Ornate Chambers",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "serath_the_scaled_one",
+          "Name": "Serath, the Scaled One",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Overgrown",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "tetzcatl_the_blazing_guardian",
+          "Name": "Tetzcatl, the Blazing Guardian",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Penitentiary",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "incarnation_of_death",
+          "Name": "Incarnation of Death",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Pit",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "brakkus_the_juggernaut",
+          "Name": "Brakkus, the Juggernaut",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Plantation",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "varloch_the_ashen_lord",
+          "Name": "Varloch, the Ashen Lord",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Ravine",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "tetzcatl_the_blazing_guardian",
+          "Name": "Tetzcatl, the Blazing Guardian",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Razed Fields",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "all",
+      "Bosses": [
+        {
+          "Id": "ignatia_the_flame_sworn",
+          "Name": "Ignatia, the Flame-Sworn",
+          "Aliases": []
+        },
+        {
+          "Id": "gelida_the_frost_tongue",
+          "Name": "Gelida, the Frost-Tongue",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current",
+      "Notes": "Current wiki lists both bosses; configured as a dual/all objective pending field confirmation."
+    },
+    {
+      "MapName": "Reservoir",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "grudgelash_vile_thorn",
+          "Name": "Grudgelash, Vile Thorn",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Riverhold",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "thariel_the_umbral_wraith",
+          "Name": "Thariel, the Umbral Wraith",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Riverside",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "zekoa_the_headcrusher",
+          "Name": "Zekoa, The Headcrusher",
+          "Aliases": [
+            "Zekoa, the Headcrusher"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Rockpools",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "brughor_the_insatiable",
+          "Name": "Brughor, the Insatiable",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Rugosa",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "syvora_daughter_of_the_deep",
+          "Name": "Syvora, Daughter of the Deep",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Rupture",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "zekoa_the_headcrusher",
+          "Name": "Zekoa, The Headcrusher",
+          "Aliases": [
+            "Zekoa, the Headcrusher"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Rustbowl",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "gozen_rebellious_rustlord",
+          "Name": "Gozen, Rebellious Rustlord",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Sacred Reservoir",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "zahmir_the_blade_sovereign",
+          "Name": "Zahmir, the Blade Sovereign",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current",
+      "Notes": "Wiki marks this as a Deadly Map Boss."
+    },
+    {
+      "MapName": "Sanctuary",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "pirasha_the_forgotten_prisoner",
+          "Name": "Pirasha, the Forgotten Prisoner",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Sandspit",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "the_sandstrider",
+          "Name": "The Sandstrider",
+          "Aliases": [
+            "Sandstrider"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Savannah",
+      "AreaIds": [
+        "MapSavanna"
+      ],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "caedron_the_hyena_lord",
+          "Name": "Caedron, the Hyena Lord",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "poe2db-verified-2026-08-19",
+      "Notes": "Live Client.txt/run audit confirms internal area ID MapSavanna. PoE2DB lists Caedron, the Hyena Lord as Savannah boss."
+    },
+    {
+      "MapName": "Seepage",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "the_fungus_behemoth",
+          "Name": "The Fungus Behemoth",
+          "Aliases": [
+            "Fungus Behemoth"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Sinking Spire",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "stormgore",
+          "Name": "Stormgore",
+          "Aliases": [
+            "Stormgore, the Guardian"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Sinkhole",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "yama_the_white",
+          "Name": "Yama The White",
+          "Aliases": [
+            "Yama the White"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Slash",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "the_black_crow",
+          "Name": "The Black Crow",
+          "Aliases": [
+            "Black Crow"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Sinter Rift",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "brughor_the_insatiable",
+          "Name": "Brughor, the Insatiable",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Slick",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "vorrik_the_infernal_engineer",
+          "Name": "Vorrik, The Infernal Engineer",
+          "Aliases": [
+            "Vorrik, the Infernal Engineer"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Sloughed Gully",
+      "AreaIds": [],
+      "CompletionType": "event",
+      "BossRule": "any",
+      "Bosses": [],
+      "SourceStatus": "community-current",
+      "Notes": "Wiki lists Kalguuran Expedition completion instead of a fixed map boss."
+    },
+    {
+      "MapName": "Snowfall",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "thariel_the_umbral_wraith",
+          "Name": "Thariel, the Umbral Wraith",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Spider Woods",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "rootgrasp_the_hateful_forest",
+          "Name": "Rootgrasp, the Hateful Forest",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Sprawling Jungle",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "medved_the_fallen_seer",
+          "Name": "Medved, the Fallen Seer",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Spring",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "manassa_the_serpent_queen",
+          "Name": "Manassa, the Serpent Queen",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Steaming Springs",
+      "AreaIds": [
+        "MapSteamingSprings"
+      ],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "manassa_the_serpent_queen",
+          "Name": "Manassa, the Serpent Queen",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Steppe",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "gozen_rebellious_rustlord",
+          "Name": "Gozen, Rebellious Rustlord",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Stronghold",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "the_shackled_horror",
+          "Name": "The Shackled Horror",
+          "Aliases": [
+            "Shackled Horror"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Sulphuric Caverns",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "all",
+      "Bosses": [
+        {
+          "Id": "lord_of_the_pit",
+          "Name": "Lord of the Pit",
+          "Aliases": []
+        },
+        {
+          "Id": "the_bone_colossus",
+          "Name": "The Bone Colossus",
+          "Aliases": [
+            "Bone Colossus"
+          ]
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Sump",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "brakka_the_withered_crone",
+          "Name": "Brakka, the Withered Crone",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Sun Temple",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "tonqui_seer_of_the_sun",
+          "Name": "Tonqui, Seer of the Sun",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "The Assembly",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "tetzcatl_the_blazing_guardian",
+          "Name": "Tetzcatl, the Blazing Guardian",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "The Copper Citadel",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "jamanra_abomination",
+          "Name": "Jamanra, the Abomination",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "The Ezomyte Megaliths",
+      "AreaIds": [],
+      "CompletionType": "random-bosses",
+      "BossRule": "any",
+      "Bosses": [],
+      "SourceStatus": "community-current",
+      "Notes": "Special Powerful Boss Encounter; up to 9 waves of random map bosses."
+    },
+    {
+      "MapName": "The Fractured Lake",
+      "AreaIds": [],
+      "CompletionType": "none",
+      "BossRule": "any",
+      "Bosses": [],
+      "SourceStatus": "community-current",
+      "Notes": "Wiki lists no fixed boss; special Lake of Kalandra area."
+    },
+    {
+      "MapName": "The Iron Citadel",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "count_geonor",
+          "Name": "Count Geonor",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "The Jade Isles",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "manoki_the_chosen",
+          "Name": "Manoki, the Chosen",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "The Silent Cave",
+      "AreaIds": [],
+      "CompletionType": "random-bosses",
+      "BossRule": "any",
+      "Bosses": [],
+      "SourceStatus": "community-current",
+      "Notes": "Special imprisoned random map boss that absorbs Essences."
+    },
+    {
+      "MapName": "The Viridian Wildwood",
+      "AreaIds": [],
+      "CompletionType": "none",
+      "BossRule": "any",
+      "Bosses": [],
+      "SourceStatus": "community-current",
+      "Notes": "Wiki lists no fixed boss; Omen-focused special map."
+    },
+    {
+      "MapName": "The Stone Citadel",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "doryani_royal_thaumaturge",
+          "Name": "Doryani, Royal Thaumaturge",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Trenches",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "gorian_the_moving_earth",
+          "Name": "Gorian, the Moving Earth",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Untainted Paradise",
+      "AreaIds": [],
+      "CompletionType": "none",
+      "BossRule": "any",
+      "Bosses": [],
+      "SourceStatus": "community-current",
+      "Notes": "Special experience map; wiki does not list a fixed boss."
+    },
+    {
+      "MapName": "Vaal City",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "viper_napuatzi",
+          "Name": "Viper Napuatzi",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Vaults of Kamasa",
+      "AreaIds": [],
+      "CompletionType": "none",
+      "BossRule": "any",
+      "Bosses": [],
+      "SourceStatus": "community-current",
+      "Notes": "Wiki lists no monsters; chest-focused special map."
+    },
+    {
+      "MapName": "Wayward Isle",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "lord_of_the_pit",
+          "Name": "Lord of the Pit",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Wetlands",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "caedron_the_hyena_lord",
+          "Name": "Caedron, the Hyena Lord",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Willow",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "any",
+      "Bosses": [
+        {
+          "Id": "connal_the_tormented",
+          "Name": "Connal, the Tormented",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current"
+    },
+    {
+      "MapName": "Woodland",
+      "AreaIds": [],
+      "CompletionType": "boss",
+      "BossRule": "all",
+      "Bosses": [
+        {
+          "Id": "murtagh_the_engorged",
+          "Name": "Murtagh, the Engorged",
+          "Aliases": []
+        },
+        {
+          "Id": "colm_the_rancorous",
+          "Name": "Colm, the Rancorous",
+          "Aliases": []
+        }
+      ],
+      "SourceStatus": "community-current",
+      "Notes": "Current wiki lists both bosses; configured as all/dual pending field confirmation."
+    }
+  ],
+  "EventBosses": [
+    {
+      "Mechanic": "Delirium",
+      "Id": "omniphobia_fear_manifest",
+      "Name": "Omniphobia, Fear Manifest",
+      "Aliases": [],
+      "SourceStatus": "provisional"
+    },
+    {
+      "Mechanic": "Delirium",
+      "Id": "kosis_revelation",
+      "Name": "Kosis, the Revelation",
+      "Aliases": [
+        "Kosis, The Revelation"
+      ],
+      "SourceStatus": "provisional"
+    }
+  ],
+  "EventBossSource": {
+    "Name": "Path of Exile 2 Delirium references; initial development seed",
+    "Retrieved": "2026-08-17",
+    "Status": "Provisional. Event-boss identities are diagnostic exclusions and should be expanded from field logs."
+  }
+}

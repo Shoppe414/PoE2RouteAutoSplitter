@@ -1,5 +1,6 @@
-param(
+﻿param(
     [string]$StateFile = "",
+    [string]$SettingsFile = "",
     [ValidateRange(100,5000)][int]$SampleMs = 500
 )
 
@@ -29,16 +30,23 @@ $StateFile = [System.IO.Path]::GetFullPath($StateFile)
 $stateDir = Split-Path -Parent $StateFile
 New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
 
-$stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-$diagRoot = Join-Path $root 'diagnostics'
-$diagDir = Join-Path $diagRoot $stamp
-New-Item -ItemType Directory -Force -Path $diagDir | Out-Null
+if ([string]::IsNullOrWhiteSpace($SettingsFile)) {
+    $SettingsFile = Join-Path $stateDir 'poe2_run_settings.json'
+}
+$SettingsFile = [System.IO.Path]::GetFullPath($SettingsFile)
+$settingsHash = if (Test-Path -LiteralPath $SettingsFile -PathType Leaf) { (Get-FileHash -LiteralPath $SettingsFile -Algorithm SHA256).Hash } else { '<missing>' }
 
-$stdoutPath = Join-Path $diagDir 'watcher-stdout.log'
-$stderrPath = Join-Path $diagDir 'watcher-stderr.log'
-$samplesPath = Join-Path $diagDir 'process-samples.csv'
-$metaPath = Join-Path $diagDir 'diagnostic-summary.txt'
-$eventsPath = Join-Path $diagDir 'windows-application-events.txt'
+$stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+$diagDir = Join-Path $packageRoot "4-README's_and_Diagnostics\Diagnostics"
+$imageDir = Join-Path $diagDir 'images'
+New-Item -ItemType Directory -Force -Path $diagDir, $imageDir | Out-Null
+$prefix = "$stamp-"
+
+$stdoutPath = Join-Path $diagDir ($prefix + 'watcher-stdout.log')
+$stderrPath = Join-Path $diagDir ($prefix + 'watcher-stderr.log')
+$samplesPath = Join-Path $diagDir ($prefix + 'process-samples.csv')
+$metaPath = Join-Path $diagDir ($prefix + 'diagnostic-summary.txt')
+$eventsPath = Join-Path $diagDir ($prefix + 'windows-application-events.txt')
 
 $startTime = Get-Date
 $exeItem = Get-Item -LiteralPath $exe
@@ -56,6 +64,7 @@ $configHash = if (Test-Path -LiteralPath $configPath) { (Get-FileHash -LiteralPa
     "PoE2 GameTimeWatcher external crash diagnostic",
     "Started: $($startTime.ToString('o'))",
     "Diagnostic directory: $diagDir",
+    "Diagnostic images: $imageDir",
     "Executable: $exe",
     "Executable SHA256: $exeHash",
     "File version: $($exeItem.VersionInfo.FileVersion)",
@@ -63,12 +72,14 @@ $configHash = if (Test-Path -LiteralPath $configPath) { (Get-FileHash -LiteralPa
     "Config: $configPath",
     "Config SHA256: $configHash",
     "State file: $StateFile",
+    "Run settings: $SettingsFile",
+    "Run settings SHA256: $settingsHash",
     "PowerShell: $($PSVersionTable.PSVersion)",
     "OS: $([System.Environment]::OSVersion.VersionString)",
     "64-bit OS: $([System.Environment]::Is64BitOperatingSystem)",
     "64-bit PowerShell process: $([System.Environment]::Is64BitProcess)",
     "Sample interval ms: $SampleMs",
-    "Launcher revision: v0.4.3 provisional-timestamp literal-path ProcessStartInfo",
+    "Launcher revision: v3.0.0 centralized diagnostics",
     ""
 ) | Set-Content -LiteralPath $metaPath -Encoding UTF8
 
@@ -86,7 +97,7 @@ $configHash = if (Test-Path -LiteralPath $configPath) { (Get-FileHash -LiteralPa
 # startup exception visible to the user and avoids another path-sensitive
 # redirection layer. GameTimeWatcher's --diagnostic-dir and --wait-on-error
 # provide persistent diagnostics as well.
-$argLine = '--state-file "' + $StateFile.Replace('"','\"') + '" --dev-console --wait-on-error --diagnostic-dir "' + $diagDir.Replace('"','\"') + '"'
+$argLine = '--state-file "' + $StateFile.Replace('"','\"') + '" --settings "' + $SettingsFile.Replace('"','\"') + '" --dev-console --wait-on-error --diagnostic-dir "' + $diagDir.Replace('"','\"') + '" --diagnostic-image-dir "' + $imageDir.Replace('"','\"') + '"'
 
 try {
     $psi = New-Object System.Diagnostics.ProcessStartInfo
@@ -144,14 +155,17 @@ try {
 
     # Preserve the state/output logs at the exact end of the diagnostic session.
     if (Test-Path -LiteralPath $StateFile) {
-        Copy-Item -LiteralPath $StateFile -Destination (Join-Path $diagDir 'final-state.txt') -Force -ErrorAction SilentlyContinue
+        Copy-Item -LiteralPath $StateFile -Destination (Join-Path $diagDir ($prefix + 'final-state.txt')) -Force -ErrorAction SilentlyContinue
     }
-    $watcherLog = Join-Path $stateDir 'poe2_gametimewatcher.log'
+    $watcherLog = Join-Path $diagDir 'poe2_gametimewatcher.log'
     if (Test-Path -LiteralPath $watcherLog) {
-        Copy-Item -LiteralPath $watcherLog -Destination (Join-Path $diagDir 'poe2_gametimewatcher.log') -Force -ErrorAction SilentlyContinue
+        Copy-Item -LiteralPath $watcherLog -Destination (Join-Path $diagDir ($prefix + 'poe2_gametimewatcher.log')) -Force -ErrorAction SilentlyContinue
     }
     if (Test-Path -LiteralPath $configPath) {
-        Copy-Item -LiteralPath $configPath -Destination (Join-Path $diagDir 'config.json') -Force -ErrorAction SilentlyContinue
+        Copy-Item -LiteralPath $configPath -Destination (Join-Path $diagDir ($prefix + 'config.json')) -Force -ErrorAction SilentlyContinue
+    }
+    if (Test-Path -LiteralPath $SettingsFile) {
+        Copy-Item -LiteralPath $SettingsFile -Destination (Join-Path $diagDir ($prefix + 'poe2_run_settings.json')) -Force -ErrorAction SilentlyContinue
     }
 
     # Native CLR/application failures can terminate the process without a managed exception.
@@ -189,7 +203,7 @@ try {
 catch {
     $details = "Diagnostic launcher failure: " + $_.Exception.ToString()
     $details | Add-Content -LiteralPath $metaPath -Encoding UTF8
-    $details | Set-Content -LiteralPath (Join-Path $diagDir 'launcher-error.txt') -Encoding UTF8
+    $details | Set-Content -LiteralPath (Join-Path $diagDir ($prefix + 'launcher-error.txt')) -Encoding UTF8
     Write-Host ''
     Write-Error $details
     throw

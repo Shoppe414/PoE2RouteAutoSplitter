@@ -15,9 +15,11 @@ public sealed class AppConfig
     public int ConfirmPausedFrames { get; set; } = 2;
     public int ConfirmRunningFrames { get; set; } = 2;
     public bool RequireForegroundForNewDetection { get; set; } = true;
+    public string GameLanguage { get; set; } = "en";
 
-    // Separate thresholds let the strongest invariant (RESUME GAME) be more
-    // sensitive without making the weaker fallbacks overly permissive.
+    // Structure-first policy: the centered four-button pause-menu geometry is the
+    // strongest signal, followed by the GAME PAUSED-style banner region. English
+    // Resume/Exit templates are low-weight corroborators only and cannot classify pause alone.
     public double PauseStackThreshold { get; set; } = 0.62;
     public double ResumeGameThreshold { get; set; } = 0.58;
     public double PauseBannerThreshold { get; set; } = 0.40;
@@ -50,8 +52,9 @@ public sealed class AppConfig
         return config;
     }
 
-    private void Validate()
+    public void Validate()
     {
+        GameLanguage = NormalizeGameLanguage(GameLanguage);
         if (ProcessNames.Length == 0) throw new InvalidOperationException("ProcessNames must not be empty.");
         if (CaptureFps is < 1 or > 30) throw new InvalidOperationException("CaptureFps must be 1-30.");
         if (FastCaptureFps is < 1 or > 60) throw new InvalidOperationException("FastCaptureFps must be 1-60.");
@@ -68,4 +71,11 @@ public sealed class AppConfig
         if (CanonicalHeight is < 360 or > 1440)
             throw new InvalidOperationException("CanonicalHeight must be 360-1440.");
     }
+
+    private static string NormalizeGameLanguage(string? code)
+    {
+        string[] supported = ["en", "fr", "de", "es-ES", "ja", "ko", "pt-BR", "ru", "th"];
+        return supported.FirstOrDefault(x => string.Equals(x, code, StringComparison.OrdinalIgnoreCase)) ?? "en";
+    }
+
 }

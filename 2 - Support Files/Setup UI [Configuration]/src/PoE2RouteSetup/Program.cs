@@ -65,7 +65,13 @@ internal static class Program
         try
         {
             var located = PackageData.LocatePackage();
-            candidates.Add(Path.Combine(Path.GetDirectoryName(located.ManifestPath)!, "PoE2RouteSetup-crash.log"));
+            var releaseRoot = Directory.GetParent(Path.GetFullPath(located.PackageRoot))?.FullName;
+            if (!string.IsNullOrWhiteSpace(releaseRoot))
+            {
+                var diagnosticDirectory = Path.Combine(releaseRoot, "4-README's_and_Diagnostics", "Diagnostics");
+                Directory.CreateDirectory(diagnosticDirectory);
+                candidates.Add(Path.Combine(diagnosticDirectory, "PoE2RouteSetup-crash.log"));
+            }
         }
         catch
         {

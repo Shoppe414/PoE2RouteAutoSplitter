@@ -107,7 +107,7 @@ public sealed class BossTracker
                         $" | recentRunDiagnostic={_runCollapse.RecentReference:F4}" +
                         $" | dropRatioDiagnostic={_runCollapse.DropRatio:F3}" +
                         $" | firstMissing={_firstMissing.Value:O}" +
-                        $" | verifyStarted={_verifyStarted.Value:O}");
+                        $" | verifyStarted={_verifyStarted.Value:O} | confirmMs={_config.DisappearConfirmMs}");
                 }
                 return;
             }
@@ -136,7 +136,7 @@ public sealed class BossTracker
                     _verifyStarted = now;
                     _events.Debug($"MISSING_STARTED | boss={_tracked.Id} | presence=name-fallback" +
                         $" | value={value:F4} | threshold={_nameMissingThreshold:F4}" +
-                        $" | firstMissing={_firstMissing.Value:O} | verifyStarted={_verifyStarted.Value:O}");
+                        $" | firstMissing={_firstMissing.Value:O} | verifyStarted={_verifyStarted.Value:O} | confirmMs={_config.DisappearConfirmMs}");
                 }
                 return;
             }

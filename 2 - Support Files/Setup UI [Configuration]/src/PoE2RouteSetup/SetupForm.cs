@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
 
 namespace PoE2RouteSetup;
 
@@ -8,6 +9,8 @@ public sealed class SetupForm : Form
     private readonly string _packageRoot;
     private readonly string _userRoot;
     private readonly SetupManifest _manifest;
+    private readonly string _settingsPath;
+    private UserSettings _userSettings;
     private readonly List<RouteEntry> _areas;
     private readonly List<RouteEntry> _bosses;
     private readonly List<RouteEntry> _customRoute = [];
@@ -22,6 +25,13 @@ public sealed class SetupForm : Form
     private readonly RadioButton _premadeOrderedRadio = new();
     private readonly RadioButton _premadeDynamicRadio = new();
     private readonly Label _presetDescription = new();
+    private readonly Label _premadePreviewModeValue = new();
+    private readonly Label _premadePreviewSetupValue = new();
+    private readonly Label _premadePreviewOrderValue = new();
+    private readonly Label _premadePreviewObjectivesValue = new();
+    private readonly Label _premadePreviewBossWatcherValue = new();
+    private readonly Label _premadePreviewTrialsValue = new();
+    private readonly Label _premadePreviewStartValue = new();
     private readonly FlowLayoutPanel _premadeCombinationPanel = new();
     private readonly CheckedListBox _premadeCombinationList = new();
 
@@ -67,11 +77,10 @@ public sealed class SetupForm : Form
     private readonly NumericUpDown _maxLevelNumeric = new();
     private readonly NumericUpDown _levelIntervalNumeric = new();
     private readonly FlowLayoutPanel _levelOptionsPanel = new();
-    private readonly CheckBox _trialBossObjectivesCheck = new();
-    private readonly CheckedListBox _trialBossChecklist = new();
-    private readonly FlowLayoutPanel _trialBossOptionsPanel = new();
+    // Trial bosses share the same content selector/catalog as Act, Interlude, and Pinnacle
+    // bosses. Keeping their canonical RouteEntry objects separate preserves the existing
+    // Trial-specific runtime objective semantics without consuming vertical UI space.
     private readonly List<RouteEntry> _trialBossRouteEntries;
-    private bool _syncingTrialBossChecklist;
 
     // Dedicated trial-run configuration.
     private readonly RadioButton _trialSekhemasRadio = new();
@@ -100,27 +109,68 @@ public sealed class SetupForm : Form
     private readonly Label _trialPreviewFinishValue = new();
     private readonly Label _trialPreviewSplitsValue = new();
 
-    // Endgame Maps configuration. Ordinary map bosses use BossWatcher's identity-free
-    // structural bar mode; map classification, modifier counts, and random-objective
-    // completion remain diagnostic areas for field validation.
+    // Vaal Ruins / Temple of Atziri configuration. This iteration remains UI-first:
+    // it defines the planned Temple dive/completion/death policy without generating the
+    // runtime Temple state machine yet. Vaal Ruins remains an explicit Maps exit boundary.
+    private readonly NumericUpDown _vaalDiveCountNumeric = new();
+    private readonly RadioButton _vaalCompletionDiveRadio = new();
+    private readonly RadioButton _vaalCompletionArchitectRadio = new();
+    private readonly RadioButton _vaalCompletionAtziriRadio = new();
+    private readonly RadioButton _vaalDeathNoneRadio = new();
+    private readonly RadioButton _vaalDeathFirstRadio = new();
+    private readonly RadioButton _vaalDeathTrackAllRadio = new();
+    private readonly TextBox _vaalCharacterNameText = new();
+    private readonly RadioButton _vaalTimingActiveOnlyRadio = new();
+    private readonly Label _vaalPreviewStartValue = new();
+    private readonly Label _vaalPreviewSetupValue = new();
+    private readonly Label _vaalPreviewActiveValue = new();
+    private readonly Label _vaalPreviewDiveValue = new();
+    private readonly Label _vaalPreviewCompletionValue = new();
+    private readonly Label _vaalPreviewDeathPolicyValue = new();
+    private readonly Label _vaalPreviewCharacterValue = new();
+    private readonly Label _vaalPreviewMapBoundaryValue = new();
+    private readonly Label _vaalPreviewRuntimeValue = new();
+
+    // Endgame Maps configuration. Maps use a dedicated lifecycle policy layered over the
+    // shared mixed ASL: map identity is Client.txt Map<name> + seed, the expected map boss
+    // must be identified by BossWatcher, and the split is committed on the first real exit
+    // after that boss is qualified. Game Time can either pause between completed maps or
+    // remain continuous except for loading screens and the configured manual-pause policy.
+    private readonly RadioButton _mapLengthFixedRadio = new();
+    private readonly RadioButton _mapLengthDeathRadio = new();
+    private readonly RadioButton _mapLengthManualRadio = new();
+    private readonly RadioButton _mapLengthPinnacleRadio = new();
     private readonly NumericUpDown _mapBossTargetNumeric = new();
+    private readonly ComboBox _mapPinnacleTargetCombo = new();
+    private readonly RadioButton _mapDeathNoneRadio = new();
+    private readonly RadioButton _mapDeathEndRadio = new();
+    private readonly RadioButton _mapDeathTrackRadio = new();
+    private readonly TextBox _mapCharacterNameText = new();
     private readonly RadioButton _mapBossCompletionRadio = new();
     private readonly RadioButton _mapQuestCompletionRadio = new();
-    private readonly CheckBox _mapIncludePinnacleCheck = new();
-    private readonly CheckedListBox _mapPinnacleChecklist = new();
-    private readonly CheckBox _mapModifierCountCheck = new();
+    private readonly RadioButton _mapGameTimeCompletionRadio = new();
+    private readonly RadioButton _mapGameTimeContinuousRadio = new();
+    private readonly Label _mapPreviewStartValue = new();
     private readonly Label _mapPreviewOrderValue = new();
     private readonly Label _mapPreviewTargetValue = new();
     private readonly Label _mapPreviewCompletionValue = new();
+    private readonly Label _mapPreviewGameTimeValue = new();
+    private readonly Label _mapPreviewDeathValue = new();
+    private readonly Label _mapPreviewCharacterValue = new();
     private readonly Label _mapPreviewPinnacleValue = new();
     private readonly Label _mapPreviewNameValue = new();
+
+    private readonly Panel _premadeStartPolicyHost = new();
+    private readonly Panel _customStartPolicyHost = new();
+    private Control? _startPolicyPanel;
+    private TableLayoutPanel? _startPolicyLayout;
+    private bool? _startPolicyLayoutStacked;
 
     private readonly RadioButton _manualStartRadio = new();
     private readonly RadioButton _riverbankStartRadio = new();
     private readonly RadioButton _zoneStartRadio = new();
     private readonly ComboBox _startZoneCombo = new();
     private readonly CheckBox _excludeManualPauseCheck = new();
-    private readonly CheckBox _devConsoleCheck = new();
     private readonly Button _gameTimeWatcherButton = new();
     private readonly Button _deployButton = new();
     private readonly Label _status = new();
@@ -131,6 +181,9 @@ public sealed class SetupForm : Form
         _packageRoot = located.PackageRoot;
         _userRoot = located.UserRoot;
         _manifest = SetupManifest.Load(located.ManifestPath);
+        _settingsPath = Path.Combine(_userRoot, "PoE2AS-Settings.json");
+        _userSettings = UserSettings.LoadOrCreate(_settingsPath, out var settingsWarning);
+        Localization.SetLanguage(_userSettings.SetupUI.DefaultLanguage);
         _areas = PackageData.LoadAreas(Resolve(_manifest.AreaCatalog));
         _bosses = PackageData.LoadBosses(Resolve(_manifest.BossCatalog), Resolve(_manifest.BossSupportOnlyList));
         _trialBossRouteEntries = BuildTrialBossRouteEntries();
@@ -145,8 +198,8 @@ public sealed class SetupForm : Form
         var startupWorkArea = startupScreen.WorkingArea;
         StartPosition = FormStartPosition.Manual;
         Size = new Size(
-            Math.Max(MinimumSize.Width, startupWorkArea.Width / 2),
-            Math.Max(MinimumSize.Height, startupWorkArea.Height));
+            Math.Max(MinimumSize.Width, (int)Math.Round(startupWorkArea.Width * (_userSettings.SetupUI.WindowWidthPercent / 100.0))),
+            Math.Max(MinimumSize.Height, (int)Math.Round(startupWorkArea.Height * (_userSettings.SetupUI.WindowHeightPercent / 100.0))));
         Location = new Point(
             startupWorkArea.Left + (startupWorkArea.Width - Width) / 2,
             startupWorkArea.Top);
@@ -159,6 +212,9 @@ public sealed class SetupForm : Form
         UpdateStartZoneEnabled();
         _targetText.Text = Path.Combine(_userRoot, "LiveSplit Target");
         _targetText.ReadOnly = true;
+        if (!string.IsNullOrWhiteSpace(settingsWarning))
+            _status.Text = settingsWarning;
+        Localization.Apply(this);
     }
 
     private void BuildUi()
@@ -174,6 +230,7 @@ public sealed class SetupForm : Form
         root.Controls.Add(BuildTargetPanel(), 0, 0);
         root.Controls.Add(BuildLiveSplitReminderPanel(), 0, 1);
         root.Controls.Add(BuildModeTabs(), 0, 2);
+        MoveStartPolicyPanelToSelectedRouteTab();
         root.Controls.Add(BuildActionPanel(), 0, 3);
         _status.AutoSize = true;
         _status.Padding = new Padding(4, 8, 4, 0);
@@ -206,10 +263,7 @@ public sealed class SetupForm : Form
             Padding = new Padding(10, 8, 10, 8),
             Margin = new Padding(0, 8, 0, 4),
             MaximumSize = new Size(1060, 0),
-            Text =
-                "LiveSplit reminders:\r\n" +
-                "• After Generate, open the generated .lss and attach the generated .asl to a Scriptable Auto Splitter component. LiveSplit does not attach the .asl automatically.\r\n" +
-                "• To exclude loading screens and, when enabled, manual-pause time from the displayed run time, set LiveSplit to Game Time. Real Time will continue counting those periods."
+            Text = Localization.Translate("LiveSplit reminders: After Generate, open the generated .lss and attach the generated .asl to a Scriptable Auto Splitter component. LiveSplit does not attach the .asl automatically. Use LiveSplit Game Time to exclude detected loading screens and enabled manual-pause time from the displayed run time.")
         };
         return box;
     }
@@ -218,44 +272,55 @@ public sealed class SetupForm : Form
     {
         _modeTabs.Dock = DockStyle.Fill;
         _modeTabs.SelectedIndexChanged += (_, _) => UpdateStartZoneEnabled();
-        var premade = new TabPage("Premade setups");
+        var premade = new TabPage("Pre-made Routes");
         premade.Controls.Add(BuildPremadePanel());
-        var custom = new TabPage("Custom route");
+        var custom = new TabPage("Custom Routes");
         custom.Controls.Add(BuildCustomPanel());
         var trials = new TabPage("Trials");
         trials.Controls.Add(BuildTrialsPanel());
+        var vaal = new TabPage("Vaal Ruins");
+        vaal.Controls.Add(BuildVaalRuinsPanel());
         var maps = new TabPage("Maps");
         maps.Controls.Add(BuildMapsPanel());
         _modeTabs.TabPages.Add(premade);
         _modeTabs.TabPages.Add(custom);
         _modeTabs.TabPages.Add(trials);
+        _modeTabs.TabPages.Add(vaal);
         _modeTabs.TabPages.Add(maps);
         return _modeTabs;
     }
 
     private Control BuildPremadePanel()
     {
-        var scroll = new Panel { Dock = DockStyle.Fill, AutoScroll = true };
+        var outer = new SplitContainer
+        {
+            Dock = DockStyle.Fill,
+            Orientation = Orientation.Vertical,
+            Size = new Size(1000, 560),
+            SplitterDistance = 600,
+            Panel1MinSize = 500,
+            Panel2MinSize = 280
+        };
+
+        var settingsHost = new Panel { Dock = DockStyle.Fill, AutoScroll = true, Padding = new Padding(8) };
         var root = new FlowLayoutPanel
         {
+            Dock = DockStyle.Top,
             AutoSize = true,
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
             FlowDirection = FlowDirection.TopDown,
-            WrapContents = false,
-            Padding = new Padding(8),
-            Width = 1020
+            WrapContents = false
         };
-        scroll.Controls.Add(root);
+        settingsHost.Controls.Add(root);
+        outer.Panel1.Controls.Add(settingsHost);
 
-        // Keep the compact selector at a stable width/height inside the vertically
-        // auto-sized FlowLayoutPanel. An AutoSize GroupBox containing a docked
-        // TableLayoutPanel can report an almost-zero preferred width, which caused
-        // the selector to collapse into a narrow column on Windows.
+        // Keep the selector compact enough for the left side of the standard
+        // settings/rules split layout used by Trials, Vaal Ruins, and Maps.
         var selector = new GroupBox
         {
             Text = "Premade route",
             AutoSize = false,
-            Width = 990,
+            Width = 560,
             Height = 142,
             Padding = new Padding(10)
         };
@@ -288,7 +353,7 @@ public sealed class SetupForm : Form
 
         grid.Controls.Add(new Label { Text = "Setup:", AutoSize = true, Anchor = AnchorStyles.Left, Padding = new Padding(0, 6, 8, 0) }, 0, 1);
         _premadeSetupCombo.DropDownStyle = ComboBoxStyle.DropDownList;
-        _premadeSetupCombo.Width = 500;
+        _premadeSetupCombo.Width = 430;
         _premadeSetupCombo.SelectedIndexChanged += (_, _) => UpdatePremadeSelectorUi(false);
         grid.Controls.Add(_premadeSetupCombo, 1, 1);
 
@@ -311,7 +376,7 @@ public sealed class SetupForm : Form
         _premadeCombinationPanel.FlowDirection = FlowDirection.TopDown;
         _premadeCombinationPanel.WrapContents = false;
         _premadeCombinationPanel.Visible = false;
-        var combinationGroup = new GroupBox { Text = "Act / Interlude combination", AutoSize = true, Width = 990, Padding = new Padding(10) };
+        var combinationGroup = new GroupBox { Text = "Act / Interlude combination", AutoSize = true, Width = 560, Padding = new Padding(10) };
         _premadeCombinationList.CheckOnClick = true;
         _premadeCombinationList.Width = 470;
         _premadeCombinationList.Height = 112;
@@ -322,27 +387,52 @@ public sealed class SetupForm : Form
         _premadeCombinationPanel.Controls.Add(new Label
         {
             AutoSize = true,
-            MaximumSize = new Size(930, 0),
-            Text = "Combination setups concatenate the selected Acts / Interludes in campaign order. The 100% or Any% rule in the Setup selection is applied to each selected Act; Interludes use their available full route."
+            MaximumSize = new Size(520, 0),
+            Text = "Selected Acts and Interludes are combined in campaign order. The chosen route rule is applied to each selected Act."
         });
         combinationGroup.Controls.Add(_premadeCombinationPanel);
         root.Controls.Add(combinationGroup);
 
         root.Controls.Add(BuildPremadeTrialsPanel());
 
-        _presetDescription.AutoSize = true;
-        _presetDescription.MaximumSize = new Size(960, 0);
-        _presetDescription.Padding = new Padding(4, 8, 4, 8);
-        root.Controls.Add(_presetDescription);
+        ConfigureStartPolicyHost(_premadeStartPolicyHost);
+        _startPolicyPanel ??= BuildStartPolicyPanel();
+        _premadeStartPolicyHost.Controls.Add(_startPolicyPanel);
+        _startPolicyPanel.Dock = DockStyle.Top;
+        ConfigureStartPolicyLayout(stackZoneSelector: true);
+        root.Controls.Add(_premadeStartPolicyHost);
+
+        // Replace the former single-line preview with the same two-column Run Rules
+        // presentation used by the other dedicated configuration tabs.
+        var previewGroup = new GroupBox { Text = "Run Rules", Dock = DockStyle.Fill, Padding = new Padding(10) };
+        var previewRoot = new TableLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            AutoSize = true,
+            ColumnCount = 2,
+            RowCount = 7,
+            Padding = new Padding(2)
+        };
+        previewRoot.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38));
+        previewRoot.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62));
+        AddTrialPreviewRow(previewRoot, 0, "Mode", _premadePreviewModeValue);
+        AddTrialPreviewRow(previewRoot, 1, "Setup", _premadePreviewSetupValue);
+        AddTrialPreviewRow(previewRoot, 2, "Order", _premadePreviewOrderValue);
+        AddTrialPreviewRow(previewRoot, 3, "Objectives", _premadePreviewObjectivesValue);
+        AddTrialPreviewRow(previewRoot, 4, "BossWatcher", _premadePreviewBossWatcherValue);
+        AddTrialPreviewRow(previewRoot, 5, "Trials", _premadePreviewTrialsValue);
+        AddTrialPreviewRow(previewRoot, 6, "Start", _premadePreviewStartValue);
+        previewGroup.Controls.Add(previewRoot);
+        outer.Panel2.Controls.Add(previewGroup);
 
         _premadeModeCombo.SelectedIndex = 0;
-        return scroll;
+        return outer;
     }
 
     private Control BuildPremadeTrialsPanel()
     {
-        var group = new GroupBox { Text = "Optional trial content", AutoSize = true, Width = 990, Padding = new Padding(10) };
-        var root = new FlowLayoutPanel { AutoSize = true, FlowDirection = FlowDirection.TopDown, WrapContents = false, Width = 950 };
+        var group = new GroupBox { Text = "Optional trial content", AutoSize = true, Width = 560, Padding = new Padding(10) };
+        var root = new FlowLayoutPanel { AutoSize = true, FlowDirection = FlowDirection.TopDown, WrapContents = false, Width = 520 };
 
         _premadeSekhemasCheck.Text = "Include Trial of the Sekhemas";
         _premadeSekhemasCheck.AutoSize = true;
@@ -382,10 +472,7 @@ public sealed class SetupForm : Form
         {
             AutoSize = true,
             MaximumSize = new Size(880, 0),
-            Text =
-                "Choose where you expect to begin each selected floor. Floors are sequential, so selecting a later floor also includes the earlier floors. " +
-                "If Floors 2 and 3 will be run back-to-back, choose the same preceding objective for both; SetupUI keeps Floor 2 before Floor 3. " +
-                "Typical progression is Floor 1 during Act 2, Floors 2–3 later (often during the Interludes), and Floor 4 after the campaign, but these are planning hints rather than enforced rules."
+            Text = "Choose where each selected Sekhemas floor is inserted into the route. Later floors include the earlier required floors."
         });
         root.Controls.Add(_premadeSekhemasPanel);
 
@@ -428,9 +515,7 @@ public sealed class SetupForm : Form
         {
             AutoSize = true,
             MaximumSize = new Size(880, 0),
-            Text =
-                "Choose where you expect to return for each selected Chaos stage. The 4-round trial is commonly done during Act 3, the 7-round trial is often deferred until the Interludes, and the 10-round trial / Trialmaster is commonly post-campaign. " +
-                "Boss routes use a dynamic Uxmal / Chetza / Bahlak encounter slot for each selected stage. Area routes track each separate visit to the active Trial of Chaos even though the game reuses the same trial area."
+            Text = "Choose where each selected Trial of Chaos stage is inserted into the route. Boss stages use the valid dynamic Chaos boss pool."
         });
         root.Controls.Add(_premadeChaosPanel);
 
@@ -514,25 +599,33 @@ public sealed class SetupForm : Form
         outer.SplitterDistance = 515;
         outer.Panel1.Controls.Add(BuildAvailableObjectivesPanel());
         outer.Panel2.Controls.Add(BuildRoutePanel());
-        return outer;
+
+        var wrapper = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 2, ColumnCount = 1 };
+        wrapper.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        wrapper.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        wrapper.Controls.Add(outer, 0, 0);
+        ConfigureStartPolicyHost(_customStartPolicyHost);
+        wrapper.Controls.Add(_customStartPolicyHost, 0, 1);
+        return wrapper;
     }
 
     private Control BuildAvailableObjectivesPanel()
     {
-        var panel = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 4, ColumnCount = 1 };
-        panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        // Keep the boss/area selector as the only expanding section. Trial bosses are
+        // available from the same Content drop-down as Acts/Interludes/Pinnacle, so the
+        // old dedicated Trial checklist no longer steals height on smaller displays.
+        var panel = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 3, ColumnCount = 1 };
         panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         panel.Controls.Add(BuildCustomCatalogSelectorPanel(), 0, 0);
         panel.Controls.Add(BuildLevelProgressionPanel(), 0, 1);
-        panel.Controls.Add(BuildTrialBossObjectivesPanel(), 0, 2);
 
         var tabs = new TabControl { Dock = DockStyle.Fill, Padding = new Point(12, 4) };
         tabs.TabPages.Add(BuildAreaObjectiveTab());
         tabs.TabPages.Add(BuildBossObjectiveTab());
-        panel.Controls.Add(tabs, 0, 3);
+        panel.Controls.Add(tabs, 0, 2);
         return panel;
     }
 
@@ -549,11 +642,12 @@ public sealed class SetupForm : Form
         var selectorRow = new FlowLayoutPanel { AutoSize = true, FlowDirection = FlowDirection.LeftToRight, WrapContents = false };
         selectorRow.Controls.Add(new Label { Text = "Content:", AutoSize = true, Padding = new Padding(0, 6, 4, 0) });
         _customCatalogGroupCombo.DropDownStyle = ComboBoxStyle.DropDownList;
-        _customCatalogGroupCombo.Width = 190;
+        _customCatalogGroupCombo.Width = 220;
         _customCatalogGroupCombo.Items.AddRange(new object[]
         {
             "Act 1", "Act 2", "Act 3", "Act 4",
             "Interlude 1", "Interlude 2", "Interlude 3",
+            "Trial of the Sekhemas", "Trial of Chaos",
             "Pinnacle"
         });
         _customCatalogGroupCombo.SelectedIndexChanged += (_, _) => RefreshCustomCatalogs();
@@ -561,7 +655,7 @@ public sealed class SetupForm : Form
         panel.Controls.Add(selectorRow);
         panel.Controls.Add(new Label
         {
-            Text = "Only areas/bosses from the selected Act, Interlude, or Pinnacle group are shown. Trial content uses the separate selector below.",
+            Text = "Shows only areas and bosses from the selected content group. Select a Trial content group to add its boss milestones.",
             AutoSize = true,
             MaximumSize = new Size(450, 0),
             Padding = new Padding(0, 3, 0, 0)
@@ -585,6 +679,11 @@ public sealed class SetupForm : Form
         _areaList.Dock = DockStyle.Fill;
         _areaList.SelectionMode = SelectionMode.MultiExtended;
         _areaList.DisplayMember = nameof(RouteEntry.Name);
+        _areaList.FormattingEnabled = true;
+        _areaList.Format += (_, e) =>
+        {
+            if (e.ListItem is RouteEntry entry) e.Value = Localization.TranslateProperNoun(entry.Name);
+        };
         _areaList.DoubleClick += (_, _) => AddSelectedAreas();
         panel.Controls.Add(_areaList, 0, 1);
 
@@ -622,7 +721,7 @@ public sealed class SetupForm : Form
         _orderedBossOptionsPanel.Controls.Add(_multiBossCheck);
         _orderedBossOptionsPanel.Controls.Add(new Label
         {
-            Text = "When enabled, set a positive occurrence count beside each selected boss. Each generated occurrence has its own internal objective key.",
+            Text = "Use this when the same boss must be defeated more than once. Set the required number of encounters for each boss.",
             AutoSize = true,
             MaximumSize = new Size(450, 0),
             Padding = new Padding(0, 2, 0, 0)
@@ -763,72 +862,9 @@ public sealed class SetupForm : Form
         {
             AutoSize = true,
             MaximumSize = new Size(470, 0),
-            Text = "Generated level milestones appear in the route preview and can be moved among area/boss objectives. The Max Level is always included as the final milestone. On ordered routes, a level already reached before it becomes active is automatically skipped (not completed). LiveSplit cannot skip its final row, so keep a later objective after any level milestone that could be reached early."
+            Text = "Adds level milestones to the route. Max Level is always the final level milestone."
         };
         body.Controls.Add(note);
-
-        group.Controls.Add(body);
-        return group;
-    }
-
-
-    private Control BuildTrialBossObjectivesPanel()
-    {
-        var group = new GroupBox
-        {
-            Text = "Trial boss objectives",
-            Dock = DockStyle.Top,
-            AutoSize = true,
-            Padding = new Padding(8, 5, 8, 7),
-            Margin = new Padding(0, 0, 0, 6)
-        };
-
-        var body = new FlowLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            AutoSize = true,
-            FlowDirection = FlowDirection.TopDown,
-            WrapContents = false
-        };
-
-        _trialBossObjectivesCheck.Text = "Add trial boss objectives";
-        _trialBossObjectivesCheck.AutoSize = true;
-        _trialBossObjectivesCheck.CheckedChanged += (_, _) =>
-        {
-            _trialBossOptionsPanel.Visible = _trialBossObjectivesCheck.Checked;
-            if (!_trialBossObjectivesCheck.Checked) ClearTrialBossObjectives();
-        };
-        body.Controls.Add(_trialBossObjectivesCheck);
-
-        _trialBossOptionsPanel.AutoSize = true;
-        _trialBossOptionsPanel.FlowDirection = FlowDirection.TopDown;
-        _trialBossOptionsPanel.WrapContents = false;
-        _trialBossOptionsPanel.Visible = false;
-
-        _trialBossChecklist.CheckOnClick = true;
-        _trialBossChecklist.DisplayMember = nameof(RouteEntry.Name);
-        _trialBossChecklist.Width = 470;
-        _trialBossChecklist.Height = 132;
-        _trialBossChecklist.IntegralHeight = false;
-        foreach (var entry in _trialBossRouteEntries) _trialBossChecklist.Items.Add(entry);
-        _trialBossChecklist.ItemCheck += (_, e) =>
-        {
-            if (_syncingTrialBossChecklist) return;
-            if (e.Index < 0 || e.Index >= _trialBossChecklist.Items.Count) return;
-            if (_trialBossChecklist.Items[e.Index] is RouteEntry entry)
-                SetTrialBossRouteEntry(entry, e.NewValue == CheckState.Checked);
-        };
-        _trialBossOptionsPanel.Controls.Add(_trialBossChecklist);
-
-        _trialBossOptionsPanel.Controls.Add(new Label
-        {
-            AutoSize = true,
-            MaximumSize = new Size(470, 0),
-            Text =
-                "Select the Trial boss milestones to include. Sekhemas Floor 2 requires both Hadi and Rafiq, in either order. " +
-                "Chaos Boss 1/2/3 may be Uxmal, Chetza, or Bahlak. Trialmaster is listed separately as the final Trial of Chaos boss."
-        });
-        body.Controls.Add(_trialBossOptionsPanel);
 
         group.Controls.Add(body);
         return group;
@@ -863,9 +899,7 @@ public sealed class SetupForm : Form
             BorderStyle = BorderStyle.FixedSingle,
             Padding = new Padding(10, 8, 10, 8),
             Margin = new Padding(0, 0, 0, 8),
-            Text =
-                "Trial run policies.\r\n" +
-                "Full Trial timing, automatic first-chamber start, Boss finish, and Exit finish are functional. Active Challenges Only remains non-functional and is still in active development."
+            Text = "Trial run settings. The run starts automatically when the first active Trial area is entered."
         };
         settings.Controls.Add(banner);
 
@@ -980,7 +1014,7 @@ public sealed class SetupForm : Form
         settingsHost.Controls.Add(settings);
         outer.Panel1.Controls.Add(settingsHost);
 
-        var previewGroup = new GroupBox { Text = "Selected trial rules", Dock = DockStyle.Fill, Padding = new Padding(10) };
+        var previewGroup = new GroupBox { Text = "Run Rules", Dock = DockStyle.Fill, Padding = new Padding(10) };
         var previewRoot = new TableLayoutPanel
         {
             Dock = DockStyle.Top,
@@ -1098,52 +1132,36 @@ public sealed class SetupForm : Form
                 ? "Each boss kill"
                 : "Trial completion / exit only";
 
-        _trialDescription.Text = sekhemas
-            ? "Runs the selected number of Sekhemas floors. Floor bosses are deterministic; Floor 2 contains two bosses, Hadi and Rafiq."
-            : "Runs the selected Chaos round category. Chaos boss stages use the restricted Uxmal / Chetza / Bahlak dynamic pool; Trialmaster is a separate optional 10-round endpoint.";
+        Localization.SetDynamicText(_trialDescription, sekhemas
+            ? "Runs the selected number of Sekhemas floors. Floor 2 requires both Hadi and Rafiq."
+            : "Runs the selected Trial of Chaos length. Boss stages use the valid Chaos boss pool.");
 
-        if (sekhemas)
-        {
-            var bossKills = GetSekhemasBossKillCount(_sekhemasLengthCombo.SelectedIndex + 1);
-            _trialLengthDescription.Text =
-                $"The run includes {length}. Selecting Each boss kill creates {bossKills} boss split{(bossKills == 1 ? "" : "s")} for this length; Floor 2 contributes two separate kills.";
-        }
-        else
-        {
-            var chaosBosses = GetChaosBossStageCount() + (_trialmasterCheck.Checked ? 1 : 0);
-            _trialLengthDescription.Text =
-                $"The run includes {length}. Selecting Each boss kill creates {chaosBosses} boss split{(chaosBosses == 1 ? "" : "s")} for this category. The random stage identity is filled in from BossWatcher at runtime.";
-        }
+        Localization.SetDynamicText(_trialLengthDescription, $"Selected length: {length}");
+        Localization.SetDynamicText(_trialTimingDescription, "Full Trial counts all active player-controlled Trial time. Loading screens are excluded from LiveSplit Game Time.");
 
-        _trialTimingDescription.Text =
-            "Full Trial counts all player-controlled trial time: combat, movement, paths, room/modifier choices, interactables, and decision time. Normal Client.txt loading-screen removal still applies when LiveSplit is displaying Game Time. Active Challenges Only is non-functional and remains in active development.";
+        Localization.SetDynamicText(_trialStartDescription, sekhemas
+            ? "Automatic start: first active Sekhemas floor entry. Lobby and setup time are excluded."
+            : "Automatic start: active Trial of Chaos arena entry. Preparation time is excluded.");
 
-        _trialStartDescription.Text = sekhemas
-            ? "Start is automatic and cannot be changed: the timer starts on entry to the first active Sekhemas floor. Pre-trial lobby/setup time is outside the run."
-            : "Start is automatic and cannot be changed: the timer starts on entry to the active Trial of Chaos arena. Temple preparation time is outside the run.";
-
-        _trialFinishDescription.Text = _trialFinalBossRadio.Checked
-            ? "Boss policy ends the run when the final required boss for the selected trial length is defeated. This is the recommended logical endpoint and requires BossWatcher to be running."
+        Localization.SetDynamicText(_trialFinishDescription, _trialFinalBossRadio.Checked
+            ? "Boss policy ends the run when the final required Trial boss is defeated. BossWatcher is required."
             : sekhemas
-                ? "Exit policy ends the run when the player leaves the active Sekhemas trial and returns to the trial lobby. BossWatcher is not required when Trial completion / exit only is selected; boss-based intermediate splits still require it."
-                : "Exit policy ends the run when the player leaves the active Trial of Chaos and returns to the Temple staging area. BossWatcher is not required when Trial completion / exit only is selected; boss-based intermediate splits still require it.";
+                ? "Exit policy ends the run when the player returns from the active Sekhemas Trial to its lobby."
+                : "Exit policy ends the run when the player returns from the active Trial of Chaos to its staging area.");
 
-        _trialSplitsDescription.Text = _trialFinalOnlyRadio.Checked
-            ? (_trialExitRadio.Checked
-                ? "Creates a split on the final required boss and a final split on trial exit. BossWatcher is required for the boss split."
-                : "Creates only the final required boss split; that split also ends the run. BossWatcher is required.")
+        Localization.SetDynamicText(_trialSplitsDescription, _trialFinalOnlyRadio.Checked
+            ? (_trialExitRadio.Checked ? "Final boss split, then Trial exit split." : "Final required boss split only.")
             : _trialMajorBossRadio.Checked
-                ? (_trialExitRadio.Checked
-                    ? "Creates a split for every required boss kill, then a final split on trial exit. BossWatcher is required for the boss splits."
-                    : "Creates a split for every required boss kill; the final boss split ends the run. BossWatcher is required.")
-                : "Creates no boss splits. The single split is the detected trial completion/exit boundary, so BossWatcher is not required.";
+                ? (_trialExitRadio.Checked ? "Split on each required boss, then on Trial exit." : "Split on each required boss; final boss ends the run.")
+                : "One split at Trial completion or exit.");
 
-        _trialPreviewTrialValue.Text = trial;
-        _trialPreviewLengthValue.Text = length;
-        _trialPreviewTimingValue.Text = timing;
-        _trialPreviewStartValue.Text = start;
-        _trialPreviewFinishValue.Text = finish;
-        _trialPreviewSplitsValue.Text = splits;
+        Localization.SetProperNounText(_trialPreviewTrialValue, trial);
+        Localization.SetDynamicText(_trialPreviewLengthValue, length);
+        Localization.SetDynamicText(_trialPreviewTimingValue, timing);
+        Localization.SetDynamicText(_trialPreviewStartValue, start);
+        Localization.SetDynamicText(_trialPreviewFinishValue, finish);
+        Localization.SetDynamicText(_trialPreviewSplitsValue, splits);
+        Localization.Apply(this);
     }
 
     private static int GetSekhemasBossKillCount(int floors)
@@ -1159,6 +1177,216 @@ public sealed class SetupForm : Form
         2 => 3,
         _ => 1
     };
+
+    private Control BuildVaalRuinsPanel()
+    {
+        var outer = new SplitContainer
+        {
+            Dock = DockStyle.Fill,
+            Orientation = Orientation.Vertical,
+            Size = new Size(1000, 560),
+            SplitterDistance = 600,
+            Panel1MinSize = 500,
+            Panel2MinSize = 280
+        };
+
+        var settingsHost = new Panel { Dock = DockStyle.Fill, AutoScroll = true, Padding = new Padding(8) };
+        var settings = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            AutoSize = true,
+            FlowDirection = FlowDirection.TopDown,
+            WrapContents = false
+        };
+
+        settings.Controls.Add(new Label
+        {
+            AutoSize = true,
+            MaximumSize = new Size(560, 0),
+            BorderStyle = BorderStyle.FixedSingle,
+            Padding = new Padding(10, 8, 10, 8),
+            Margin = new Padding(0, 0, 0, 8),
+            Text = "Vaal Ruins / Temple of Atziri settings. Runtime Temple generation is not enabled in this development iteration."
+        });
+
+        var setupLabel = new Label { Text = "Vaal Ruins — setup / staging area (planned untimed state)", AutoSize = true };
+        var setupDescription = new Label();
+        ConfigureTrialDescriptionLabel(setupDescription);
+        setupDescription.Text =
+            "Vaal Ruins setup and preparation are excluded from active Temple Game Time.";
+        settings.Controls.Add(BuildTrialGroup("Setup state", setupLabel, setupDescription));
+
+        var activeLabel = new Label { Text = "Atziri's Temple — Temple Dive (planned timed state)", AutoSize = true };
+        var activeDescription = new Label();
+        ConfigureTrialDescriptionLabel(activeDescription);
+        activeDescription.Text =
+            "Temple timing begins on entry to an active Temple Dive. Returning to Vaal Ruins pauses Temple Game Time.";
+        settings.Controls.Add(BuildTrialGroup("Active state", activeLabel, activeDescription));
+
+        _vaalTimingActiveOnlyRadio.Text = "Active Temple time only — planned default";
+        _vaalTimingActiveOnlyRadio.AutoSize = true;
+        _vaalTimingActiveOnlyRadio.Checked = true;
+        _vaalTimingActiveOnlyRadio.Enabled = false;
+        var timingDescription = new Label();
+        ConfigureTrialDescriptionLabel(timingDescription);
+        timingDescription.Text =
+            "Only active Temple Dive time counts. Vaal Ruins setup time between dives is excluded.";
+        settings.Controls.Add(BuildTrialGroup("Timing scope", _vaalTimingActiveOnlyRadio, timingDescription));
+
+        _vaalDiveCountNumeric.Minimum = 1;
+        _vaalDiveCountNumeric.Maximum = 10;
+        _vaalDiveCountNumeric.Value = 1;
+        _vaalDiveCountNumeric.Width = 90;
+        _vaalDiveCountNumeric.ValueChanged += (_, _) => UpdateVaalRuinsUi();
+        var divePanel = new FlowLayoutPanel { AutoSize = true, FlowDirection = FlowDirection.LeftToRight, WrapContents = false };
+        divePanel.Controls.Add(new Label { Text = "Temple Dive count:", AutoSize = true, Padding = new Padding(0, 6, 8, 0) });
+        divePanel.Controls.Add(_vaalDiveCountNumeric);
+        var diveDescription = new Label();
+        ConfigureTrialDescriptionLabel(diveDescription);
+        diveDescription.Text =
+            "Choose the planned Temple Dive count. Default is 1 and the maximum is 10. Dive Number uses this value as the completion endpoint.";
+        settings.Controls.Add(BuildTrialGroup("Temple Dive", divePanel, diveDescription));
+
+        _vaalCompletionDiveRadio.Text = "Dive Number";
+        _vaalCompletionDiveRadio.AutoSize = true;
+        _vaalCompletionDiveRadio.Checked = true;
+        _vaalCompletionDiveRadio.CheckedChanged += (_, _) => UpdateVaalRuinsUi();
+        _vaalCompletionArchitectRadio.Text = "Royal Architect";
+        _vaalCompletionArchitectRadio.AutoSize = true;
+        _vaalCompletionArchitectRadio.CheckedChanged += (_, _) => UpdateVaalRuinsUi();
+        _vaalCompletionAtziriRadio.Text = "Atziri";
+        _vaalCompletionAtziriRadio.AutoSize = true;
+        _vaalCompletionAtziriRadio.CheckedChanged += (_, _) => UpdateVaalRuinsUi();
+        var completionPanel = new FlowLayoutPanel { AutoSize = true, FlowDirection = FlowDirection.TopDown, WrapContents = false };
+        completionPanel.Controls.Add(_vaalCompletionDiveRadio);
+        completionPanel.Controls.Add(_vaalCompletionArchitectRadio);
+        completionPanel.Controls.Add(_vaalCompletionAtziriRadio);
+        var completionDescription = new Label();
+        ConfigureTrialDescriptionLabel(completionDescription);
+        completionDescription.Text =
+            "Choose whether the run ends after the selected dive count, Royal Architect, or Atziri.";
+        settings.Controls.Add(BuildTrialGroup("Completion Criteria", completionPanel, completionDescription));
+
+        _vaalDeathNoneRadio.Text = "No deaths — do not track death events (Default)";
+        _vaalDeathNoneRadio.AutoSize = true;
+        _vaalDeathNoneRadio.Checked = true;
+        _vaalDeathNoneRadio.CheckedChanged += (_, _) => UpdateVaalRuinsUi();
+        _vaalDeathFirstRadio.Text = "First Death - end on the tracked character's first death of the run (Deathless mode)";
+        _vaalDeathFirstRadio.AutoSize = true;
+        _vaalDeathFirstRadio.CheckedChanged += (_, _) => UpdateVaalRuinsUi();
+        _vaalDeathTrackAllRadio.Text = "Track all deaths — add Death [x] rows; Temple timing continues";
+        _vaalDeathTrackAllRadio.AutoSize = true;
+        _vaalDeathTrackAllRadio.CheckedChanged += (_, _) => UpdateVaalRuinsUi();
+        var deathPolicyPanel = new FlowLayoutPanel { AutoSize = true, FlowDirection = FlowDirection.TopDown, WrapContents = false };
+        deathPolicyPanel.Controls.Add(_vaalDeathNoneRadio);
+        deathPolicyPanel.Controls.Add(_vaalDeathFirstRadio);
+        deathPolicyPanel.Controls.Add(_vaalDeathTrackAllRadio);
+        var deathDescription = new Label();
+        ConfigureTrialDescriptionLabel(deathDescription);
+        deathDescription.Text =
+            "Choose whether deaths are ignored, the first death ends the run (Deathless mode), or all deaths are tracked while the run continues.";
+        settings.Controls.Add(BuildTrialGroup("Death Condition Tracking", deathPolicyPanel, deathDescription));
+
+        _vaalCharacterNameText.Width = 470;
+        _vaalCharacterNameText.TextChanged += (_, _) => UpdateVaalRuinsUi();
+        var characterDescription = new Label();
+        ConfigureTrialDescriptionLabel(characterDescription);
+        characterDescription.Text =
+            "Enter an exact match to the Path of Exile 2 character name.";
+        settings.Controls.Add(BuildTrialGroup("Tracked character", _vaalCharacterNameText, characterDescription));
+
+        var mapBoundaryLabel = new Label { Text = "Entering Vaal Ruins from a map = Maps exit boundary", AutoSize = true };
+        var mapBoundaryDescription = new Label();
+        ConfigureTrialDescriptionLabel(mapBoundaryDescription);
+        mapBoundaryDescription.Text =
+            "Entering Vaal Ruins from a map is a real map exit boundary.";
+        settings.Controls.Add(BuildTrialGroup("Maps interaction", mapBoundaryLabel, mapBoundaryDescription));
+
+        settingsHost.Controls.Add(settings);
+        outer.Panel1.Controls.Add(settingsHost);
+
+        var previewGroup = new GroupBox { Text = "Run Rules", Dock = DockStyle.Fill, Padding = new Padding(10) };
+        var previewRoot = new TableLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            AutoSize = true,
+            ColumnCount = 2,
+            RowCount = 9,
+            Padding = new Padding(2)
+        };
+        previewRoot.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38));
+        previewRoot.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62));
+        AddTrialPreviewRow(previewRoot, 0, "Start", _vaalPreviewStartValue);
+        AddTrialPreviewRow(previewRoot, 1, "Setup", _vaalPreviewSetupValue);
+        AddTrialPreviewRow(previewRoot, 2, "Active", _vaalPreviewActiveValue);
+        AddTrialPreviewRow(previewRoot, 3, "Temple dives", _vaalPreviewDiveValue);
+        AddTrialPreviewRow(previewRoot, 4, "Completion", _vaalPreviewCompletionValue);
+        AddTrialPreviewRow(previewRoot, 5, "Death tracking", _vaalPreviewDeathPolicyValue);
+        AddTrialPreviewRow(previewRoot, 6, "Character", _vaalPreviewCharacterValue);
+        AddTrialPreviewRow(previewRoot, 7, "From Maps", _vaalPreviewMapBoundaryValue);
+        AddTrialPreviewRow(previewRoot, 8, "Runtime", _vaalPreviewRuntimeValue);
+        previewGroup.Controls.Add(previewRoot);
+        outer.Panel2.Controls.Add(previewGroup);
+
+        UpdateVaalRuinsUi();
+        return outer;
+    }
+
+    private string GetVaalCompletionMode() => _vaalCompletionArchitectRadio.Checked ? "architect"
+        : _vaalCompletionAtziriRadio.Checked ? "atziri"
+        : "dives";
+
+    private string GetVaalDeathPolicyMode() => _vaalDeathFirstRadio.Checked ? "first"
+        : _vaalDeathTrackAllRadio.Checked ? "all"
+        : "none";
+
+    private string GetNormalizedVaalCharacterName() => (_vaalCharacterNameText.Text ?? "").Trim().Normalize(NormalizationForm.FormC);
+
+    private bool VaalCharacterRequired => !_vaalDeathNoneRadio.Checked;
+
+    private void UpdateVaalRuinsUi()
+    {
+        _vaalDeathNoneRadio.Enabled = true;
+        _vaalDeathFirstRadio.Enabled = true;
+        _vaalDeathTrackAllRadio.Enabled = true;
+        _vaalDiveCountNumeric.Enabled = true;
+        _vaalCharacterNameText.Enabled = VaalCharacterRequired;
+
+        var completion = GetVaalCompletionMode();
+        var deathPolicy = GetVaalDeathPolicyMode();
+        var character = GetNormalizedVaalCharacterName();
+        var dives = (int)_vaalDiveCountNumeric.Value;
+
+        Localization.SetDynamicText(_vaalPreviewStartValue, "Automatic — first Temple Dive entry; Vaal Ruins setup is excluded");
+        Localization.SetDynamicText(_vaalPreviewSetupValue, "Vaal Ruins — setup / planned untimed");
+        Localization.SetDynamicText(_vaalPreviewActiveValue, "Atziri's Temple — Temple Dive / planned timed");
+        Localization.SetDynamicText(_vaalPreviewDiveValue, $"{dives} {(dives == 1 ? "planned dive" : "planned dives")} (hard maximum 10)");
+        var completionText = completion switch
+        {
+            "architect" => "Royal Architect",
+            "atziri" => "Atziri",
+            _ => $"Dive Number — finish after dive {dives}"
+        };
+        if (completion is "architect" or "atziri")
+            Localization.SetProperNounText(_vaalPreviewCompletionValue, completionText);
+        else
+            Localization.SetDynamicText(_vaalPreviewCompletionValue, completionText);
+
+        var vaalDeathText = deathPolicy switch
+        {
+            "first" => "First Death — terminal (Deathless mode)",
+            "all" => "Track all Death [x] rows; continue",
+            _ => "No death tracking"
+        };
+        Localization.SetDynamicText(_vaalPreviewDeathPolicyValue, vaalDeathText);
+        if (VaalCharacterRequired && character.Length > 0)
+            _vaalPreviewCharacterValue.Text = character;
+        else
+            Localization.SetDynamicText(_vaalPreviewCharacterValue, VaalCharacterRequired ? "Required — not entered" : "Not required / not read");
+        Localization.SetDynamicText(_vaalPreviewMapBoundaryValue, "Real map exit boundary");
+        Localization.SetDynamicText(_vaalPreviewRuntimeValue, "UI/policy only — not generated in this iteration");
+        Localization.Apply(this);
+    }
 
     private Control BuildMapsPanel()
     {
@@ -1188,106 +1416,151 @@ public sealed class SetupForm : Form
             BorderStyle = BorderStyle.FixedSingle,
             Padding = new Padding(10, 8, 10, 8),
             Margin = new Padding(0, 0, 0, 8),
-            Text =
-                "Maps — dynamic endgame boss runs.\r\n" +
-                "Map runs are always Dynamic / unordered. Ordinary map bosses use structural health-bar detection only: BossWatcher does not need the boss name or OCR identity. When the verified boss UI disappears, LiveSplit receives the split. If the boss was not actually defeated (for example, the player died or left), use LiveSplit Undo Split before retrying. Map-entry classification and random-objective completion remain under diagnostic validation."
+            Text = "The timer will automatically start when first entering the map. A valid run is from first entry to first exit after the area boss kill."
         });
 
-        var orderLabel = new Label
-        {
-            Text = "Dynamic / unordered — Required",
-            AutoSize = true
-        };
+        var orderLabel = new Label { Text = "Dynamic / unordered — Required", AutoSize = true };
         var orderDescription = new Label();
         ConfigureTrialDescriptionLabel(orderDescription);
         orderDescription.Text =
-            "Map level and encounter order are discovered at runtime. The route therefore cannot assume a fixed map sequence or a fixed point for optional Pinnacle encounters.";
+            "Maps are detected automatically in the order they are entered.";
         settings.Controls.Add(BuildTrialGroup("Route order", orderLabel, orderDescription));
+
+        _mapLengthFixedRadio.Text = "Fixed number of maps";
+        _mapLengthFixedRadio.AutoSize = true;
+        _mapLengthFixedRadio.Checked = true;
+        _mapLengthFixedRadio.CheckedChanged += (_, _) => UpdateMapsUi();
+        _mapLengthDeathRadio.Text = "Until first death";
+        _mapLengthDeathRadio.AutoSize = true;
+        _mapLengthDeathRadio.CheckedChanged += (_, _) => UpdateMapsUi();
+        _mapLengthManualRadio.Text = "Manual finish — use the normal LiveSplit Start/Split hotkey";
+        _mapLengthManualRadio.AutoSize = true;
+        _mapLengthManualRadio.CheckedChanged += (_, _) => UpdateMapsUi();
+        _mapLengthPinnacleRadio.Text = "Specific Pinnacle boss defeat";
+        _mapLengthPinnacleRadio.AutoSize = true;
+        _mapLengthPinnacleRadio.CheckedChanged += (_, _) => UpdateMapsUi();
 
         _mapBossTargetNumeric.Minimum = 1;
         _mapBossTargetNumeric.Maximum = 100;
         _mapBossTargetNumeric.Value = 100;
         _mapBossTargetNumeric.Width = 90;
         _mapBossTargetNumeric.ValueChanged += (_, _) => UpdateMapsUi();
-        var targetPanel = new FlowLayoutPanel { AutoSize = true, FlowDirection = FlowDirection.LeftToRight, WrapContents = false };
-        targetPanel.Controls.Add(new Label { Text = "Map boss encounters:", AutoSize = true, Padding = new Padding(0, 6, 8, 0) });
-        targetPanel.Controls.Add(_mapBossTargetNumeric);
+        var fixedPanel = new FlowLayoutPanel { AutoSize = true, FlowDirection = FlowDirection.LeftToRight, WrapContents = false };
+        fixedPanel.Controls.Add(new Label { Text = "Maps:", AutoSize = true, Padding = new Padding(0, 6, 8, 0) });
+        fixedPanel.Controls.Add(_mapBossTargetNumeric);
+
+        _mapPinnacleTargetCombo.DropDownStyle = ComboBoxStyle.DropDownList;
+        // Do not rely on ComboBox.Format + DisplayMember for authoritative proper-noun
+        // localization. In WinForms the Format callback is not consistently used for
+        // manually-added object items when a DisplayMember is also set, which left the
+        // Maps Pinnacle endpoint list showing RouteEntry.Name (canonical English) even
+        // though the refreshed ProperNouns catalog contained the localized boss names.
+        // Store a lightweight display wrapper instead. ToString() resolves the canonical
+        // name through Localization.TranslateProperNoun at draw time while Entry keeps the
+        // canonical ID/name used by route generation.
+        _mapPinnacleTargetCombo.Width = 470;
+        foreach (var boss in GetPinnacleBossEntries())
+            _mapPinnacleTargetCombo.Items.Add(new LocalizedProperNounRouteItem { Entry = boss });
+        if (_mapPinnacleTargetCombo.Items.Count > 0) _mapPinnacleTargetCombo.SelectedIndex = 0;
+        _mapPinnacleTargetCombo.SelectedIndexChanged += (_, _) => UpdateMapsUi();
+
+        var runLengthPanel = new FlowLayoutPanel
+        {
+            AutoSize = true,
+            FlowDirection = FlowDirection.TopDown,
+            WrapContents = false
+        };
+        runLengthPanel.Controls.Add(_mapLengthFixedRadio);
+        runLengthPanel.Controls.Add(fixedPanel);
+        runLengthPanel.Controls.Add(_mapLengthDeathRadio);
+        runLengthPanel.Controls.Add(_mapLengthManualRadio);
+        runLengthPanel.Controls.Add(_mapLengthPinnacleRadio);
+        runLengthPanel.Controls.Add(_mapPinnacleTargetCombo);
         var targetDescription = new Label();
         ConfigureTrialDescriptionLabel(targetDescription);
         targetDescription.Text =
-            "Choose 1–100 dynamic map-boss objectives. The active split is named at map entry, for example: Map Level 78 - Boss #12. Ordinary map boss names are never required or written into the split.";
-        settings.Controls.Add(BuildTrialGroup("Run length", targetPanel, targetDescription));
+            "Choose a fixed map count, first-death endpoint, manual finish, or a specific Pinnacle boss defeat.";
+        settings.Controls.Add(BuildTrialGroup("Run length / endpoint", runLengthPanel, targetDescription));
 
-        _mapBossCompletionRadio.Text = "Map boss kill — Default / functional";
+        _mapDeathNoneRadio.Text = "No death tracking — Default";
+        _mapDeathNoneRadio.AutoSize = true;
+        _mapDeathNoneRadio.Checked = true;
+        _mapDeathNoneRadio.CheckedChanged += (_, _) => UpdateMapsUi();
+        _mapDeathEndRadio.Text = "End on first death";
+        _mapDeathEndRadio.AutoSize = true;
+        _mapDeathEndRadio.CheckedChanged += (_, _) => UpdateMapsUi();
+        _mapDeathTrackRadio.Text = "Track deaths — add Death [x] LiveSplit rows; timer continues";
+        _mapDeathTrackRadio.AutoSize = true;
+        _mapDeathTrackRadio.CheckedChanged += (_, _) => UpdateMapsUi();
+        var deathPolicyPanel = new FlowLayoutPanel { AutoSize = true, FlowDirection = FlowDirection.TopDown, WrapContents = false };
+        deathPolicyPanel.Controls.Add(_mapDeathNoneRadio);
+        deathPolicyPanel.Controls.Add(_mapDeathEndRadio);
+        deathPolicyPanel.Controls.Add(_mapDeathTrackRadio);
+        var deathDescription = new Label();
+        ConfigureTrialDescriptionLabel(deathDescription);
+        deathDescription.Text =
+            "Choose whether deaths are ignored, the first death ends the run, or all deaths are tracked while the run continues.";
+        settings.Controls.Add(BuildTrialGroup("Death policy", deathPolicyPanel, deathDescription));
+
+        _mapCharacterNameText.Width = 470;
+        _mapCharacterNameText.TextChanged += (_, _) => UpdateMapsUi();
+        var characterDescription = new Label();
+        ConfigureTrialDescriptionLabel(characterDescription);
+        characterDescription.Text =
+            "Enter an exact match to the Path of Exile 2 character name. Required only when death tracking is enabled.";
+        settings.Controls.Add(BuildTrialGroup("Tracked character", _mapCharacterNameText, characterDescription));
+
+        _mapBossCompletionRadio.Text = "First exit after the area boss kill — Required";
         _mapBossCompletionRadio.AutoSize = true;
         _mapBossCompletionRadio.Checked = true;
-        _mapBossCompletionRadio.CheckedChanged += (_, _) => UpdateMapsUi();
-        _mapQuestCompletionRadio.Text = "Map objective / random quest clear — NON-FUNCTIONAL — Needs diagnostics";
+        _mapQuestCompletionRadio.Text = "Map objective / random quest clear — NON-FUNCTIONAL";
         _mapQuestCompletionRadio.AutoSize = true;
         _mapQuestCompletionRadio.Enabled = false;
         var completionDescription = new Label();
         ConfigureTrialDescriptionLabel(completionDescription);
         completionDescription.Text =
-            "Boss policy uses BossWatcher's structural red-bar / boss-UI detector and deliberately bypasses OCR for ordinary map bosses. Verified bar disappearance sends the split signal; the runner is responsible for Undo Split if the encounter was not actually completed. Random map objectives/quests remain non-functional until Client.txt exposes a reliable completion signal.";
+            "The expected area boss must be defeated before the exit counts as map completion. Event bosses and recognized side-area bosses do not count as the area boss.";
         settings.Controls.Add(BuildTrialGroup("Map completion rule", _mapBossCompletionRadio, _mapQuestCompletionRadio, completionDescription));
 
-        _mapIncludePinnacleCheck.Text = "Include Pinnacle bosses";
-        _mapIncludePinnacleCheck.AutoSize = true;
-        _mapIncludePinnacleCheck.CheckedChanged += (_, _) =>
-        {
-            _mapPinnacleChecklist.Visible = _mapIncludePinnacleCheck.Checked;
-            UpdateMapsUi();
-        };
-        _mapPinnacleChecklist.CheckOnClick = true;
-        _mapPinnacleChecklist.DisplayMember = nameof(RouteEntry.Name);
-        _mapPinnacleChecklist.Width = 500;
-        _mapPinnacleChecklist.Height = 150;
-        _mapPinnacleChecklist.IntegralHeight = false;
-        _mapPinnacleChecklist.Visible = false;
-        foreach (var boss in GetPinnacleBossEntries())
-            _mapPinnacleChecklist.Items.Add(boss);
-        _mapPinnacleChecklist.ItemCheck += (_, _) => BeginInvoke(new Action(UpdateMapsUi));
-        var pinnacleDescription = new Label();
-        ConfigureTrialDescriptionLabel(pinnacleDescription);
-        pinnacleDescription.Text =
-            "Pinnacle objectives are optional and remain dynamic. Ordinary maps use identity-free structural detection, while Pinnacle encounters retain the normal BossWatcher OCR identity path so the selected Pinnacle objective can be credited. Their exact position is not predetermined.";
-        settings.Controls.Add(BuildTrialGroup("Optional Pinnacle bosses", _mapIncludePinnacleCheck, _mapPinnacleChecklist, pinnacleDescription));
-
-        _mapModifierCountCheck.Text = "Include unique modifier count in the split name when detectable — Diagnostic only";
-        _mapModifierCountCheck.AutoSize = true;
-        _mapModifierCountCheck.Checked = true;
-        _mapModifierCountCheck.CheckedChanged += (_, _) => UpdateMapsUi();
-        var namingDescription = new Label();
-        ConfigureTrialDescriptionLabel(namingDescription);
-        namingDescription.Text =
-            "Planned format: Map Level X - Boss #Y. If diagnostics reveal a reliable unique-modifier count at entry, the format can become Map Level X - N Mods - Boss #Y. If no reliable signal exists, modifier count will simply be omitted.";
-        settings.Controls.Add(BuildTrialGroup("Dynamic split naming", _mapModifierCountCheck, namingDescription));
-
-        var detectionDescription = new Label();
-        ConfigureTrialDescriptionLabel(detectionDescription);
-        detectionDescription.Text =
-            "The diagnostic classifier records every generated area and flags an ENDGAME_CANDIDATE when the previous scene appears to be The Ziggurat Refuge or a Hideout, the destination is level 65+, and the destination is not a known campaign/trial/hub area. Candidates are deliberately logged as unconfirmed map-or-special instances so Pinnacle/unique endgame destinations can be identified rather than silently misclassified.";
-        settings.Controls.Add(BuildTrialGroup("Map-entry diagnostics", detectionDescription));
+        _mapGameTimeCompletionRadio.Text = "PoE2 Map Completion — pause after a completed map exit (Default)";
+        _mapGameTimeCompletionRadio.AutoSize = true;
+        _mapGameTimeCompletionRadio.Checked = true;
+        _mapGameTimeCompletionRadio.CheckedChanged += (_, _) => UpdateMapsUi();
+        _mapGameTimeContinuousRadio.Text = "Continuous Game Time — count all non-loading time during the run";
+        _mapGameTimeContinuousRadio.AutoSize = true;
+        _mapGameTimeContinuousRadio.CheckedChanged += (_, _) => UpdateMapsUi();
+        var gameTimePolicyPanel = new FlowLayoutPanel { AutoSize = true, FlowDirection = FlowDirection.TopDown, WrapContents = false };
+        gameTimePolicyPanel.Controls.Add(_mapGameTimeCompletionRadio);
+        gameTimePolicyPanel.Controls.Add(_mapGameTimeContinuousRadio);
+        var gameTimePolicyDescription = new Label();
+        ConfigureTrialDescriptionLabel(gameTimePolicyDescription);
+        gameTimePolicyDescription.Text =
+            "PoE2 Map Completion pauses Game Time after the first exit following the area boss kill and resumes on the next new map entry. Continuous Game Time keeps counting between maps; only loading screens and the Manual Pause setting can pause Game Time.";
+        settings.Controls.Add(BuildTrialGroup("Game Time policy", gameTimePolicyPanel, gameTimePolicyDescription));
 
         settingsHost.Controls.Add(settings);
         outer.Panel1.Controls.Add(settingsHost);
 
-        var previewGroup = new GroupBox { Text = "Proposed Maps rules", Dock = DockStyle.Fill, Padding = new Padding(10) };
+        var previewGroup = new GroupBox { Text = "Run Rules", Dock = DockStyle.Fill, Padding = new Padding(10) };
         var previewRoot = new TableLayoutPanel
         {
             Dock = DockStyle.Top,
             AutoSize = true,
             ColumnCount = 2,
-            RowCount = 5,
+            RowCount = 9,
             Padding = new Padding(2)
         };
         previewRoot.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38));
         previewRoot.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62));
-        AddTrialPreviewRow(previewRoot, 0, "Order", _mapPreviewOrderValue);
-        AddTrialPreviewRow(previewRoot, 1, "Map bosses", _mapPreviewTargetValue);
-        AddTrialPreviewRow(previewRoot, 2, "Completion", _mapPreviewCompletionValue);
-        AddTrialPreviewRow(previewRoot, 3, "Pinnacles", _mapPreviewPinnacleValue);
-        AddTrialPreviewRow(previewRoot, 4, "Split naming", _mapPreviewNameValue);
+        AddTrialPreviewRow(previewRoot, 0, "Start", _mapPreviewStartValue);
+        AddTrialPreviewRow(previewRoot, 1, "Order", _mapPreviewOrderValue);
+        AddTrialPreviewRow(previewRoot, 2, "Endpoint", _mapPreviewTargetValue);
+        AddTrialPreviewRow(previewRoot, 3, "Completion", _mapPreviewCompletionValue);
+        AddTrialPreviewRow(previewRoot, 4, "Game Time", _mapPreviewGameTimeValue);
+        AddTrialPreviewRow(previewRoot, 5, "Death policy", _mapPreviewDeathValue);
+        AddTrialPreviewRow(previewRoot, 6, "Character", _mapPreviewCharacterValue);
+        AddTrialPreviewRow(previewRoot, 7, "Pinnacle target", _mapPreviewPinnacleValue);
+        AddTrialPreviewRow(previewRoot, 8, "Split naming", _mapPreviewNameValue);
         previewGroup.Controls.Add(previewRoot);
         outer.Panel2.Controls.Add(previewGroup);
 
@@ -1305,63 +1578,144 @@ public sealed class SetupForm : Form
         return ids.Select(RequiredBoss).ToList();
     }
 
-    private List<RouteEntry> GetSelectedMapPinnacleBosses()
+    private RouteEntry? GetSelectedMapPinnacleTarget() =>
+        (_mapPinnacleTargetCombo.SelectedItem as LocalizedProperNounRouteItem)?.Entry;
+
+    private void RebuildMapPinnacleTargetItems()
     {
-        var result = new List<RouteEntry>();
-        if (!_mapIncludePinnacleCheck.Checked) return result;
-        foreach (var item in _mapPinnacleChecklist.CheckedItems)
-            if (item is RouteEntry boss) result.Add(boss);
-        return result;
+        // WinForms caches the rendered text of ComboBox object items. Invalidate/Refresh
+        // alone is not enough after SetupUI language changes, so rebuild the lightweight
+        // display wrappers while preserving the canonical selected boss identity.
+        var selectedId = GetSelectedMapPinnacleTarget()?.Id;
+        _mapPinnacleTargetCombo.BeginUpdate();
+        try
+        {
+            _mapPinnacleTargetCombo.Items.Clear();
+            foreach (var boss in GetPinnacleBossEntries())
+                _mapPinnacleTargetCombo.Items.Add(new LocalizedProperNounRouteItem { Entry = boss });
+
+            var selectedIndex = -1;
+            if (!string.IsNullOrWhiteSpace(selectedId))
+            {
+                for (var i = 0; i < _mapPinnacleTargetCombo.Items.Count; i++)
+                {
+                    if (_mapPinnacleTargetCombo.Items[i] is LocalizedProperNounRouteItem item
+                        && string.Equals(item.Entry.Id, selectedId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            if (selectedIndex < 0 && _mapPinnacleTargetCombo.Items.Count > 0)
+                selectedIndex = 0;
+            _mapPinnacleTargetCombo.SelectedIndex = selectedIndex;
+        }
+        finally
+        {
+            _mapPinnacleTargetCombo.EndUpdate();
+        }
+        _mapPinnacleTargetCombo.Invalidate();
     }
+
+    private string GetMapEndpointMode() => _mapLengthDeathRadio.Checked ? "death"
+        : _mapLengthManualRadio.Checked ? "manual"
+        : _mapLengthPinnacleRadio.Checked ? "pinnacle"
+        : "fixed";
+
+    private string GetMapDeathPolicyMode() => _mapDeathEndRadio.Checked ? "end"
+        : _mapDeathTrackRadio.Checked ? "track"
+        : "none";
+
+    private string GetMapGameTimePolicyMode() => _mapGameTimeContinuousRadio.Checked ? "continuous" : "completion";
+
+    private string GetNormalizedMapCharacterName() => (_mapCharacterNameText.Text ?? "").Trim().Normalize(NormalizationForm.FormC);
+
+    private bool MapCharacterRequired => !_mapDeathNoneRadio.Checked || _mapLengthDeathRadio.Checked;
 
     private void UpdateMapsUi()
     {
-        _mapPinnacleChecklist.Visible = _mapIncludePinnacleCheck.Checked;
-        var selectedPinnacles = GetSelectedMapPinnacleBosses();
-        _mapPreviewOrderValue.Text = "Dynamic / unordered";
-        _mapPreviewTargetValue.Text = ((int)_mapBossTargetNumeric.Value).ToString();
-        _mapPreviewCompletionValue.Text = _mapBossCompletionRadio.Checked ? "Map boss bar disappearance" : "Map objective / random quest";
-        _mapPreviewPinnacleValue.Text = _mapIncludePinnacleCheck.Checked
-            ? (selectedPinnacles.Count == 0 ? "Enabled; none selected yet" : $"{selectedPinnacles.Count} selected")
-            : "Not included";
-        _mapPreviewNameValue.Text = _mapModifierCountCheck.Checked
-            ? "Map Level X - N Mods - Boss #Y (when detectable)"
-            : "Map Level X - Boss #Y";
+        // "Until first death" is an endpoint, so its matching death policy is mandatory.
+        if (_mapLengthDeathRadio.Checked && !_mapDeathEndRadio.Checked)
+            _mapDeathEndRadio.Checked = true;
+
+        var untilDeath = _mapLengthDeathRadio.Checked;
+        _mapDeathNoneRadio.Enabled = !untilDeath;
+        _mapDeathTrackRadio.Enabled = !untilDeath;
+        _mapDeathEndRadio.Enabled = true;
+        _mapBossTargetNumeric.Enabled = _mapLengthFixedRadio.Checked;
+        _mapPinnacleTargetCombo.Enabled = _mapLengthPinnacleRadio.Checked;
+        _mapCharacterNameText.Enabled = MapCharacterRequired;
+
+        var endpoint = GetMapEndpointMode();
+        var deathPolicy = GetMapDeathPolicyMode();
+        var gameTimePolicy = GetMapGameTimePolicyMode();
+        var pinnacle = GetSelectedMapPinnacleTarget();
+        var character = GetNormalizedMapCharacterName();
+
+        Localization.SetDynamicText(_mapPreviewStartValue, "Automatic — first entry into the first map");
+        Localization.SetDynamicText(_mapPreviewOrderValue, "Dynamic / unordered");
+        var mapTargetText = endpoint switch
+        {
+            "death" => "Until first tracked death",
+            "manual" => "Manual finish hotkey",
+            "pinnacle" => "Specific Pinnacle boss defeat",
+            _ => $"{(int)_mapBossTargetNumeric.Value} {((int)_mapBossTargetNumeric.Value == 1 ? "finalized map" : "finalized maps")}" 
+        };
+        Localization.SetDynamicText(_mapPreviewTargetValue, mapTargetText);
+        Localization.SetDynamicText(_mapPreviewCompletionValue, "First exit after the area boss kill");
+        Localization.SetDynamicText(_mapPreviewGameTimeValue, gameTimePolicy == "continuous"
+            ? "Continuous — only loading screens and Manual Pause policy can stop Game Time"
+            : "PoE2 Map Completion — pause between completed maps (Default)");
+        var mapDeathText = deathPolicy switch
+        {
+            "end" => "End on first death",
+            "track" => "Track Death [x] rows",
+            _ => "No death tracking"
+        };
+        Localization.SetDynamicText(_mapPreviewDeathValue, mapDeathText);
+        if (MapCharacterRequired && character.Length > 0)
+            _mapPreviewCharacterValue.Text = character;
+        else
+            Localization.SetDynamicText(_mapPreviewCharacterValue, MapCharacterRequired ? "Required — not entered" : "Not required / not read");
+        if (_mapLengthPinnacleRadio.Checked && pinnacle is not null)
+            Localization.SetProperNounText(_mapPreviewPinnacleValue, pinnacle.Name);
+        else
+            Localization.SetDynamicText(_mapPreviewPinnacleValue, _mapLengthPinnacleRadio.Checked ? "Select a Pinnacle boss" : "Not the run endpoint");
+        Localization.SetDynamicText(_mapPreviewNameValue, "Map [x] — <name> (Lv N) — SUCCESS/FAILED; Death [x] when enabled");
+        Localization.Apply(this);
     }
 
     private void ValidateMapsSelection()
     {
-        if (_mapBossTargetNumeric.Value < 1 || _mapBossTargetNumeric.Value > 100)
-            throw new InvalidOperationException("Map boss encounter count must be between 1 and 100.");
+        if (_mapLengthFixedRadio.Checked && (_mapBossTargetNumeric.Value < 1 || _mapBossTargetNumeric.Value > 100))
+            throw new InvalidOperationException("Fixed Maps run length must be between 1 and 100 maps.");
         if (!_mapBossCompletionRadio.Checked)
-            throw new InvalidOperationException("Map objective / random quest completion is non-functional. Keep Map boss kill selected.");
+            throw new InvalidOperationException("Map objective / random quest completion is non-functional. Keep boss-qualified-then-exit selected.");
+        if (_mapLengthPinnacleRadio.Checked && GetSelectedMapPinnacleTarget() is null)
+            throw new InvalidOperationException("Select the Pinnacle boss that ends this Maps run.");
+
+        if (MapCharacterRequired)
+        {
+            var character = GetNormalizedMapCharacterName();
+            if (character.Length == 0)
+                throw new InvalidOperationException("Character Name is required when the Maps death policy tracks player deaths.");
+            if (!System.Text.RegularExpressions.Regex.IsMatch(character, @"^[\p{L}_]+$"))
+                throw new InvalidOperationException("Character Name may contain Unicode letters and '_' only. Numbers and other special characters are not valid Path of Exile 2 character-name input for this tracker.");
+        }
     }
 
-    private List<RouteEntry> BuildMapObjectives()
-    {
-        var result = new List<RouteEntry>();
-        for (var i = 1; i <= (int)_mapBossTargetNumeric.Value; i++)
+    private List<RouteEntry> BuildMapObjectives() =>
+    [
+        new RouteEntry
         {
-            result.Add(new RouteEntry
-            {
-                Type = "mapboss",
-                Id = i.ToString(),
-                Name = $"Map Boss #{i}",
-                Group = "Dynamic Maps"
-            });
+            Type = "maprun",
+            Id = "1",
+            Name = "Map [1] — Waiting for map entry",
+            Group = "Dynamic Maps"
         }
-        foreach (var boss in GetSelectedMapPinnacleBosses())
-        {
-            result.Add(new RouteEntry
-            {
-                Type = "boss",
-                Id = boss.Id,
-                Name = boss.Name,
-                Group = "Optional Pinnacle"
-            });
-        }
-        return result;
-    }
+    ];
 
     private Control BuildRoutePanel()
     {
@@ -1431,9 +1785,35 @@ public sealed class SetupForm : Form
         return group;
     }
 
+    private void ConfigureStartPolicyHost(Panel host)
+    {
+        host.Dock = DockStyle.Top;
+        host.AutoSize = true;
+        host.Padding = new Padding(8, 6, 8, 6);
+    }
+
+    private void MoveStartPolicyPanelToSelectedRouteTab()
+    {
+        if (_modeTabs.SelectedIndex is not (0 or 1)) return;
+        _startPolicyPanel ??= BuildStartPolicyPanel();
+        var target = _modeTabs.SelectedIndex == 0 ? _premadeStartPolicyHost : _customStartPolicyHost;
+        if (_startPolicyPanel.Parent != target)
+        {
+            _startPolicyPanel.Parent?.Controls.Remove(_startPolicyPanel);
+            target.Controls.Add(_startPolicyPanel);
+            _startPolicyPanel.Dock = DockStyle.Top;
+        }
+
+        // The Premade pane is intentionally narrower because Run Rules occupies the
+        // right side. Stack the zone selector below option 2 there so the ComboBox can
+        // use the full pane width. Keep the more compact inline layout on Custom Routes,
+        // where vertical catalog space is more valuable on smaller displays.
+        ConfigureStartPolicyLayout(stackZoneSelector: _modeTabs.SelectedIndex == 0);
+    }
+
     private Control BuildActionPanel()
     {
-        var panel = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, RowCount = 3, ColumnCount = 4, Padding = new Padding(0, 8, 0, 0) };
+        var panel = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, RowCount = 2, ColumnCount = 4, Padding = new Padding(0, 8, 0, 0) };
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -1446,24 +1826,19 @@ public sealed class SetupForm : Form
         _deployButton.Click += (_, _) => DeploySelected();
         panel.Controls.Add(_deployButton, 0, 0);
 
-        _devConsoleCheck.Text = "Developer console diagnostics";
-        _devConsoleCheck.AutoSize = true;
-        _devConsoleCheck.Anchor = AnchorStyles.Right;
-        panel.Controls.Add(_devConsoleCheck, 2, 0);
+        var settingsButton = new Button { Text = "Settings", AutoSize = true, Height = 38, Padding = new Padding(12, 2, 12, 2) };
+        settingsButton.Click += (_, _) => OpenUserSettings();
+        panel.Controls.Add(settingsButton, 2, 0);
 
         var bossWatcher = new Button { Text = "Start BossWatcher", AutoSize = true, Height = 38, Padding = new Padding(12, 2, 12, 2) };
         bossWatcher.Click += (_, _) => StartBossWatcher();
         panel.Controls.Add(bossWatcher, 3, 0);
 
-        var startPolicy = BuildStartPolicyPanel();
-        panel.Controls.Add(startPolicy, 0, 1);
-        panel.SetColumnSpan(startPolicy, 4);
-
         _excludeManualPauseCheck.Text = "Pause LiveSplit Game Time while PoE2 is manually paused (optional; requires GameTimeWatcher)";
         _excludeManualPauseCheck.AutoSize = true;
         _excludeManualPauseCheck.Anchor = AnchorStyles.Left;
         _excludeManualPauseCheck.CheckedChanged += (_, _) => _gameTimeWatcherButton.Enabled = _excludeManualPauseCheck.Checked;
-        panel.Controls.Add(_excludeManualPauseCheck, 0, 2);
+        panel.Controls.Add(_excludeManualPauseCheck, 0, 1);
         panel.SetColumnSpan(_excludeManualPauseCheck, 3);
 
         _gameTimeWatcherButton.Text = "Start GameTimeWatcher";
@@ -1472,7 +1847,7 @@ public sealed class SetupForm : Form
         _gameTimeWatcherButton.Padding = new Padding(10, 1, 10, 1);
         _gameTimeWatcherButton.Enabled = false;
         _gameTimeWatcherButton.Click += (_, _) => StartGameTimeWatcher();
-        panel.Controls.Add(_gameTimeWatcherButton, 3, 2);
+        panel.Controls.Add(_gameTimeWatcherButton, 3, 1);
 
         return panel;
     }
@@ -1486,32 +1861,90 @@ public sealed class SetupForm : Form
             AutoSize = true,
             Padding = new Padding(10, 6, 10, 8)
         };
-        var panel = new TableLayoutPanel { Dock = DockStyle.Fill, AutoSize = true, RowCount = 3, ColumnCount = 2 };
-        panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        _startPolicyLayout = new TableLayoutPanel { Dock = DockStyle.Fill, AutoSize = true };
 
-        _manualStartRadio.Text = "1. Manual Start — start LiveSplit yourself";
-        _manualStartRadio.AutoSize = true;
-        panel.Controls.Add(_manualStartRadio, 0, 0);
-        panel.SetColumnSpan(_manualStartRadio, 2);
-
-        _riverbankStartRadio.Text = "2. Riverbank Start — fresh character; auto-start after the Wounded Man's final opening line (default)";
+        _riverbankStartRadio.Text = "1. Riverbank Start — fresh character; auto-start after the Wounded Man's final opening line (default)";
         _riverbankStartRadio.AutoSize = true;
-        panel.Controls.Add(_riverbankStartRadio, 0, 1);
-        panel.SetColumnSpan(_riverbankStartRadio, 2);
+        _riverbankStartRadio.CheckedChanged += (_, _) => { if (_riverbankStartRadio.Checked) UpdatePresetDescription(); };
 
-        _zoneStartRadio.Text = "3. First Split Zone Entry Auto Start — start when this zone is entered:";
+        _zoneStartRadio.Text = "2. First Split Zone Entry Auto Start — start when this zone is entered:";
         _zoneStartRadio.AutoSize = true;
-        _zoneStartRadio.CheckedChanged += (_, _) => UpdateStartZoneEnabled();
-        panel.Controls.Add(_zoneStartRadio, 0, 2);
+        _zoneStartRadio.CheckedChanged += (_, _) => { UpdateStartZoneEnabled(); if (_zoneStartRadio.Checked) UpdatePresetDescription(); };
 
         _startZoneCombo.DropDownStyle = ComboBoxStyle.DropDownList;
         _startZoneCombo.Width = 430;
         _startZoneCombo.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-        panel.Controls.Add(_startZoneCombo, 1, 2);
+        _startZoneCombo.SelectedIndexChanged += (_, _) => { if (_zoneStartRadio.Checked) UpdatePresetDescription(); };
 
-        group.Controls.Add(panel);
+        _manualStartRadio.Text = "3. Manual Start — start LiveSplit yourself";
+        _manualStartRadio.AutoSize = true;
+        _manualStartRadio.CheckedChanged += (_, _) => { if (_manualStartRadio.Checked) UpdatePresetDescription(); };
+
+        ConfigureStartPolicyLayout(stackZoneSelector: true);
+        group.Controls.Add(_startPolicyLayout);
         return group;
+    }
+
+    private void ConfigureStartPolicyLayout(bool stackZoneSelector)
+    {
+        if (_startPolicyLayout is null || _startPolicyLayoutStacked == stackZoneSelector) return;
+
+        _startPolicyLayout.SuspendLayout();
+        try
+        {
+            _startPolicyLayout.Controls.Clear();
+            _startPolicyLayout.ColumnStyles.Clear();
+            _startPolicyLayout.RowStyles.Clear();
+
+            if (stackZoneSelector)
+            {
+                _startPolicyLayout.ColumnCount = 1;
+                _startPolicyLayout.RowCount = 4;
+                _startPolicyLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+                for (var row = 0; row < 4; row++)
+                    _startPolicyLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+                _startPolicyLayout.Controls.Add(_riverbankStartRadio, 0, 0);
+                _startPolicyLayout.SetColumnSpan(_riverbankStartRadio, 1);
+                _startPolicyLayout.Controls.Add(_zoneStartRadio, 0, 1);
+                _startPolicyLayout.SetColumnSpan(_zoneStartRadio, 1);
+
+                // The selector gets its own full-width row in Premade Routes. Docking
+                // horizontally avoids the old behavior where the localized option-2
+                // label consumed most of the row before the ComboBox was measured.
+                _startZoneCombo.Dock = DockStyle.Fill;
+                _startPolicyLayout.Controls.Add(_startZoneCombo, 0, 2);
+                _startPolicyLayout.SetColumnSpan(_startZoneCombo, 1);
+                _startPolicyLayout.Controls.Add(_manualStartRadio, 0, 3);
+                _startPolicyLayout.SetColumnSpan(_manualStartRadio, 1);
+            }
+            else
+            {
+                _startPolicyLayout.ColumnCount = 2;
+                _startPolicyLayout.RowCount = 3;
+                _startPolicyLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+                _startPolicyLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+                for (var row = 0; row < 3; row++)
+                    _startPolicyLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+                _startPolicyLayout.Controls.Add(_riverbankStartRadio, 0, 0);
+                _startPolicyLayout.SetColumnSpan(_riverbankStartRadio, 2);
+                _startPolicyLayout.Controls.Add(_zoneStartRadio, 0, 1);
+                _startPolicyLayout.SetColumnSpan(_zoneStartRadio, 1);
+                _startZoneCombo.Dock = DockStyle.None;
+                _startZoneCombo.Width = 430;
+                _startZoneCombo.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+                _startPolicyLayout.Controls.Add(_startZoneCombo, 1, 1);
+                _startPolicyLayout.SetColumnSpan(_startZoneCombo, 1);
+                _startPolicyLayout.Controls.Add(_manualStartRadio, 0, 2);
+                _startPolicyLayout.SetColumnSpan(_manualStartRadio, 2);
+            }
+        }
+        finally
+        {
+            _startPolicyLayoutStacked = stackZoneSelector;
+            _startPolicyLayout.ResumeLayout(performLayout: true);
+        }
     }
 
     private static Button MakeButton(string text, Action action)
@@ -1564,63 +1997,28 @@ public sealed class SetupForm : Form
     private bool IsTrialBossRouteEntry(RouteEntry entry) =>
         _trialBossRouteEntries.Any(x => SameRouteEntry(x, entry));
 
-    private void SetTrialBossRouteEntry(RouteEntry entry, bool enabled)
-    {
-        var existing = _customRoute.FindIndex(x => SameRouteEntry(x, entry));
-        if (enabled)
-        {
-            if (existing < 0) _customRoute.Add(entry);
-        }
-        else if (existing >= 0)
-        {
-            _customRoute.RemoveAt(existing);
-        }
-        RefreshRouteList();
-    }
-
-    private void ClearTrialBossObjectives()
-    {
-        _syncingTrialBossChecklist = true;
-        try
-        {
-            for (var i = 0; i < _trialBossChecklist.Items.Count; i++)
-                _trialBossChecklist.SetItemChecked(i, false);
-        }
-        finally { _syncingTrialBossChecklist = false; }
-
-        _customRoute.RemoveAll(IsTrialBossRouteEntry);
-        RefreshRouteList();
-    }
-
-    private void ValidateTrialBossObjectives()
-    {
-        var routeEntries = _customRoute.Where(IsTrialBossRouteEntry).ToList();
-        var checkedEntries = new List<RouteEntry>();
-        for (var i = 0; i < _trialBossChecklist.Items.Count; i++)
-        {
-            if (_trialBossChecklist.GetItemChecked(i) && _trialBossChecklist.Items[i] is RouteEntry entry)
-                checkedEntries.Add(entry);
-        }
-
-        if (!_trialBossObjectivesCheck.Checked)
-        {
-            if (routeEntries.Count > 0)
-                throw new InvalidOperationException("Trial boss objectives are present even though Add trial boss objectives is disabled.");
-            return;
-        }
-
-        if (routeEntries.Count != checkedEntries.Count
-            || checkedEntries.Any(expected => !routeEntries.Any(actual => SameRouteEntry(actual, expected))))
-            throw new InvalidOperationException("Trial boss objectives no longer match the checked trial boss selections. Toggle the trial-boss option off and reselect the desired milestones.");
-    }
-
     private void PopulatePresets()
     {
         UpdatePremadeSelectorUi(true);
     }
 
-    private string PremadeMode => _premadeModeCombo.SelectedItem?.ToString() ?? "Area Completion";
-    private string PremadeSetup => _premadeSetupCombo.SelectedItem?.ToString() ?? "";
+    private string PremadeMode => _premadeModeCombo.SelectedIndex switch
+    {
+        1 => "Boss Completion",
+        2 => "Area + Boss Completion",
+        3 => "Level Race",
+        _ => "Area Completion"
+    };
+
+    private string PremadeSetup
+    {
+        get
+        {
+            var labels = GetPremadeSetupLabels(PremadeMode);
+            var index = _premadeSetupCombo.SelectedIndex;
+            return index >= 0 && index < labels.Count ? labels[index] : "";
+        }
+    }
     private bool PremadeOrdered => _premadeOrderedRadio.Checked;
     private bool PremadeHasBosses => PremadeMode is "Boss Completion" or "Area + Boss Completion";
     private bool PremadeHasAreas => PremadeMode is "Area Completion" or "Area + Boss Completion";
@@ -1733,7 +2131,13 @@ public sealed class SetupForm : Form
         if (setup.Equals("All Interludes", StringComparison.OrdinalIgnoreCase))
             return new List<string> { "Interlude 1", "Interlude 2", "Interlude 3" };
         if (PremadeIsCombination)
-            return _premadeCombinationList.CheckedItems.Cast<string>().ToList();
+        {
+            string[] canonicalGroups = { "Act 1", "Act 2", "Act 3", "Act 4", "Interlude 1", "Interlude 2", "Interlude 3" };
+            var selectedGroups = new List<string>();
+            for (var i = 0; i < _premadeCombinationList.Items.Count && i < canonicalGroups.Length; i++)
+                if (_premadeCombinationList.GetItemChecked(i)) selectedGroups.Add(canonicalGroups[i]);
+            return selectedGroups;
+        }
         if (setup.StartsWith("Campaign", StringComparison.OrdinalIgnoreCase))
             return new List<string> { "Act 1", "Act 2", "Act 3", "Act 4", "Interlude 1", "Interlude 2", "Interlude 3" };
         return new List<string>();
@@ -2115,6 +2519,25 @@ public sealed class SetupForm : Form
         objectives.AddRange(rebuilt);
     }
 
+    private sealed class LocalizedProperNounRouteItem
+    {
+        public RouteEntry Entry { get; init; } = null!;
+
+        public override string ToString() => Localization.TranslateProperNoun(Entry.Name);
+    }
+
+    private sealed class StartZoneItem
+    {
+        public RouteEntry Entry { get; init; } = null!;
+
+        public override string ToString()
+        {
+            var group = Localization.Translate(Entry.Group);
+            var name = Localization.TranslateProperNoun(Entry.Name);
+            return string.IsNullOrWhiteSpace(group) ? name : $"{group} — {name}";
+        }
+    }
+
     private sealed class PremadeInsertItem
     {
         public string Type { get; init; } = "";
@@ -2122,7 +2545,12 @@ public sealed class SetupForm : Form
         public string Name { get; init; } = "";
         public bool AtStart { get; init; }
         public bool AtEnd { get; init; }
-        public override string ToString() => AtStart ? "<Start of route>" : AtEnd ? "<End of route>" : Name;
+        public override string ToString()
+        {
+            if (AtStart) return "<" + Localization.Translate("Start of route") + ">";
+            if (AtEnd) return "<" + Localization.Translate("End of route") + ">";
+            return Localization.TranslateProperNoun(Name);
+        }
     }
 
     private void PopulatePremadeInsertionCombos()
@@ -2233,11 +2661,30 @@ public sealed class SetupForm : Form
         return 40;
     }
 
-    private string SelectedCustomCatalogGroup => _customCatalogGroupCombo.SelectedItem?.ToString() ?? "Act 1";
+    private string SelectedCustomCatalogGroup => _customCatalogGroupCombo.SelectedIndex switch
+    {
+        1 => "Act 2",
+        2 => "Act 3",
+        3 => "Act 4",
+        4 => "Interlude 1",
+        5 => "Interlude 2",
+        6 => "Interlude 3",
+        7 => "Trial of the Sekhemas",
+        8 => "Trial of Chaos",
+        9 => "Pinnacle",
+        _ => "Act 1"
+    };
+
+    private bool SelectedCustomCatalogIsTrial =>
+        SelectedCustomCatalogGroup.StartsWith("Trial of", StringComparison.OrdinalIgnoreCase);
 
     private bool AreaMatchesCustomGroup(RouteEntry entry)
     {
         var selected = SelectedCustomCatalogGroup;
+        // The custom Trial groups intentionally expose boss milestones only. Trial areas
+        // continue to use the dedicated Trials tab/runtime rather than becoming ordinary
+        // campaign-area objectives in a mixed custom route.
+        if (selected.StartsWith("Trial of", StringComparison.OrdinalIgnoreCase)) return false;
         if (selected.Equals("Pinnacle", StringComparison.OrdinalIgnoreCase))
             return entry.Group.Equals("Endgame", StringComparison.OrdinalIgnoreCase);
         return entry.Group.Equals(selected, StringComparison.OrdinalIgnoreCase);
@@ -2250,6 +2697,19 @@ public sealed class SetupForm : Form
             return entry.Group.StartsWith("Pinnacle", StringComparison.OrdinalIgnoreCase);
         return entry.Group.Equals(selected, StringComparison.OrdinalIgnoreCase);
     }
+
+    private IEnumerable<RouteEntry> CurrentCustomBossCatalog()
+    {
+        var selected = SelectedCustomCatalogGroup;
+        if (selected.StartsWith("Trial of", StringComparison.OrdinalIgnoreCase))
+            return _trialBossRouteEntries.Where(x => x.Group.StartsWith(selected, StringComparison.OrdinalIgnoreCase));
+        return StandardBossCatalog().Where(BossMatchesCustomGroup);
+    }
+
+    private bool IsBossCatalogEntryAlreadySelected(RouteEntry entry) =>
+        IsTrialBossRouteEntry(entry)
+            ? _customRoute.Any(x => SameRouteEntry(x, entry))
+            : IsStandardBossAlreadySelected(entry);
 
     private static string BaseBossId(RouteEntry entry)
     {
@@ -2276,6 +2736,12 @@ public sealed class SetupForm : Form
     {
         RefreshCustomAreaList();
         RefreshCustomBossGrid();
+
+        // Trial milestones do not expose the generic repeated-occurrence editor because
+        // their runtime objective shapes are fixed (paired Sekhemas boss / Chaos stage).
+        var occurrenceColumn = _bossGrid.Columns["Occurrences"];
+        if (occurrenceColumn is not null)
+            occurrenceColumn.Visible = _orderedCheck.Checked && _multiBossCheck.Checked && !SelectedCustomCatalogIsTrial;
     }
 
     private void RefreshCustomAreaList()
@@ -2306,13 +2772,14 @@ public sealed class SetupForm : Form
         // occurrence-cell edit rather than forcing validation while changing Act/Interlude.
         _bossGrid.CancelEdit();
         _bossGrid.Rows.Clear();
-        foreach (var entry in StandardBossCatalog()
-                     .Where(BossMatchesCustomGroup)
-                     .Where(x => !IsStandardBossAlreadySelected(x))
-                     .Where(x => term.Length == 0 || x.Name.Contains(term, StringComparison.OrdinalIgnoreCase))
+        foreach (var entry in CurrentCustomBossCatalog()
+                     .Where(x => !IsBossCatalogEntryAlreadySelected(x))
+                     .Where(x => term.Length == 0
+                         || x.Name.Contains(term, StringComparison.OrdinalIgnoreCase)
+                         || Localization.TranslateProperNoun(x.Name).Contains(term, StringComparison.OrdinalIgnoreCase))
                      .OrderBy(x => x.Name))
         {
-            var rowIndex = _bossGrid.Rows.Add(entry.Name, 1);
+            var rowIndex = _bossGrid.Rows.Add(Localization.TranslateProperNoun(entry.Name), 1);
             _bossGrid.Rows[rowIndex].Tag = entry;
         }
         if (_bossGrid.Rows.Count > 0) _bossGrid.ClearSelection();
@@ -2325,23 +2792,42 @@ public sealed class SetupForm : Form
         _unorderedBossOptionsPanel.Visible = !ordered;
         var occurrenceColumn = _bossGrid.Columns["Occurrences"];
         if (occurrenceColumn is not null)
-            occurrenceColumn.Visible = ordered && _multiBossCheck.Checked;
+            occurrenceColumn.Visible = ordered && _multiBossCheck.Checked && !SelectedCustomCatalogIsTrial;
 
-        _routePolicySummary.Text = ordered
+        _routePolicySummary.Text = Localization.Translate(ordered
             ? "Ordered: objectives must be completed in the sequence shown. The next objective becomes active only after the current objective is completed."
-            : "Dynamic / unordered: objectives may be completed in any order. Any selected objective can advance the run when its completion condition is met.";
+            : "Dynamic / unordered: objectives may be completed in any order. Any selected objective can advance the run when its completion condition is met.");
+        Localization.Apply(this);
     }
 
     private void PopulateStartZones()
     {
+        var previousId = (_startZoneCombo.SelectedItem as StartZoneItem)?.Entry.Id
+            ?? (_startZoneCombo.SelectedItem as RouteEntry)?.Id
+            ?? "";
+
         _startZoneCombo.BeginUpdate();
         _startZoneCombo.Items.Clear();
         foreach (var area in _areas
                      .Where(x => !x.Id.Equals("G1_1", StringComparison.OrdinalIgnoreCase))
                      .OrderBy(x => x.Group)
                      .ThenBy(x => x.Name))
-            _startZoneCombo.Items.Add(area);
+            _startZoneCombo.Items.Add(new StartZoneItem { Entry = area });
         _startZoneCombo.EndUpdate();
+
+        if (!string.IsNullOrWhiteSpace(previousId))
+        {
+            for (var i = 0; i < _startZoneCombo.Items.Count; i++)
+            {
+                if (_startZoneCombo.Items[i] is StartZoneItem item
+                    && item.Entry.Id.Equals(previousId, StringComparison.OrdinalIgnoreCase))
+                {
+                    _startZoneCombo.SelectedIndex = i;
+                    return;
+                }
+            }
+        }
+
         if (_startZoneCombo.Items.Count > 0) _startZoneCombo.SelectedIndex = 0;
     }
 
@@ -2364,7 +2850,14 @@ public sealed class SetupForm : Form
     {
         if (_premadeSetupCombo.SelectedIndex < 0)
         {
-            _presetDescription.Text = "Select a setup.";
+            Localization.SetDynamicText(_premadePreviewModeValue, PremadeMode);
+            Localization.SetDynamicText(_premadePreviewSetupValue, "Select a setup.");
+            Localization.SetDynamicText(_premadePreviewOrderValue, PremadeOrdered ? "Ordered" : "Dynamic / unordered");
+            Localization.SetDynamicText(_premadePreviewObjectivesValue, "0 generated objectives");
+            Localization.SetDynamicText(_premadePreviewBossWatcherValue, "Not required");
+            Localization.SetDynamicText(_premadePreviewTrialsValue, "None (opt-in)");
+            Localization.SetDynamicText(_premadePreviewStartValue, GetPremadeStartRuleText());
+            Localization.Apply(this);
             return;
         }
 
@@ -2373,7 +2866,7 @@ public sealed class SetupForm : Form
         if (_premadeSekhemasCheck.Checked)
         {
             var depth = new[] { _premadeSekhemasFloor1, _premadeSekhemasFloor2, _premadeSekhemasFloor3, _premadeSekhemasFloor4 }.Count(x => x.Checked);
-            trialParts.Add($"Sekhemas: {depth} floor(s)");
+            trialParts.Add($"Sekhemas: {depth} {(depth == 1 ? "floor" : "floors")}");
         }
         if (_premadeChaosCheck.Checked)
         {
@@ -2381,36 +2874,65 @@ public sealed class SetupForm : Form
             if (_premadeChaosBoss1.Checked) stages.Add("4 rounds");
             if (_premadeChaosBoss2.Checked) stages.Add("7 rounds");
             if (_premadeChaosBoss3.Checked) stages.Add("10 rounds");
-            var stageText = stages.Count == 0 ? "no stage selected" : string.Join(", ", stages);
-            trialParts.Add($"Chaos: {stageText}{(_premadeTrialmaster.Checked ? " + Trialmaster" : "")}");
+            var stageText = stages.Count == 0 ? "No stage selected" : string.Join(", ", stages);
+            var trialmaster = _premadeTrialmaster.Checked ? " + The Trialmaster" : "";
+            trialParts.Add($"Chaos: {stageText}{trialmaster}");
         }
 
         var objectiveCount = 0;
         try { objectiveCount = BuildPremadeObjectivesWithTrials().Count; } catch { }
-        var watcher = PremadeHasBosses ? "BossWatcher required" : "BossWatcher not required";
-        var trialText = trialParts.Count == 0 ? "Trials: none (opt-in)" : "Trials: " + string.Join("; ", trialParts);
-        var mixedNote = PremadeMode == "Area + Boss Completion"
-            ? " Area + Boss premades currently use dynamic/unordered completion; an ordered mixed campaign baseline has not been defined."
-            : "";
-        _presetDescription.Text = $"{PremadeMode} — {PremadeSetup} — {order}. {objectiveCount} generated objective(s). {watcher}. {trialText}.{mixedNote}";
+
+        Localization.SetDynamicText(_premadePreviewModeValue, PremadeMode);
+        Localization.SetDynamicText(_premadePreviewSetupValue, PremadeSetup);
+        Localization.SetDynamicText(_premadePreviewOrderValue, order);
+        Localization.SetDynamicText(_premadePreviewObjectivesValue, $"{objectiveCount} generated objectives");
+        Localization.SetDynamicText(_premadePreviewBossWatcherValue, PremadeHasBosses ? "Required" : "Not required");
+        if (trialParts.Count == 0)
+            Localization.SetDynamicText(_premadePreviewTrialsValue, "None (opt-in)");
+        else
+            Localization.SetDynamicText(_premadePreviewTrialsValue, string.Join("; ", trialParts));
+        Localization.SetDynamicText(_premadePreviewStartValue, GetPremadeStartRuleText());
+
+        // Keep the legacy label synchronized for compatibility with any external UI
+        // inspection code, but do not render it in the premade tab anymore.
+        _presetDescription.Text = $"{PremadeMode} — {PremadeSetup} — {order}. {objectiveCount} generated objectives.";
+        Localization.Apply(this);
+    }
+
+    private string GetPremadeStartRuleText()
+    {
+        if (_zoneStartRadio.Checked)
+        {
+            var selectedArea = _startZoneCombo.SelectedItem switch
+            {
+                StartZoneItem display => display.Entry.Name,
+                RouteEntry entry => entry.Name,
+                _ => _startZoneCombo.SelectedItem?.ToString() ?? ""
+            };
+            return string.IsNullOrWhiteSpace(selectedArea)
+                ? "Specific area entry auto start"
+                : "Specific area entry auto start — " + selectedArea;
+        }
+        if (_manualStartRadio.Checked) return "Manual Start";
+        return "Riverbank auto start";
     }
 
     private void UpdateStartZoneEnabled()
     {
+        var routeStartSelected = _modeTabs.SelectedIndex is 0 or 1;
         var trialsSelected = _modeTabs.SelectedIndex == 2;
-        var mapsSelected = _modeTabs.SelectedIndex == 3;
-        var ownsStartPolicy = trialsSelected || mapsSelected;
+        var vaalSelected = _modeTabs.SelectedIndex == 3;
+        var mapsSelected = _modeTabs.SelectedIndex == 4;
 
-        // Dedicated Trials owns a fixed first-chamber start policy. Maps is currently
-        // a diagnostic-only dynamic mode and therefore does not use the normal campaign
-        // Manual / Riverbank / arbitrary-zone timing controls either.
-        _manualStartRadio.Enabled = !ownsStartPolicy;
-        _riverbankStartRadio.Enabled = !ownsStartPolicy;
-        _zoneStartRadio.Enabled = !ownsStartPolicy;
-        _startZoneCombo.Enabled = !ownsStartPolicy && _zoneStartRadio.Checked;
-        _deployButton.Enabled = true;
+        MoveStartPolicyPanelToSelectedRouteTab();
+        _manualStartRadio.Enabled = routeStartSelected;
+        _riverbankStartRadio.Enabled = routeStartSelected;
+        _zoneStartRadio.Enabled = routeStartSelected;
+        _startZoneCombo.Enabled = routeStartSelected && _zoneStartRadio.Checked;
+        _deployButton.Enabled = !vaalSelected;
 
         if (trialsSelected) UpdateTrialsUi();
+        if (vaalSelected) UpdateVaalRuinsUi();
         if (mapsSelected) UpdateMapsUi();
     }
 
@@ -2428,7 +2950,13 @@ public sealed class SetupForm : Form
         if (_riverbankStartRadio.Checked)
             return new StartPolicy { Mode = StartMode.Riverbank, AreaId = "G1_1", AreaName = "The Riverbank" };
 
-        if (_startZoneCombo.SelectedItem is not RouteEntry zone)
+        var zone = _startZoneCombo.SelectedItem switch
+        {
+            StartZoneItem item => item.Entry,
+            RouteEntry legacy => legacy,
+            _ => null
+        };
+        if (zone is null)
             throw new InvalidOperationException("Select a start zone for First Split Zone Entry Auto Start.");
         if (zone.Id.Equals("G1_1", StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("The Riverbank is reserved for the Riverbank Start option. Choose a different zone.");
@@ -2546,7 +3074,8 @@ public sealed class SetupForm : Form
     private void AddAllBosses()
     {
         // Respect the currently visible boss catalog and each row's occurrence value.
-        // In unordered mode this adds every visible boss to the eligible encounter pool.
+        // Standard unordered bosses become pool members; Trial milestones retain their
+        // fixed Trial objective semantics exactly as the former checklist did.
         AddBossRows(_bossGrid.Rows.Cast<DataGridViewRow>().OrderBy(x => x.Index));
     }
 
@@ -2564,6 +3093,18 @@ public sealed class SetupForm : Form
             foreach (var row in selectedRows)
             {
                 if (row.Tag is not RouteEntry entry) continue;
+
+                // Trial milestones are already complete runtime objectives (including
+                // Sekhemas' paired Floor 2 boss and Chaos' dynamic stage placeholders).
+                // Add them exactly as the old dedicated Trial checklist did instead of
+                // converting them into ordinary repeated/direct boss catalog entries.
+                if (IsTrialBossRouteEntry(entry))
+                {
+                    if (!_customRoute.Any(x => SameRouteEntry(x, entry)))
+                        selections.Add((entry, 1));
+                    continue;
+                }
+
                 if (IsStandardBossAlreadySelected(entry)) continue;
 
                 var count = 1;
@@ -2579,6 +3120,12 @@ public sealed class SetupForm : Form
             foreach (var selection in selections)
             {
                 var entry = selection.Entry;
+                if (IsTrialBossRouteEntry(entry))
+                {
+                    _customRoute.Add(entry);
+                    continue;
+                }
+
                 if (!_orderedCheck.Checked)
                 {
                     _customRoute.Add(new RouteEntry
@@ -2636,7 +3183,9 @@ public sealed class SetupForm : Form
                 "bosspoolmember" => "BOSS POOL",
                 _ => entry.Type.ToUpperInvariant()
             };
-            _routeList.Items.Add($"{i + 1:D3}  {typeLabel,-12}  {entry.Name}");
+            var localizedType = Localization.TranslateDynamic(typeLabel);
+            var localizedName = Localization.TranslateProperNoun(entry.Name);
+            _routeList.Items.Add($"{i + 1:D3}  {localizedType,-12}  {localizedName}");
         }
         _routeList.EndUpdate();
         if (_routeList.Items.Count > 0 && selectIndex >= 0)
@@ -2657,17 +3206,6 @@ public sealed class SetupForm : Form
     {
         var i = _routeList.SelectedIndex;
         if (i < 0) return;
-        if (IsTrialBossRouteEntry(_customRoute[i]) && _trialBossObjectivesCheck.Checked)
-        {
-            for (var j = 0; j < _trialBossChecklist.Items.Count; j++)
-            {
-                if (_trialBossChecklist.Items[j] is RouteEntry trialEntry && SameRouteEntry(trialEntry, _customRoute[i]))
-                {
-                    _trialBossChecklist.SetItemChecked(j, false);
-                    return;
-                }
-            }
-        }
         if (_customRoute[i].Type.Equals("level", StringComparison.OrdinalIgnoreCase) && _levelProgressionCheck.Checked)
         {
             MessageBox.Show(this,
@@ -2683,7 +3221,6 @@ public sealed class SetupForm : Form
     private void ClearRoute()
     {
         _levelProgressionCheck.Checked = false;
-        _trialBossObjectivesCheck.Checked = false;
         _customRoute.Clear();
         RefreshRouteList();
         RefreshCustomCatalogs();
@@ -2765,7 +3302,8 @@ public sealed class SetupForm : Form
             var premade = _modeTabs.SelectedIndex == 0;
             var custom = _modeTabs.SelectedIndex == 1;
             var trials = _modeTabs.SelectedIndex == 2;
-            var maps = _modeTabs.SelectedIndex == 3;
+            var vaal = _modeTabs.SelectedIndex == 3;
+            var maps = _modeTabs.SelectedIndex == 4;
             if (premade)
             {
                 if (_premadeSetupCombo.SelectedIndex < 0)
@@ -2777,12 +3315,15 @@ public sealed class SetupForm : Form
                 if (_customRoute.Count == 0)
                     throw new InvalidOperationException("Add at least one area, boss, or level objective to the custom route.");
                 ValidateLevelProgressionObjectives();
-                ValidateTrialBossObjectives();
                 ValidateCustomBossPolicy();
             }
             else if (trials)
             {
                 ValidateTrialSelection();
+            }
+            else if (vaal)
+            {
+                throw new InvalidOperationException("Vaal Ruins is UI-only in this development iteration. Runtime Temple generation will be enabled after the Temple transition/failure policy is validated.");
             }
             else if (maps)
             {
@@ -2811,7 +3352,22 @@ public sealed class SetupForm : Form
             else
                 DeployMaps(stage, target, startPolicy);
 
+            // Reload the user-editable master settings immediately before snapshotting so
+            // manual JSON edits made while SetupUI is open are honored on the next Generate.
+            _userSettings = UserSettings.LoadOrCreate(_settingsPath, out var generationSettingsWarning);
+            if (!string.IsNullOrWhiteSpace(generationSettingsWarning))
+                SetStatus(generationSettingsWarning);
+            WriteRunSettingsSnapshot(stage, premade, custom, trials, maps);
+
+            // Run-validation files live outside the disposable LiveSplit Target directory.
+            // Commit the generated setup first, then hash the committed files into the
+            // top-level "3 - verification files" directory so route regeneration does not
+            // erase previous run-verification evidence.
             if (!CommitStage(stage, target)) return;
+
+            var verificationDirectory = GetVerificationDirectory();
+            WriteRunValidationSupport(verificationDirectory);
+            WriteSetupValidationManifest(target, verificationDirectory);
 
             if (premade)
                 SetStatus($"Deployed premade: {PremadeMode} / {PremadeSetup} / {(PremadeOrdered ? "Ordered" : "Dynamic")}");
@@ -2820,7 +3376,7 @@ public sealed class SetupForm : Form
             else if (trials)
                 SetStatus($"Deployed trial run: {(_trialSekhemasRadio.Checked ? "Sekhemas" : "Chaos")} / {(_trialFinalBossRadio.Checked ? "Boss finish" : "Exit finish")}.");
             else
-                SetStatus($"Deployed Maps run for {(int)_mapBossTargetNumeric.Value} map-boss encounter(s) with {GetSelectedMapPinnacleBosses().Count} optional Pinnacle objective(s).");
+                SetStatus($"Deployed Maps run: {GetMapEndpointMode()} endpoint / {GetMapDeathPolicyMode()} death policy / {GetMapGameTimePolicyMode()} Game Time.");
 
             // The persistent LiveSplit reminder panel contains the required post-generation
             // instructions. Do not show a second success dialog after the target-clear
@@ -2948,6 +3504,7 @@ public sealed class SetupForm : Form
         // internal @start path.
         patchedAsl = LiveSplitFiles.ApplyGeneratedZoneStartPolicy(patchedAsl, startPolicy);
         patchedAsl = LiveSplitFiles.ApplyGameTimeOptions(patchedAsl, _excludeManualPauseCheck.Checked);
+        patchedAsl = LiveSplitFiles.ApplyRunAuditPolicy(patchedAsl, target, "Dedicated Trial Run", _manifest.Version);
         File.WriteAllText(stagedAsl, patchedAsl, new UTF8Encoding(false));
 
         var trialName = _trialSekhemasRadio.Checked ? "Trial of the Sekhemas" : "Trial of Chaos";
@@ -3000,15 +3557,29 @@ public sealed class SetupForm : Form
     private void DeployMaps(string stage, string target, StartPolicy startPolicy)
     {
         var objectives = BuildMapObjectives();
-        if (objectives.Count == 0)
-            throw new InvalidOperationException("Maps setup requires at least one map-boss objective.");
+        var endpoint = GetMapEndpointMode();
+        var deathPolicy = GetMapDeathPolicyMode();
+        var gameTimePolicy = GetMapGameTimePolicyMode();
+        var character = MapCharacterRequired ? GetNormalizedMapCharacterName() : "";
+        var pinnacle = GetSelectedMapPinnacleTarget();
+        var mapTarget = _mapLengthFixedRadio.Checked ? (int)_mapBossTargetNumeric.Value : 0;
+        var pinnacleId = _mapLengthPinnacleRadio.Checked ? pinnacle?.Id ?? "" : "";
+        var pinnacleName = _mapLengthPinnacleRadio.Checked ? pinnacle?.Name ?? "" : "";
 
         var routePath = Path.Combine(stage, "poe2_mixed_route.txt");
         var route = new StringBuilder();
-        route.AppendLine("# Generated Maps dynamic boss run");
+        route.AppendLine("# Generated Maps lifecycle run — PoE2 Route AutoSplitter Setup UI");
         route.AppendLine("@start=manual");
         route.AppendLine("@order=unordered");
         route.AppendLine("@areaCompletion=entry");
+        route.AppendLine("@mapPolicy=v2");
+        route.AppendLine($"@mapEndpoint={endpoint}");
+        route.AppendLine($"@mapTarget={mapTarget}");
+        route.AppendLine($"@mapDeathPolicy={deathPolicy}");
+        route.AppendLine($"@mapGameTimePolicy={gameTimePolicy}");
+        route.AppendLine($"@mapCharacter={character}");
+        route.AppendLine($"@mapPinnacleTarget={pinnacleId}");
+        route.AppendLine($"@mapPinnacleName={pinnacleName}");
         route.AppendLine();
         foreach (var entry in objectives)
             route.AppendLine($"{entry.RouteText,-42} # {entry.Name}");
@@ -3019,55 +3590,84 @@ public sealed class SetupForm : Form
         var stagedAsl = Path.Combine(stage, "PoE2-Maps.asl");
         var targetAsl = Path.Combine(target, "PoE2-Maps.asl");
         var patchedAsl = LiveSplitFiles.RewriteRuntimePaths(File.ReadAllText(sourceAsl), target);
+        patchedAsl = LiveSplitFiles.ApplyMapsPolicyV2(patchedAsl);
         patchedAsl = LiveSplitFiles.ApplyAutoStartOption(patchedAsl, true);
         patchedAsl = LiveSplitFiles.ApplyGameTimeOptions(patchedAsl, _excludeManualPauseCheck.Checked);
+        patchedAsl = LiveSplitFiles.ApplyRunAuditPolicy(patchedAsl, target, "Maps - Lifecycle Policy v2", _manifest.Version);
         File.WriteAllText(stagedAsl, patchedAsl, new UTF8Encoding(false));
 
         var stagedLss = Path.Combine(stage, "Maps-Dynamic.lss");
-        LiveSplitFiles.WritePremadeSplits(stagedLss, objectives, "Maps - Dynamic Boss Run");
+        LiveSplitFiles.WritePremadeSplits(stagedLss, objectives, "Maps - Lifecycle Policy v2");
 
         EnsureBossEventFile(stage);
-        EnsureBossContextFile(stage, "identity", "setup-ready");
+        EnsureBossContextFile(stage, "identity", "maps-policy-v2-setup-ready");
         if (_excludeManualPauseCheck.Checked) EnsureManualPauseStateFile(stage);
 
-        WriteSetupSummary(stage, "Maps - Dynamic Boss Run",
-            $"{(int)_mapBossTargetNumeric.Value} map-boss encounters; {GetSelectedMapPinnacleBosses().Count} optional Pinnacle boss(es); dynamic only; auto-start on first qualifying map entry",
+        var endpointSummary = endpoint switch
+        {
+            "death" => "until first death",
+            "manual" => "manual finish hotkey",
+            "pinnacle" => $"Pinnacle defeat: {pinnacleName}",
+            _ => $"fixed {mapTarget} finalized map(s)"
+        };
+        var deathSummary = deathPolicy switch
+        {
+            "end" => $"end on first death; character={character}",
+            "track" => $"track Death [x] rows; character={character}",
+            _ => "no death tracking; character not read"
+        };
+        var gameTimeSummary = gameTimePolicy == "continuous"
+            ? "continuous Game Time; only loading screens and configured manual pause may pause"
+            : "PoE2 map-completion Game Time; pause between completed maps";
+
+        WriteSetupSummary(stage, "Maps - Lifecycle Policy v2",
+            $"{endpointSummary}; {deathSummary}; {gameTimeSummary}; Map<name>+seed identity; boss qualifies, first exit commits; premature exits resolve on same/new seed",
             stagedLss, stagedAsl, targetAsl, true, _excludeManualPauseCheck.Checked, startPolicy);
 
         var info = new StringBuilder();
-        info.AppendLine("PoE2 Maps dynamic boss run / diagnostics");
-        info.AppendLine("Status: MAP BOSS AUTOSPLITTING ENABLED — map classification remains under diagnostic validation.");
-        info.AppendLine($"Map boss encounters: {(int)_mapBossTargetNumeric.Value}");
+        info.AppendLine("PoE2 Maps lifecycle policy v2 — development test");
+        info.AppendLine($"Endpoint: {endpointSummary}");
+        info.AppendLine($"Death policy: {deathSummary}");
+        info.AppendLine($"Game Time policy: {gameTimeSummary}");
         info.AppendLine("Route order: Dynamic / unordered only");
-        info.AppendLine("Completion: verified ordinary-map boss-bar disappearance (no OCR identity required)");
-        info.AppendLine($"Modifier count in name: {(_mapModifierCountCheck.Checked ? "Requested when a reliable signal is found" : "Disabled")}");
+        info.AppendLine("Map identity: exact Client.txt area ID beginning with 'Map' + generated seed");
+        info.AppendLine("Start condition: The timer will automatically start when first entering the map. A valid run is from first entry to first exit after the area boss kill.");
+        info.AppendLine("Successful map: expected map boss OCR match -> confirmed MAP_GONE qualifies the active seed; the first real external exit after qualification commits SUCCESS");
+        if (gameTimePolicy == "continuous")
+            info.AppendLine("Between-map Game Time: counted. Only loading-screen exclusion and the configured Manual Pause policy may pause Game Time.");
+        else
+            info.AppendLine("Between-map Game Time: excluded after a completed map exit until the next new map entry (PoE2 Map Completion default).");
+        info.AppendLine("Map child areas: Abyss_Depths*, Abyss_Boss1, Abyss_Boss2, Delirium_HungerBoss, and ExpeditionSubArea* remain inside the parent attempt; their bosses cannot qualify the parent while the child is active");
+        info.AppendLine("Vaal Ruins: never a map child. Entering the Vaal setup/hub from an active map is a real exit boundary");
+        info.AppendLine(gameTimePolicy == "continuous"
+            ? "Premature exit: save the exit boundary for audit/split attribution but keep Game Time counting; same seed re-entry continues the attempt; a different seed confirms FAILED without rolling Game Time back"
+            : "Premature exit: save exit Game Time but keep timing provisionally; same seed re-entry continues the attempt; a different seed confirms FAILED and rolls Game Time back to the saved exit before starting the new seed");
+        info.AppendLine(gameTimePolicy == "continuous"
+            ? "Completed-map re-entry: same finalized Map+seed is ignored for map completion, but Game Time continues to count"
+            : "Completed-map re-entry: same finalized Map+seed is ignored and setup Game Time remains paused");
+        info.AppendLine("Deaths: exact '<configured character> has been slain.' comparison only; party-member deaths are ignored");
+        if (endpoint == "pinnacle")
+        {
+            info.AppendLine($"Pinnacle endpoint: {pinnacleName} ({pinnacleId})");
+            info.AppendLine(gameTimePolicy == "continuous"
+                ? "Pinnacle timing: Game Time remains continuous; the selected BossWatcher GONE event creates the final Pinnacle split."
+                : "Pinnacle timing: setup pause is released on the selected BossWatcher SEEN event; GONE creates the final Pinnacle split.");
+        }
+        if (endpoint == "manual")
+            info.AppendLine("Manual endpoint: the current placeholder is always the final LiveSplit row. Press the normal Start/Split hotkey to finish; the row is renamed Manual Finish.");
         info.AppendLine();
-        info.AppendLine("Candidate map heuristic logged by the ASL:");
-        info.AppendLine("  previous scene = The Ziggurat Refuge or contains 'Hideout'");
-        info.AppendLine("  destination generated level >= 65");
-        info.AppendLine("  destination is not a known campaign/trial/hub area");
-        info.AppendLine("  result is logged as ENDGAME_CANDIDATE classification=unconfirmed-map-or-special");
+        info.AppendLine("Run-audit events added by Maps policy:");
+        info.AppendLine("  MAP_ENTER, MAP_REENTRY, MAP_COMPLETED_REENTRY_IGNORED");
+        info.AppendLine("  MAP_CHILD_ENTER, MAP_CHILD_TRANSITION, MAP_CHILD_RETURN");
+        info.AppendLine("  MAP_CHILD_EXIT_EXTERNAL, MAP_CHILD_EXIT_TO_NEW_MAP, MAP_VAAL_RUINS_EXIT_BOUNDARY");
+        info.AppendLine("  MAP_BOSS_QUALIFIED, MAP_PREMATURE_EXIT, MAP_SUCCESS");
+        info.AppendLine("  MAP_FAILURE_CONFIRMED, MAP_TIME_ROLLBACK / MAP_TIME_CONTINUOUS");
+        info.AppendLine("  PLAYER_DEATH (only when death tracking is enabled; non-matching party deaths are ignored and not stored)");
+        info.AppendLine("  PINNACLE_SEEN, PINNACLE_COMPLETE, MANUAL_FINISH");
         info.AppendLine();
-        info.AppendLine("BossWatcher context policy:");
-        info.AppendLine("  ordinary map candidate -> mode=map -> structural boss-bar tracking, OCR bypassed");
-        info.AppendLine("  non-map / known special area -> mode=identity -> normal OCR identity tracking");
-        info.AppendLine("  MAP_GONE -> LiveSplit split; use Undo Split when the boss was not actually completed");
-        info.AppendLine();
-        info.AppendLine("Relevant diagnostic markers:");
-        info.AppendLine("  ENDGAME_TRANSITION");
-        info.AppendLine("  ENDGAME_CANDIDATE");
-        info.AppendLine("  BOSS_CONTEXT_WRITE");
-        info.AppendLine("  MAP_SCENE");
-        info.AppendLine("  MAP_SIGNAL");
-        info.AppendLine("  MAP_BOSS_SPLIT_SIGNAL");
-        info.AppendLine();
-        info.AppendLine("Optional Pinnacle objectives selected:");
-        var pinnacles = GetSelectedMapPinnacleBosses();
-        if (pinnacles.Count == 0) info.AppendLine("  (none)");
-        foreach (var boss in pinnacles) info.AppendLine("  - " + boss.Name);
-        info.AppendLine();
-        info.AppendLine("Testing goal: enter several ordinary maps from Ziggurat/personal/party/guild hideouts, confirm the split row updates to Map Level X - Boss #Y, kill/fail/retry bosses (using Undo Split on failed attempts), and record any random map objectives encountered. Preserve poe2_mixed_route_debug.log, poe2_boss_context.txt, Client.txt, and BossWatcher debug/event logs.");
-        File.WriteAllText(Path.Combine(stage, "MAPS_DIAGNOSTIC_RULES.txt"), info.ToString(), new UTF8Encoding(false));
+        info.AppendLine("Important: no maximum-attempt/death count is hard-coded in this iteration. Failure is authoritative when an unfinished map is replaced by a different Map+seed.");
+        info.AppendLine("Preserve the generated run .log/.sha256/summary plus Client.txt, poe2_mixed_route_debug.log, poe2_boss_context.txt, and BossWatcher logs when reporting test results.");
+        File.WriteAllText(Path.Combine(stage, "MAPS_POLICY_TEST_NOTES.txt"), info.ToString(), new UTF8Encoding(false));
     }
 
     private void DeployPremadeGenerated(string stage, string target, StartPolicy startPolicy)
@@ -3102,6 +3702,7 @@ public sealed class SetupForm : Form
         var patchedAsl = LiveSplitFiles.RewriteRuntimePaths(sourceAslText, target);
         patchedAsl = LiveSplitFiles.ApplyGeneratedZoneStartPolicy(patchedAsl, startPolicy);
         patchedAsl = LiveSplitFiles.ApplyGameTimeOptions(patchedAsl, _excludeManualPauseCheck.Checked);
+        patchedAsl = LiveSplitFiles.ApplyRunAuditPolicy(patchedAsl, target, "Premade - " + PremadeMode + " / " + PremadeSetup, _manifest.Version);
         File.WriteAllText(stagedAsl, patchedAsl, new UTF8Encoding(false));
 
         var stagedLss = Path.Combine(stage, "Premade-Route.lss");
@@ -3171,6 +3772,7 @@ public sealed class SetupForm : Form
         var patchedAsl = LiveSplitFiles.RewriteRuntimePaths(sourceAslText, target);
         patchedAsl = LiveSplitFiles.ApplyGeneratedZoneStartPolicy(patchedAsl, startPolicy);
         patchedAsl = LiveSplitFiles.ApplyGameTimeOptions(patchedAsl, _excludeManualPauseCheck.Checked);
+        patchedAsl = LiveSplitFiles.ApplyRunAuditPolicy(patchedAsl, target, preset.Group + " / " + preset.DisplayName, _manifest.Version);
         File.WriteAllText(stagedAsl, patchedAsl, new UTF8Encoding(false));
 
         if (preset.RequiresBossWatcher) EnsureBossEventFile(stage);
@@ -3209,6 +3811,7 @@ public sealed class SetupForm : Form
         var patchedAsl = LiveSplitFiles.RewriteRuntimePaths(sourceAslText, target);
         patchedAsl = LiveSplitFiles.ApplyGeneratedZoneStartPolicy(patchedAsl, startPolicy);
         patchedAsl = LiveSplitFiles.ApplyGameTimeOptions(patchedAsl, _excludeManualPauseCheck.Checked);
+        patchedAsl = LiveSplitFiles.ApplyRunAuditPolicy(patchedAsl, target, "Custom Route", _manifest.Version);
         File.WriteAllText(stagedAsl, patchedAsl, new UTF8Encoding(false));
 
         var stagedLss = Path.Combine(stage, "Custom-Route.lss");
@@ -3223,6 +3826,238 @@ public sealed class SetupForm : Form
         WriteSetupSummary(stage, "Custom Route", $"{runtimeObjectives.Count} timed objectives; {(_orderedCheck.Checked ? "ordered" : "unordered")}{poolSuffix}",
             stagedLss, stagedAsl, targetAsl, needsWatcher, _excludeManualPauseCheck.Checked, startPolicy);
         WriteCustomObjectiveSummary(stage);
+    }
+
+    private void WriteRunValidationSupport(string verificationDirectory)
+    {
+        const string readme = """
+PoE2 Route AutoSplitter - Run Validation Files
+
+Every SetupUI-generated run now writes an append-only run log whose events form a SHA-256 hash chain.
+At run completion/reset/shutdown, the autosplitter also writes a readable summary and a .sha256 manifest.
+
+Stored in:
+  3 - verification files
+
+Generated per run:
+  poe2_run_<RunId>.log
+  poe2_run_<RunId>_summary.txt
+  poe2_run_<RunId>.sha256
+  poe2_run_<RunId>_setup.sha256
+
+Generated per setup:
+  poe2_setup_validation.sha256
+
+Verification support:
+  RUN_VALIDATION_README.txt
+  Verify-RunValidation.ps1
+
+The run checksum manifest hashes the completed run log, summary, and a run-specific copy of the setup-validation manifest.
+The setup-validation manifest hashes the stable generated ASL/config/rules/support files in LiveSplit Target,
+including poe2_run_settings.json (the effective user-facing SetupUI/BossWatcher/GameTimeWatcher settings snapshot).
+LiveSplit .lss files are intentionally excluded because LiveSplit updates their attempt history and split data.
+The run log also records whether setup validation passed at run start and finish.
+
+To verify:
+  powershell -ExecutionPolicy Bypass -File .\Verify-RunValidation.ps1
+
+Or specify a run manifest:
+  powershell -ExecutionPolicy Bypass -File .\Verify-RunValidation.ps1 -ChecksumPath .\poe2_run_<RunId>.sha256
+
+Validation scope:
+  - Detects accidental file corruption and ordinary edits.
+  - Detects removed/reordered/modified run-log events through the event hash chain.
+  - Ties the submitted run log to the generated setup files through SHA-256 manifests.
+
+This is integrity/audit evidence, not tamper-proof anti-cheat proof. Because the runner controls the local
+machine, a sufficiently determined user could replace the software and generate a new internally consistent
+set of local files. Video or other category-specific evidence may still be required by leaderboard rules.
+""";
+
+        const string verifier = """
+param(
+    [string]$ChecksumPath
+)
+
+$ErrorActionPreference = 'Stop'
+$baseDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+if ([string]::IsNullOrWhiteSpace($ChecksumPath)) {
+    $latest = Get-ChildItem -LiteralPath $baseDir -Filter 'poe2_run_*.sha256' -File |
+        Sort-Object LastWriteTimeUtc -Descending |
+        Select-Object -First 1
+    if ($null -eq $latest) { throw 'No poe2_run_*.sha256 manifest was found.' }
+    $ChecksumPath = $latest.FullName
+} elseif (-not [System.IO.Path]::IsPathRooted($ChecksumPath)) {
+    $ChecksumPath = Join-Path $baseDir $ChecksumPath
+}
+
+function Get-Sha256Text([string]$Text) {
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $bytes = [System.Text.UTF8Encoding]::new($false).GetBytes($Text)
+        return ([System.BitConverter]::ToString($sha.ComputeHash($bytes))).Replace('-', '').ToLowerInvariant()
+    } finally { $sha.Dispose() }
+}
+
+function Test-ChecksumManifest([string]$Path, [string]$Root, [string]$Label) {
+    $ok = $true
+    foreach ($raw in Get-Content -LiteralPath $Path -Encoding UTF8) {
+        $line = $raw.Trim()
+        if ($line.Length -eq 0 -or $line.StartsWith('#')) { continue }
+        if ($line -notmatch '^([0-9a-fA-F]{64})\s{2}(.+)$') {
+            Write-Host "FAIL [$Label] invalid manifest line: $line"
+            $ok = $false
+            continue
+        }
+        $expected = $Matches[1].ToLowerInvariant()
+        $relative = $Matches[2]
+        $file = Join-Path $Root ($relative -replace '/', [System.IO.Path]::DirectorySeparatorChar)
+        if (-not (Test-Path -LiteralPath $file -PathType Leaf)) {
+            Write-Host "FAIL [$Label] missing: $relative"
+            $ok = $false
+            continue
+        }
+        $actual = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($actual -ne $expected) {
+            Write-Host "FAIL [$Label] SHA256 mismatch: $relative"
+            Write-Host "  expected $expected"
+            Write-Host "  actual   $actual"
+            $ok = $false
+        } else {
+            Write-Host "PASS [$Label] $relative"
+        }
+    }
+    return $ok
+}
+
+$ChecksumPath = [System.IO.Path]::GetFullPath($ChecksumPath)
+$manifestDir = Split-Path -Parent $ChecksumPath
+$runManifestOk = Test-ChecksumManifest -Path $ChecksumPath -Root $manifestDir -Label 'run'
+
+$manifestLines = Get-Content -LiteralPath $ChecksumPath -Encoding UTF8
+$logEntry = $manifestLines | Where-Object { $_ -match '^[0-9a-fA-F]{64}\s{2}poe2_run_.+\.log$' } | Select-Object -First 1
+if ($null -eq $logEntry) { throw 'The run manifest does not contain a run-log entry.' }
+$logName = ($logEntry -replace '^[0-9a-fA-F]{64}\s{2}', '')
+$logPath = Join-Path $manifestDir $logName
+
+$chainOk = $true
+$expectedPrev = ('0' * 64)
+$lineNumber = 0
+foreach ($line in Get-Content -LiteralPath $logPath -Encoding UTF8) {
+    $lineNumber++
+    if ($line -notmatch '^prev=([0-9a-f]{64})\|hash=([0-9a-f]{64})\|(.*)$') {
+        Write-Host "FAIL [chain] malformed event at line $lineNumber"
+        $chainOk = $false
+        break
+    }
+    $prev = $Matches[1]
+    $recorded = $Matches[2]
+    $canonical = $Matches[3]
+    if ($prev -ne $expectedPrev) {
+        Write-Host "FAIL [chain] previous-hash mismatch at line $lineNumber"
+        $chainOk = $false
+        break
+    }
+    $actual = Get-Sha256Text ($prev + "`n" + $canonical)
+    if ($actual -ne $recorded) {
+        Write-Host "FAIL [chain] event hash mismatch at line $lineNumber"
+        $chainOk = $false
+        break
+    }
+    $expectedPrev = $recorded
+}
+
+$declaredFinal = $manifestLines | Where-Object { $_ -match '^# FinalEventHash=' } | Select-Object -First 1
+if ($null -ne $declaredFinal) {
+    $declaredFinalHash = ($declaredFinal -replace '^# FinalEventHash=', '').Trim().ToLowerInvariant()
+    if ($declaredFinalHash -ne $expectedPrev) {
+        Write-Host 'FAIL [chain] final event hash does not match the checksum manifest.'
+        $chainOk = $false
+    }
+}
+if ($chainOk) { Write-Host "PASS [chain] $lineNumber event(s); final=$expectedPrev" }
+
+$setupEntry = $manifestLines | Where-Object { $_ -match '^[0-9a-fA-F]{64}\s{2}poe2_run_.+_setup\.sha256$' } | Select-Object -First 1
+$setupName = if ($null -ne $setupEntry) {
+    ($setupEntry -replace '^[0-9a-fA-F]{64}\s{2}', '')
+} else {
+    'poe2_setup_validation.sha256'
+}
+$setupPath = Join-Path $manifestDir $setupName
+$setupOk = $true
+if (Test-Path -LiteralPath $setupPath -PathType Leaf) {
+    $packageRoot = Split-Path -Parent $manifestDir
+    $setupOk = Test-ChecksumManifest -Path $setupPath -Root $packageRoot -Label 'setup'
+} else {
+    Write-Host "FAIL [setup] $setupName is missing."
+    $setupOk = $false
+}
+
+if ($runManifestOk -and $chainOk -and $setupOk) {
+    Write-Host 'VALIDATION RESULT: PASS'
+    exit 0
+}
+Write-Host 'VALIDATION RESULT: FAIL'
+exit 1
+""";
+
+        Directory.CreateDirectory(verificationDirectory);
+        File.WriteAllText(Path.Combine(verificationDirectory, "RUN_VALIDATION_README.txt"), readme, new UTF8Encoding(false));
+        File.WriteAllText(Path.Combine(verificationDirectory, "Verify-RunValidation.ps1"), verifier, new UTF8Encoding(false));
+    }
+
+    private void WriteSetupValidationManifest(string target, string verificationDirectory)
+    {
+        var excludedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "poe2_setup_validation.sha256",
+            "poe2_boss_events.log",
+            "poe2_boss_context.txt",
+            "poe2_manual_pause_state.txt",
+            "poe2_mixed_route_status.txt",
+            "poe2_mixed_route_debug.log",
+            "poe2_run_current.txt"
+        };
+
+        var files = Directory.GetFiles(target, "*", SearchOption.AllDirectories)
+            .Where(path => !excludedNames.Contains(Path.GetFileName(path)))
+            // Per-attempt poe2_run_<RunId> files are mutable output. The generated
+            // poe2_run_settings.json snapshot is deliberately stable and MUST be hashed.
+            .Where(path => !Path.GetFileName(path).StartsWith("poe2_run_", StringComparison.OrdinalIgnoreCase)
+                || Path.GetFileName(path).Equals("poe2_run_settings.json", StringComparison.OrdinalIgnoreCase))
+            // LiveSplit legitimately mutates .lss attempt history / split data after runs,
+            // so validate the generated ASL + route/rules/support files instead.
+            .Where(path => !Path.GetExtension(path).Equals(".lss", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(path => Path.GetRelativePath(target, path), StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var manifest = new StringBuilder();
+        manifest.AppendLine("# PoE2 Route AutoSplitter generated setup validation");
+        manifest.AppendLine("# Version=" + _manifest.Version);
+        manifest.AppendLine("# GeneratedUtc=" + DateTimeOffset.UtcNow.ToString("o"));
+        manifest.AppendLine("# Mutable watcher/state logs and .lss attempt-history files are intentionally excluded.");
+
+        foreach (var file in files)
+        {
+            using var sha = System.Security.Cryptography.SHA256.Create();
+            using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            var hash = Convert.ToHexString(sha.ComputeHash(stream)).ToLowerInvariant();
+            var targetRelative = Path.GetRelativePath(target, file).Replace(Path.DirectorySeparatorChar, '/');
+            var relative = "1 - User Setup/LiveSplit Target/" + targetRelative;
+            manifest.AppendLine(hash + "  " + relative);
+        }
+
+        Directory.CreateDirectory(verificationDirectory);
+        File.WriteAllText(Path.Combine(verificationDirectory, "poe2_setup_validation.sha256"), manifest.ToString(), new UTF8Encoding(false));
+    }
+
+    private string GetVerificationDirectory()
+    {
+        var releaseRoot = Directory.GetParent(Path.GetFullPath(_packageRoot))?.FullName
+            ?? throw new DirectoryNotFoundException("Could not locate the package root for verification files.");
+        var verificationDirectory = Path.Combine(releaseRoot, "3 - verification files");
+        Directory.CreateDirectory(verificationDirectory);
+        return verificationDirectory;
     }
 
     private string ValidateTargetPath()
@@ -3320,6 +4155,169 @@ public sealed class SetupForm : Form
         File.WriteAllText(Path.Combine(stage, "CUSTOM_OBJECTIVES.txt"), text.ToString(), new UTF8Encoding(false));
     }
 
+    private void OpenUserSettings()
+    {
+        try
+        {
+            // Re-read the file first so hand-edited JSON is reflected when the dialog opens.
+            _userSettings = UserSettings.LoadOrCreate(_settingsPath, out var warning);
+            using var dialog = new UserSettingsDialog(_userSettings);
+            if (dialog.ShowDialog(this) != DialogResult.OK)
+            {
+                if (!string.IsNullOrWhiteSpace(warning)) SetStatus(warning);
+                return;
+            }
+
+            _userSettings = dialog.Settings;
+            _userSettings.Save(_settingsPath);
+            Localization.SetLanguage(_userSettings.SetupUI.DefaultLanguage);
+            Localization.Apply(this);
+            RefreshCustomCatalogs();
+            RefreshRouteList();
+            _areaList.Refresh();
+            RebuildMapPinnacleTargetItems();
+            // Rebuild display wrappers after a language change. Canonical RouteEntry IDs and
+            // English names remain unchanged; only their visible localized text is rebuilt.
+            PopulateStartZones();
+            _startZoneCombo.Refresh();
+            UpdatePremadeSelectorUi(false);
+            UpdateTrialsUi();
+            UpdateVaalRuinsUi();
+            UpdateMapsUi();
+            _modeTabs.Invalidate();
+            SetStatus(Localization.Translate("Settings saved. Language applies immediately; window-size changes apply on the next SetupUI launch; watcher and detector settings apply to the next watcher launch or Generate / Deploy."));
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex.Message);
+        }
+    }
+
+    private void WriteRunSettingsSnapshot(string stage, bool premade, bool custom, bool trials, bool maps)
+    {
+        var runMode = premade ? "Premade" : custom ? "Custom Route" : trials ? "Trials" : maps ? "Maps" : "Unknown";
+        var run = new Dictionary<string, object?>
+        {
+            ["Mode"] = runMode,
+            ["ManualPauseGameTimeRemoval"] = _excludeManualPauseCheck.Checked,
+            ["DeveloperConsoleAtGeneration"] = _userSettings.SetupUI.DeveloperConsoleDefault
+        };
+
+        if (premade)
+        {
+            run["PremadeMode"] = PremadeMode;
+            run["PremadeSetup"] = PremadeSetup;
+            run["ObjectiveOrder"] = PremadeOrdered ? "Ordered" : "Dynamic";
+        }
+        else if (custom)
+        {
+            run["ObjectiveOrder"] = _orderedCheck.Checked ? "Ordered" : "Dynamic";
+            run["ObjectiveCount"] = BuildCustomRuntimeObjectives().Count;
+        }
+        else if (trials)
+        {
+            run["Trial"] = _trialSekhemasRadio.Checked ? "Trial of the Sekhemas" : "Trial of Chaos";
+            run["FinishPolicy"] = _trialFinalBossRadio.Checked ? "Final boss" : "Trial exit";
+        }
+        else if (maps)
+        {
+            var deathPolicy = GetMapDeathPolicyMode();
+            run["MapEndpoint"] = GetMapEndpointMode();
+            run["MapDeathPolicy"] = deathPolicy;
+            run["MapGameTimePolicy"] = GetMapGameTimePolicyMode();
+            run["MapCompletionPolicy"] = "first-exit-after-area-boss-kill";
+            run["CharacterName"] = deathPolicy == "none" ? null : GetNormalizedMapCharacterName();
+            if (_mapLengthPinnacleRadio.Checked && GetSelectedMapPinnacleTarget() is RouteEntry pinnacle)
+                run["PinnacleTarget"] = pinnacle.Name;
+        }
+
+        // Snapshot the exact map-boss database used by this generated setup into LiveSplit Target.
+        // BossWatcher is launched with this immutable copy, so the SHA-256 run audit validates the
+        // same database that actually gated Maps-mode boss identity during the run.
+        var mapBossDatabaseSource = Resolve("BossWatcher/map-bosses.json");
+        var mapBossDatabaseFileName = "poe2_map_bosses.json";
+        var mapBossDatabasePath = Path.Combine(stage, mapBossDatabaseFileName);
+        string mapBossDatabaseSha256 = "";
+        string mapBossDatabaseVersion = "";
+        if (File.Exists(mapBossDatabaseSource))
+        {
+            File.Copy(mapBossDatabaseSource, mapBossDatabasePath, true);
+            using (var sha = System.Security.Cryptography.SHA256.Create())
+            using (var stream = File.OpenRead(mapBossDatabasePath))
+                mapBossDatabaseSha256 = Convert.ToHexString(sha.ComputeHash(stream)).ToLowerInvariant();
+
+            try
+            {
+                using var mapDbDoc = JsonDocument.Parse(File.ReadAllText(mapBossDatabasePath));
+                if (mapDbDoc.RootElement.TryGetProperty("DatabaseVersion", out var dbVersionElement))
+                    mapBossDatabaseVersion = dbVersionElement.GetString() ?? "";
+            }
+            catch { }
+        }
+
+        // Snapshot the verified BossWatcher localization catalog too. The selected PoE2 game
+        // language is stored above, and BossWatcher is launched against this hashed copy so a
+        // validation package can prove which localized names were eligible for OCR.
+        var bossLocalizationSource = Resolve("BossWatcher/boss-localizations.json");
+        var bossLocalizationFileName = "poe2_boss_localizations.json";
+        var bossLocalizationPath = Path.Combine(stage, bossLocalizationFileName);
+        string bossLocalizationSha256 = "";
+        string bossLocalizationVersion = "";
+        if (File.Exists(bossLocalizationSource))
+        {
+            File.Copy(bossLocalizationSource, bossLocalizationPath, true);
+            using (var sha = System.Security.Cryptography.SHA256.Create())
+            using (var stream = File.OpenRead(bossLocalizationPath))
+                bossLocalizationSha256 = Convert.ToHexString(sha.ComputeHash(stream)).ToLowerInvariant();
+
+            try
+            {
+                using var localizationDoc = JsonDocument.Parse(File.ReadAllText(bossLocalizationPath));
+                if (localizationDoc.RootElement.TryGetProperty("DatabaseVersion", out var localizationVersionElement))
+                    bossLocalizationVersion = localizationVersionElement.GetString() ?? "";
+            }
+            catch { }
+        }
+
+        var snapshot = new
+        {
+            SchemaVersion = 1,
+            GeneratedBy = $"PoE2 Route AutoSplitter {_manifest.Version}",
+            GeneratedUtc = DateTimeOffset.UtcNow.ToString("o"),
+            SourceSettingsFile = "PoE2AS-Settings.json",
+            SetupUI = _userSettings.SetupUI,
+            PoE2 = _userSettings.PoE2,
+            BossWatcher = _userSettings.BossWatcher,
+            BossWatcherDatabase = new
+            {
+                File = mapBossDatabaseFileName,
+                DatabaseVersion = mapBossDatabaseVersion,
+                Sha256 = mapBossDatabaseSha256
+            },
+            BossWatcherLocalizationDatabase = new
+            {
+                File = bossLocalizationFileName,
+                DatabaseVersion = bossLocalizationVersion,
+                Sha256 = bossLocalizationSha256
+            },
+            GameTimeWatcher = _userSettings.GameTimeWatcher,
+            Run = run
+        };
+
+        File.WriteAllText(
+            Path.Combine(stage, "poe2_run_settings.json"),
+            JsonSerializer.Serialize(snapshot, UserSettings.JsonOptions),
+            new UTF8Encoding(false));
+    }
+
+    private static string RequireRunSettingsSnapshot(string target)
+    {
+        var path = Path.Combine(target, "poe2_run_settings.json");
+        if (!File.Exists(path))
+            throw new FileNotFoundException("poe2_run_settings.json was not found. Generate / Deploy the setup again before starting a watcher.", path);
+        return path;
+    }
+
     private void StartBossWatcher()
     {
         try
@@ -3348,7 +4346,18 @@ public sealed class SetupForm : Form
             var eventPath = Path.Combine(target, "poe2_boss_events.log");
             EnsureBossEventFile(target);
             var contextPath = Path.Combine(target, "poe2_boss_context.txt");
-            var args = $"--event-file {QuoteArgument(eventPath)} --context-file {QuoteArgument(contextPath)}" + (_devConsoleCheck.Checked ? " --dev-console" : "");
+            var settingsPath = RequireRunSettingsSnapshot(target);
+            var mapBossDatabasePath = Path.Combine(target, "poe2_map_bosses.json");
+            if (!File.Exists(mapBossDatabasePath))
+                throw new FileNotFoundException("poe2_map_bosses.json was not found. Generate / Deploy the setup again before starting BossWatcher.", mapBossDatabasePath);
+            var bossLocalizationPath = Path.Combine(target, "poe2_boss_localizations.json");
+            if (!File.Exists(bossLocalizationPath))
+                throw new FileNotFoundException("poe2_boss_localizations.json was not found. Generate / Deploy the setup again before starting BossWatcher.", bossLocalizationPath);
+            var releaseRoot = Directory.GetParent(Path.GetFullPath(_packageRoot))?.FullName
+                ?? throw new DirectoryNotFoundException("Could not locate the package root for diagnostics.");
+            var diagnosticDirectory = Path.Combine(releaseRoot, "4-README's_and_Diagnostics", "Diagnostics");
+            Directory.CreateDirectory(Path.Combine(diagnosticDirectory, "images"));
+            var args = $"--event-file {QuoteArgument(eventPath)} --context-file {QuoteArgument(contextPath)} --settings {QuoteArgument(settingsPath)} --map-db {QuoteArgument(mapBossDatabasePath)} --localization-db {QuoteArgument(bossLocalizationPath)} --diagnostic-dir {QuoteArgument(diagnosticDirectory)}" + (_userSettings.SetupUI.DeveloperConsoleDefault ? " --dev-console" : "");
             Process.Start(new ProcessStartInfo
             {
                 FileName = exe,
@@ -3356,7 +4365,7 @@ public sealed class SetupForm : Form
                 WorkingDirectory = Path.GetDirectoryName(exe)!,
                 UseShellExecute = true
             });
-            SetStatus($"BossWatcher started in {(_devConsoleCheck.Checked ? "developer" : "user")} console mode.");
+            SetStatus($"BossWatcher started in {(_userSettings.SetupUI.DeveloperConsoleDefault ? "developer" : "user")} console mode.");
         }
         catch (Exception ex) { ShowError(ex.Message); }
     }
@@ -3398,9 +4407,10 @@ public sealed class SetupForm : Form
                 throw new FileNotFoundException("PoE2GameTimeWatcher.exe was not found. In 2 - Support Files\\GameTimeWatcher, run Build.ps1.");
 
             var statePath = Path.Combine(target, "poe2_manual_pause_state.txt");
+            var settingsPath = RequireRunSettingsSnapshot(target);
             EnsureManualPauseStateFile(target);
 
-            if (_devConsoleCheck.Checked)
+            if (_userSettings.SetupUI.DeveloperConsoleDefault)
             {
                 var diagnosticScript = Path.Combine(watcherRoot, "Run-Diagnostic.ps1");
                 if (!File.Exists(diagnosticScript))
@@ -3409,15 +4419,15 @@ public sealed class SetupForm : Form
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = "powershell.exe",
-                    Arguments = $"-NoExit -NoProfile -ExecutionPolicy Bypass -File {QuoteArgument(diagnosticScript)} -StateFile {QuoteArgument(statePath)}",
+                    Arguments = $"-NoExit -NoProfile -ExecutionPolicy Bypass -File {QuoteArgument(diagnosticScript)} -StateFile {QuoteArgument(statePath)} -SettingsFile {QuoteArgument(settingsPath)}",
                     WorkingDirectory = watcherRoot,
                     UseShellExecute = true
                 });
-                SetStatus("GameTimeWatcher external crash diagnostic started. Results will be saved under the GameTimeWatcher diagnostics folder.");
+                SetStatus("GameTimeWatcher external crash diagnostic started. Results will be saved under 4-README's_and_Diagnostics\\Diagnostics.");
                 return;
             }
 
-            var args = $"--state-file {QuoteArgument(statePath)} --wait-on-error";
+            var args = $"--state-file {QuoteArgument(statePath)} --settings {QuoteArgument(settingsPath)} --wait-on-error";
             Process.Start(new ProcessStartInfo
             {
                 FileName = exe,
@@ -3475,10 +4485,14 @@ public sealed class SetupForm : Form
             .AppendLine($"AutoSplitter full path: {Path.GetFullPath(deployedAslPath)}")
             .AppendLine("Layout (.lsl): Not generated by design")
             .AppendLine("Game Time load removal: Enabled by default (Client.txt authoritative loading-screen durations)")
-            .AppendLine("Start policy: " + DescribeStartPolicy(startPolicy))
+            .AppendLine(group.StartsWith("Maps", StringComparison.Ordinal)
+                ? "Start policy: Automatic — first entry into the first map"
+                : "Start policy: " + DescribeStartPolicy(startPolicy))
             .AppendLine($"Manual pause exclusion: {(manualPauseRemoval ? "Enabled" : "Disabled")}")
             .AppendLine($"BossWatcher required: {(bossWatcher ? "Yes" : "No")}")
             .AppendLine($"GameTimeWatcher required: {(manualPauseRemoval ? "Yes" : "No")}")
+            .AppendLine("Run validation: Enabled by default (SHA-256 event chain + summary + checksum manifest)")
+            .AppendLine("Run validation verifier: Verify-RunValidation.ps1")
             .AppendLine()
             .AppendLine("LiveSplit setup:")
             .AppendLine("1. Open the generated .lss splits file.")
@@ -3500,6 +4514,6 @@ public sealed class SetupForm : Form
 
     private string Resolve(string relative) => Path.GetFullPath(Path.Combine(_packageRoot, relative.Replace('/', Path.DirectorySeparatorChar)));
     private static string QuoteArgument(string value) => "\"" + value.Replace("\"", "\\\"") + "\"";
-    private void SetStatus(string text) => _status.Text = text;
-    private void ShowError(string text) => MessageBox.Show(this, text, "PoE2 AutoSplitter Setup", MessageBoxButtons.OK, MessageBoxIcon.Error);
+    private void SetStatus(string text) => _status.Text = Localization.Translate(text);
+    private void ShowError(string text) => MessageBox.Show(this, Localization.Translate(text), Localization.Translate("PoE2 AutoSplitter Setup"), MessageBoxButtons.OK, MessageBoxIcon.Error);
 }

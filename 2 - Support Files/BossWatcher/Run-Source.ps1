@@ -1,6 +1,7 @@
 param(
     [switch]$DevConsole,
-    [string]$EventFile = ''
+    [string]$EventFile = '',
+    [string]$SettingsFile = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -11,6 +12,7 @@ if ($EventFile) {
     $runArgs += '--event-file'
     $runArgs += [System.IO.Path]::GetFullPath($EventFile)
 }
+if ($SettingsFile) { $runArgs += @('--settings', [System.IO.Path]::GetFullPath($SettingsFile)) }
 if ($DevConsole) { $runArgs += '--dev-console' }
 
 Push-Location $root

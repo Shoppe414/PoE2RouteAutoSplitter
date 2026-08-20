@@ -12,11 +12,47 @@ public enum OcrPreprocessMode
 
 public sealed class ScreenCapture
 {
-    public CaptureResult? CaptureBossRoi(GameWindowInfo window, NormalizedRect roi, bool requireForeground)
+    /// <summary>
+    /// Captures only the boss UI band INSIDE the Path of Exile 2 client area. Horizontal
+    /// geometry is centered on the game client and derived from client HEIGHT so ultrawide
+    /// clients do not stretch the boss OCR lanes apart. The vertical band remains normalized
+    /// to client height.
+    /// </summary>
+    public CaptureResult? CaptureBossRoi(GameWindowInfo window, AppConfig config, bool requireForeground)
     {
         if (requireForeground && NativeMethods.GetForegroundWindow() != window.Handle)
             return null;
 
+        if (!NativeMethods.GetClientRect(window.Handle, out var client))
+            return null;
+
+        var origin = new NativeMethods.POINT { X = 0, Y = 0 };
+        if (!NativeMethods.ClientToScreen(window.Handle, ref origin))
+            return null;
+
+        var clientWidth = client.Right - client.Left;
+        var clientHeight = client.Bottom - client.Top;
+        if (clientWidth <= 0 || clientHeight <= 0) return null;
+
+        var clientRect = GetBossCaptureClientRect(clientWidth, clientHeight, config);
+        var x = origin.X + clientRect.X;
+        var y = origin.Y + clientRect.Y;
+        var width = clientRect.Width;
+        var height = clientRect.Height;
+
+        var bitmap = new Bitmap(width, height, PixelFormat.Format24bppRgb);
+        using var g = Graphics.FromImage(bitmap);
+        g.CopyFromScreen(x, y, 0, 0, new Size(width, height), CopyPixelOperation.SourceCopy);
+
+        return new CaptureResult(bitmap, clientWidth, clientHeight, new Rectangle(x, y, width, height));
+    }
+
+    // Compatibility overload retained for calibration/helpers that deliberately request a
+    // fully normalized rectangle. Live BossWatcher capture uses the AppConfig overload above.
+    public CaptureResult? CaptureBossRoi(GameWindowInfo window, NormalizedRect roi, bool requireForeground)
+    {
+        if (requireForeground && NativeMethods.GetForegroundWindow() != window.Handle)
+            return null;
         if (!NativeMethods.GetClientRect(window.Handle, out var client))
             return null;
 
@@ -36,8 +72,22 @@ public sealed class ScreenCapture
         var bitmap = new Bitmap(width, height, PixelFormat.Format24bppRgb);
         using var g = Graphics.FromImage(bitmap);
         g.CopyFromScreen(x, y, 0, 0, new Size(width, height), CopyPixelOperation.SourceCopy);
-
         return new CaptureResult(bitmap, clientWidth, clientHeight, new Rectangle(x, y, width, height));
+    }
+
+    public static Rectangle GetBossCaptureClientRect(int clientWidth, int clientHeight, AppConfig config)
+    {
+        var width = Math.Clamp(
+            (int)Math.Round(clientHeight * config.BossCaptureWidthHeightRatio),
+            1, clientWidth);
+        var height = Math.Clamp(
+            (int)Math.Round(clientHeight * config.BossRoi.Height),
+            1, clientHeight);
+        var x = Math.Max(0, (clientWidth - width) / 2);
+        var y = Math.Clamp(
+            (int)Math.Round(clientHeight * config.BossRoi.Y),
+            0, Math.Max(0, clientHeight - height));
+        return new Rectangle(x, y, width, height);
     }
 
     // Compatibility overload: the calibrated orange/gold mask remains the primary OCR source.
@@ -266,11 +316,15 @@ public sealed class ScreenCapture
     {
         return lane switch
         {
-            // The calibrated dual capture shows the left name within ~12-48% and the right
-            // name within ~53-86% of the full BossNameRoi. These 40%-wide lane crops exclude
-            // most outer frame/terrain noise while retaining the full names.
-            BossLane.Left => Compose(config.BossNameRoi, new NormalizedRect(0.10, 0.0, 0.40, 1.0)),
-            BossLane.Right => Compose(config.BossNameRoi, new NormalizedRect(0.50, 0.0, 0.40, 1.0)),
+            // Dual names are NOT children of the narrow single-boss BossNameRoi. Each boss
+            // receives a wide independent lane anchored to the capture midpoint. This preserves
+            // the complete left/right names at 16:9 while the height-relative outer capture
+            // keeps the same physical UI geometry on 21:9 and 32:9 clients.
+            //
+            // Left:  10% -> 50% of the centered boss capture
+            // Right: 50% -> 90% of the centered boss capture
+            BossLane.Left => new NormalizedRect(0.10, config.BossNameRoi.Y, 0.40, config.BossNameRoi.Height),
+            BossLane.Right => new NormalizedRect(0.50, config.BossNameRoi.Y, 0.40, config.BossNameRoi.Height),
             _ => config.BossNameRoi
         };
     }

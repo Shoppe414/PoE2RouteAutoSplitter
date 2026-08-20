@@ -1,3 +1,125 @@
+# v3.0.0 Release Candidate — multilingual release / maps, trials, diagnostics, and adaptive BossWatcher geometry
+
+- Promotes the current development line to the 3.0.0 Release Candidate.
+- Consolidates supported SetupUI and PoE2 game languages to the nine languages supported by Path of Exile 2.
+- Adds authoritative localized boss and area display names with conservative English fallback.
+- Adds campaign, Trial, Vaal Ruins, and Maps route-policy/UI improvements completed during the 2.2.1 development cycle.
+- Moves Trial boss objectives into the Custom Route content selector to preserve usable space on smaller displays.
+- Adds height-relative, center-anchored BossWatcher capture geometry so 16:9, ultrawide, and super-ultrawide clients use consistent boss-UI scaling.
+- Adds dedicated package verification and documentation/diagnostics directories.
+- Centralizes setup-validation manifests, per-run SHA-256 manifests, audit logs, and run summaries under `3 - verification files` so regenerating `LiveSplit Target` does not delete prior per-run audit files.
+- Centralizes diagnostic logs under `4-README's_and_Diagnostics\Diagnostics` and diagnostic PNGs under its `images` subdirectory.
+
+## v2.2.1 dev - authoritative localization / supported-language hotfix
+- Localized the Custom Route **Dynamic/unordered boss mode** explanatory sentence in every supported SetupUI language, including its runtime default-count value.
+- Expanded the authoritative proper-noun refresh for campaign and Atlas/map area names: when PoE2DB autocomplete lacks an area label, the refresh now reads the localized title from that same canonical PoE2DB area/map page. Missing or synthetic pages still fall back to canonical English rather than being machine-translated.
+- SetupUI Language and PoE2 Game Language now share one catalog and expose only the nine current PoE2-supported languages: English, French, German, Spanish (Spain), Japanese, Korean, Portuguese (Brazil), Russian, and Thai.
+- Removed the previously offered non-PoE2 SetupUI locales from embedded resources and the installer language page; legacy unsupported saved codes normalize safely to English.
+- Added complete SetupUI locale packs for Portuguese (Brazil) and Thai so every selectable SetupUI language has a corresponding UI resource.
+- Fixed authoritative proper-noun refresh corruption on Windows PowerShell 5.1 by downloading PoE2DB catalog responses as raw bytes and decoding them explicitly as strict UTF-8. This prevents mojibake such as `PrÃ©teur` and corrupted Japanese/Korean/Thai names.
+- Expanded the proper-noun refresh to all eight supported non-English languages, including Portuguese (Brazil) and Thai.
+- BossWatcher localization is now regenerated from the same canonical English -> localized-entry mapping used by SetupUI instead of remaining a separate sparse hand-maintained database. Missing/ambiguous names are still omitted rather than guessed.
+- Corrected the Portuguese bootstrap localization for The Bloated Miller to `O Moleiro Inchado`.
+- No ASL timing, route-order, Maps lifecycle, pause-detection, Trials, or Vaal runtime policy was intentionally changed by this localization hotfix.
+- Windows/.NET/PowerShell execution was not available in the packaging environment; source/static validation is included and the refresh/build path still requires normal Windows field testing.
+
+## v2.2.1 dev - Maps Game Time policy selection
+- Simplified the Maps start/completion wording: **The timer will automatically start when first entering the map. A valid run is from first entry to first exit after the area boss kill.**
+- Added a Maps **Game Time policy** selector.
+- **PoE2 Map Completion** is the default and preserves the existing behavior: Game Time pauses after a completed-map exit and resumes on the next new map entry.
+- **Continuous Game Time** counts all non-loading time after the run starts; only loading-screen exclusion and the configured Manual Pause policy may pause Game Time.
+- Continuous mode does not apply between-map Game Time rollback after an unfinished map is replaced by a new seed, and it does not rewind current Game Time when fast-exit boss confirmation arrives after the exit. Split boundaries may still be attributed to the saved map-exit timestamp.
+- The generated route now records `@mapGameTimePolicy=completion|continuous`, and `poe2_run_settings.json` records both `MapGameTimePolicy` and the fixed `MapCompletionPolicy`.
+- Added the new Maps policy UI strings to all 14 translated SetupUI locale packs.
+- No pre-run validity gate was added for runners who enter a map before the timed run; video/rules review remains responsible for validating the required start state.
+
+## v2.2.1 dev - Locale-resistant Client.txt parsing + fast map-exit reconciliation
+- Hardened generated ASL Client.txt parsing so critical load/area timing prefers stable structural fields: canonical quoted Area IDs, numeric seeds/levels, and message-site hash families. English phrases remain compatibility fallbacks rather than the sole trigger.
+- Kept `You have entered ...` as a legacy display-name fallback only; canonical internal Area IDs remain authoritative whenever available.
+- Historical user Client.txt samples show exact message-site hashes can change across PoE2 builds, so the parser now accepts the observed hash families (`2d8e*`, `2caa*`, `4cba*`) instead of one exact build-specific hash.
+- Added a guarded map-exit assist: the normal in-map MAP_GONE confirmation remains 5500 ms, but a database-OCR-qualified boss that was already continuously missing for at least 500 ms before a real external map exit may confirm immediately on that exit.
+- Map-child transitions cannot use the exit assist, and structural/untrusted boss detections cannot use it.
+- When trusted MAP_GONE arrives after a fast provisional exit, Maps policy retroactively finalizes SUCCESS at the already-saved map-exit Game Time/Real Time.
+- Added the observed `MapSavanna` internal Area ID to the Savannah / Caedron map entry.
+- BossWatcher version: `0.3.6-map-exit-assist`.
+
+## v2.2.1 dev - Map premature-exit safety hotfix
+- Fixed a Maps false-completion path where an unknown map could arm BossWatcher via structural fallback during loading, then become boss-qualified before the real boss was encountered.
+- Maps now require database-OCR boss identity for MAP_GONE qualification; unknown/special maps fail closed.
+- Added current Port / Malgor map mapping and guaranteed BossWatcher debug-log creation.
+
+# v2.2.1 development — Scriptable Auto Splitter load regression hotfix
+
+- Fixed a LiveSplit ASL compile regression introduced by the generated run-audit / Maps policy delegates.
+- LiveSplit normalizes the exact token `return;` in an ASL action to `return null;`. That normalization is correct for an ASL action body, but it also affects text inside nested `System.Action<...>` lambdas. A void lambda containing `return;` therefore became `return null;` and failed C# compilation before `startup` could run.
+- Changed the three generated void-lambda early returns to `return /* ASL void lambda: keep return void */;`, preserving valid C# void-return semantics while avoiding LiveSplit's exact-token normalization.
+- The run-audit layer, Maps lifecycle policy, multilingual BossWatcher/GameTimeWatcher work, localization, and all base ASL templates remain enabled/unchanged otherwise.
+- No Windows/.NET compilation was performed for this development package.
+
+## v2.2.1 development — multilingual watcher foundation
+
+- Added a separate PoE2 **game language** setting, independent from SetupUI display language.
+- BossWatcher v0.3.4 can select localized OCR models and verified localized boss-name dictionaries while preserving invariant runtime boss IDs.
+- Added hashed `poe2_boss_localizations.json` run snapshots.
+- GameTimeWatcher v0.4.5 now gives primary weight to pause-menu structure/layout and secondary weight to the paused-state banner; English Resume/Exit text is only low-weight corroboration.
+- Build tooling can provision the supported Tesseract language models through BossWatcher `Setup-OCR.ps1`.
+- Localization coverage is intentionally conservative in this first runtime-OCR iteration: missing non-English boss names are not guessed or silently treated as English.
+
+# v2.2.1 development test — localized SetupUI / installer language selection
+
+- Simplified the Maps **Map completion rule** explanation to the end-user result: defeat the expected map boss and exit; event/side-area bosses do not count.
+- Simplified Maps **Tracked character** help to require an exact Path of Exile 2 character-name match when death tracking is enabled.
+- Added SetupUI localization resources and a Settings startup-language selector for English, Spanish (Latin America), Spanish (Spain), French, Standard Mandarin Chinese (Simplified), Cantonese Chinese (Traditional), German, Russian, Japanese, Korean, Bengali, Marathi, Telugu, Tamil, and Italian.
+- Saving the language applies it immediately to the open SetupUI and persists it as `SetupUI.DefaultLanguage`.
+- Added an Inno Setup **Application Language** page. English is the fresh-install default; upgrades preselect an existing supported SetupUI language.
+- Reworked GameTimeWatcher visual thresholds as explicit percentage inputs and clarified which saved screen image each threshold compares against. These are screen-template image matches, not text OCR. Runtime 0.00-1.00 values remain unchanged.
+- Localization changes only SetupUI presentation; canonical route/area/boss data and BossWatcher OCR language/detection behavior are unchanged.
+- No ASL, BossWatcher, GameTimeWatcher, Maps lifecycle, Trials runtime, or Vaal Ruins runtime policy was changed.
+
+# v2.2.1 development test — Settings UI cleanup
+
+- Removed the **Developer console diagnostics** checkbox from the main SetupUI window. Developer diagnostics can now be enabled only from **Settings**.
+- The Settings dialog now explains that developer diagnostics is intended for troubleshooting/log collection: BossWatcher launches with its verbose developer console and GameTimeWatcher launches through its diagnostic wrapper.
+- Developer-diagnostics changes apply to the next watcher launch in the current SetupUI session; the main window no longer carries a second potentially conflicting toggle.
+- Reworked GameTimeWatcher tuning labels and descriptions so each visual threshold states which on-screen template it is matching.
+- GameTimeWatcher visual thresholds are displayed as human-readable percentages (62%, 58%, 40%, 50%, 70% defaults) instead of 0.62-style floating-point values. Stored/runtime values remain unchanged internally.
+- Added explanatory text that GameTimeWatcher uses image-template matching rather than OCR, that higher percentages are stricter, and that overly high/low settings can cause missed detections/false positives.
+- No BossWatcher, GameTimeWatcher, ASL timing, Maps, Trials, or Vaal Ruins runtime policy was changed by this UI-only cleanup.
+
+# v2.2.1 development test — Vaal Ruins UI / policy iteration
+
+- Renamed the Vaal Ruins draft run-target section to **Completion Criteria** with **Dive Number**, **Royal Architect**, and **Atziri** choices.
+- Replaced **Single Temple Dive** with a configurable **Temple Dive** count. Default is 1; SetupUI enforces the hard 1-10 dive range.
+- Added Vaal Ruins death-condition tracking choices: **No deaths** (default), **First death**, and **Track all deaths**.
+- Added an independent **First death** deathless-run condition. When enabled, Death Condition Tracking is forced and locked to **First death** so the planned rules cannot contradict each other.
+- Added a tracked-character field to the Vaal Ruins UI scaffold for future exact Client.txt death matching when death tracking is active.
+- Expanded the Vaal Ruins policy preview to show dive count, completion criteria, first-death condition, death tracking, and character requirement.
+- Vaal Ruins remains UI/policy scaffolding only in this iteration; Generate / Deploy stays disabled and no Temple runtime state machine is emitted yet.
+- Existing Maps child-area handling and the Vaal Ruins Maps exit-boundary policy are unchanged.
+
+# v2.2.1 development test — Maps lifecycle policy v2
+
+- Replaced the earlier Maps candidate/Undo-Split policy with exact Client.txt `Map<name>` + seed lifecycle tracking. Scene names are display-only and no longer define map exit.
+- Map entry starts/resumes Game Time; successful boss qualification plus exit commits `SUCCESS` and pauses between-map setup time.
+- Premature exits save a provisional exit time while Game Time continues. Same-seed re-entry continues the attempt; a different map seed confirms `FAILED`, backdates that map split to the saved exit, removes intervening setup time, and immediately times the replacement map.
+- Added four Maps endpoints: fixed finalized-map count, until first death, manual finish via LiveSplit Start/Split, and selected Pinnacle boss defeat.
+- Added three death policies: no tracking (default), end on first death, and tracked dynamic `Death [x]` rows while timing continues. Character Name is required only when death tracking is enabled.
+- Character Name validation accepts Unicode letters plus `_` only. Runtime death credit uses exact configured-name comparison against Client.txt `<name> has been slain.` notifications so party-member deaths are ignored.
+- Maps lifecycle, seed, success/failure, rollback, optional death, Pinnacle, and manual-finish events are written into the shared SHA-256 run-audit chain.
+- BossWatcher `MAP_GONE` now qualifies the active map instead of immediately implying a LiveSplit split; user-facing map completion text and documentation were updated accordingly.
+- No maximum portal/attempt count is hard-coded in this iteration.
+
+# v2.2.1 development test — SHA-256 run validation / audit logging
+
+- Added a shared timing-neutral run-audit layer to every SetupUI-generated ASL: Premade, Custom, Trials, Maps, and legacy/static preset deployments.
+- Each LiveSplit start creates a unique Run ID and an append-only `poe2_run_<RunId>.log`. Every event is chained to the previous event with SHA-256 so removed, reordered, or edited event lines are detectable.
+- Every committed LiveSplit split is recorded with its final committed segment name, Game Time, and Real Time. Dynamic Maps rows therefore immediately produce per-map timing statistics using the map row name that was active when the split committed.
+- Run completion/reset/ASL exit writes `poe2_run_<RunId>_summary.txt` plus `poe2_run_<RunId>.sha256`, containing the final event-chain hash and SHA-256 checksums for the run log, summary, and generated setup-validation manifest.
+- SetupUI now creates `poe2_setup_validation.sha256` for stable generated ASL/config/rules/support files and `Verify-RunValidation.ps1` to verify both the file checksums and the event hash chain. LiveSplit `.lss` files and mutable watcher/state logs are intentionally excluded from the setup baseline because they legitimately change during use.
+- `poe2_run_current.txt` exposes the current Run ID and output paths so BossWatcher/GameTimeWatcher can be correlated with the same run in a later integration pass.
+- The run summary explicitly describes this as integrity/audit evidence rather than tamper-proof anti-cheat proof.
+- The audit core remains shared by all run types. Maps policy v2 now adds map seed/lifecycle, success/failure, rollback, optional tracked-death, Pinnacle, and manual-finish events to the same chain.
+
 # v2.2.1 Release Candidate — Trial auto-start and SetupUI refinement
 
 - Fixed dedicated Trial generation so Trial runs use the same independent `Client.txt` zone-entry start policy as Premade and Custom runs. Wildcard trial IDs such as `Sanctum_1_*` are now handled by the hardened generated start reader.

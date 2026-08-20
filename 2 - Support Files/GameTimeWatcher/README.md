@@ -1,4 +1,24 @@
-# PoE2 GameTimeWatcher
+﻿# PoE2 GameTimeWatcher v0.4.5 — structure-first multilingual pause detection
+
+## v0.4.5 structure-first multilingual pause detection
+
+GameTimeWatcher now reads the generated `PoE2.Language` setting, but pause recognition is intentionally designed to depend as little as possible on text.
+
+Evidence priority is:
+
+1. **Pause-menu structure/layout — 68% weight.** The primary detector compares the stable centered four-button geometry, button side frames, and row separators while excluding most of the button centers where translated text appears. A strong structure match remains the primary pause invariant.
+2. **Paused-state banner — 24% weight.** The second detector looks for the dark horizontal banner with centered bright title text used by the `GAME PAUSED` state. It evaluates the banner/title shape rather than requiring the exact English letters, so translated equivalents can still corroborate the pause layout.
+3. **English Resume / Exit text templates — 4% each.** These are low-weight corroborators only and are searched only when the selected PoE2 game language is English. They cannot prove pause by themselves.
+
+The MTX Shop remains a separate visual state. The existing percentage thresholds remain user-adjustable in SetupUI. Because the new masked structure score differs from the older full-template score, the existing default structure threshold is a field-calibration value in this development build; diagnostics should be collected if a language/display configuration misses or falsely recognizes pause.
+
+
+## v0.4.4 shared user settings
+
+GameTimeWatcher accepts `--settings <poe2_run_settings.json>`. SetupUI passes the generated snapshot automatically. The shared user-facing section can override the provisional input timeout plus the five validated pause/MTX template thresholds without editing the watcher's advanced `config.json`. Missing or invalid shared settings fail back to the validated component config.
+
+The master values are edited through SetupUI or `1 - User Setup\PoE2AS-Settings.json`. Generate / Deploy copies the effective values into `LiveSplit Target\poe2_run_settings.json`, and the setup SHA-256 manifest validates that snapshot.
+
 
 ## v0.4.3 pause-accounting integration
 
@@ -91,11 +111,15 @@ Run `Run-Diagnostic.cmd` (or `Run-Diagnostic.ps1`) for development testing. The 
 
 Diagnostic runs are saved under:
 
-`diagnostics\YYYYMMDD-HHMMSS\`
+`4-README's_and_Diagnostics\Diagnostics` (logs) and `4-README's_and_Diagnostics\Diagnostics\images` (PNG captures)
 
-A fatal startup exception is also written beside the LiveSplit state file as:
+The normal GameTimeWatcher runtime/debug log is also centralized at:
 
-`poe2_gametimewatcher_startup_error.log`
+`4-README's_and_Diagnostics\Diagnostics\poe2_gametimewatcher.log`
+
+A fatal startup exception is written into the same centralized diagnostics directory as:
+
+`4-README's_and_Diagnostics\Diagnostics\poe2_gametimewatcher_startup_error.log`
 
 You can also run the watcher from an already-open PowerShell window:
 

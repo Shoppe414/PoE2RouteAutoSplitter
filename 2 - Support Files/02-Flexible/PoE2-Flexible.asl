@@ -211,12 +211,14 @@ startup
     vars.seenAreaIds = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
     vars.unknownAreaIds = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
 
+    // Canonical area identity comes from the quoted internal ID. Prefer the observed
+    // generation-message token family 2caa* so localized surrounding text does not matter.
     vars.areaRegex = new System.Text.RegularExpressions.Regex(
-        "^[^ ]+ [^ ]+ (\\d+).*Generating level (\\d+) area \"([^\"]+)\"",
-        System.Text.RegularExpressions.RegexOptions.Compiled
+        "^[^ ]+ [^ ]+ (\\d+)(?=.*(?:\\s2caa[0-9A-Fa-f]{4}\\s|Generating level))(?=.*\\[DEBUG\\s+[^\\]]+\\]\\s+.*?(\\d{1,3})\\D+\"([A-Za-z][A-Za-z0-9_]*)\")",
+        System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase
     );
     vars.loadStartRegex = new System.Text.RegularExpressions.Regex(
-        "^[^ ]+ [^ ]+ (\\d+).*Got Instance Details",
+        "^[^ ]+ [^ ]+ (\\d+)(?=.*(?:\\s2d8e[0-9A-Fa-f]{4}\\s|Got Instance Details))",
         System.Text.RegularExpressions.RegexOptions.Compiled
     );
     vars.enteredNameRegex = new System.Text.RegularExpressions.Regex(
@@ -469,13 +471,19 @@ startup
     vars.gtManualLastGoodStateSequence = 0L;
     vars.gtManualReadGraceActive = false;
     vars.gtNextPausePollUtc = System.DateTime.MinValue;
+    // Prefer the Client.txt load-start message-site family (2d8e*). The English text
+    // remains a compatibility fallback for older/current logs, but load detection no longer
+    // depends on the human-readable sentence being English.
     vars.gtLoadStartRegex = new System.Text.RegularExpressions.Regex(
-        "^[^ ]+ [^ ]+ (\\d+).*Got Instance Details",
-        System.Text.RegularExpressions.RegexOptions.Compiled
+        "^[^ ]+ [^ ]+ (\\d+)(?=.*(?:\\s2d8e[0-9A-Fa-f]{4}\\s|Got Instance Details))",
+        System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase
     );
+    // The 4cba* message-site family identifies loading-screen completion. Capture the
+    // parenthesized display name only for diagnostics and the trailing numeric duration for
+    // timing; translated labels such as "LOADING SCREEN", "Duration", or "seconds" are not required.
     vars.gtLoadEndRegex = new System.Text.RegularExpressions.Regex(
-        "^[^ ]+ [^ ]+ (\\d+).*\\[LOADING SCREEN\\] \\((.*?)\\) Duration = ([0-9]+(?:\\.[0-9]+)?) seconds",
-        System.Text.RegularExpressions.RegexOptions.Compiled
+        "^[^ ]+ [^ ]+ (\\d+)(?=.*(?:\\s4cba[0-9A-Fa-f]{4}\\s|\\[LOADING SCREEN\\])).*?\\((.*?)\\).*?([0-9]+(?:\\.[0-9]+)?)\\D*$",
+        System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase
     );
 }
 
