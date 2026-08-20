@@ -24,7 +24,7 @@ e0ae63ee8ee371d79f1f653cfe65605f9392158218fcf1f43e3a795eea4d5936  2 - Support Fi
 dcef8ea02b9ffdb996bf5ae36485e394feb037fc7fabc3e8583022da960a9491  2 - Support Files/BossWatcher/map-bosses.json
 a4abd345f9393f295e1a307858e4033d4a06433f036cd9966e8e8fb9484cbed0  2 - Support Files/BossWatcher/README.md
 87f47745541d6f0f882f4059c5b0ef33cb60ec793931d878c75ccf3d636cb215  2 - Support Files/BossWatcher/Run-Source.ps1
-3f8233ddc3c76e2627360e22adfaacf8b2775741097bbbcfd3901a5aabbf30ba  2 - Support Files/BossWatcher/Setup-OCR.ps1
+c676327ff04128ad952d67136fecd8878be356e5768a6c781973541af2f2b3b5  2 - Support Files/BossWatcher/Setup-OCR.ps1
 3facaad1eb4c3e8e7ca7eaeef7121126439f76bc89d211d2496c6512278fe019  2 - Support Files/BossWatcher/src/PoE2BossWatcher/AppConfig.cs
 13356dfde892199d69cda77f0fedaa611fe6d39703c000ecffed83e344cc61b8  2 - Support Files/BossWatcher/src/PoE2BossWatcher/BossBarMetrics.cs
 95b5b0d52ba019b457165e684c8a7e1937520102b52c3662c4796918391c94a5  2 - Support Files/BossWatcher/src/PoE2BossWatcher/BossContextReader.cs

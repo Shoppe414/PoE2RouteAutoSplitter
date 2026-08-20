@@ -1,6 +1,6 @@
 {
     "SchemaVersion":  1,
-    "DatabaseVersion":  "poe2db-20260820T050832Z",
+    "DatabaseVersion":  "poe2db-20260820T055242Z",
     "Purpose":  "Authoritative PoE2 game-client boss names for multilingual BossWatcher OCR, refreshed from PoE2DB by canonical English entry identity. Missing names are omitted; no machine translation.",
     "Bosses":  [
                    {

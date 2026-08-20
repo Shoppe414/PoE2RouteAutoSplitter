@@ -23,7 +23,7 @@ $models = @(
 )
 
 $requested = @($Language | ForEach-Object { $_.Trim() } | Where-Object { $_ })
-$installAll = $requested.Count -eq 0 -or ($requested | Where-Object { $_ -ieq 'all' }).Count -gt 0
+$installAll = $requested.Count -eq 0 -or ($requested -icontains 'all')
 $selected = if ($installAll) {
     $models
 } else {

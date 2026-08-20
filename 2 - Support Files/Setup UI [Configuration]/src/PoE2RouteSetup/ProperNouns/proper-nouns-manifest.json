@@ -1,6 +1,6 @@
 {
     "schemaVersion":  3,
-    "generatedUtc":  "2026-08-20T05:08:32.0132010Z",
+    "generatedUtc":  "2026-08-20T05:52:42.6478630Z",
     "source":  "PoE2DB multilingual autocomplete catalogs plus localized campaign/map area and Pinnacle boss entry pages",
     "homepage":  "https://poe2db.tw/us/",
     "headerScript":  "https://cdn.poe2db.tw/js/poedb_header.24467ff783e4d3e5.js",
@@ -314,7 +314,7 @@
                                          "ru":  82,
                                          "th":  82
                                      },
-                        "output":  "D:\\TEST\\PoE2AS-v3.0.0-RC-buildfix4\\PoE2AS-v3.0.0-RC\\2 - Support Files\\BossWatcher\\boss-localizations.json"
+                        "output":  "D:\\TEST\\PoE2AS-v3.0.0-RC-buildfix5\\PoE2AS-v3.0.0-RC\\2 - Support Files\\BossWatcher\\boss-localizations.json"
                     },
     "policy":  "Canonical English target -\u003e exact English label or canonical URL slug -\u003e normalized same PoE2DB entry path. Campaign/map area names missing from autocomplete may use the localized title from the same canonical PoE2DB page slug. Known Pinnacle boss identities prefer that localized page title because non-English autocomplete catalogs can retain the English boss label. Missing/ambiguous names remain English in SetupUI and unavailable to non-English BossWatcher OCR; no game proper noun is machine-translated."
 }
