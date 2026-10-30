@@ -294,5 +294,8 @@
   "Act 3 — Any%": "Acte 3 — Any%",
   "Act 4 — 100%": "Acte 4 — 100%",
   "Act 4 — Any%": "Acte 4 — Any%",
-  "Shows only areas and bosses from the selected content group. Select a Trial content group to add its boss milestones.": "Affiche uniquement les zones et boss du groupe de contenu sélectionné. Sélectionnez un groupe d’Épreuve pour ajouter ses jalons de boss."
+  "Shows only areas and bosses from the selected content group. Select a Trial content group to add its boss milestones.": "Affiche uniquement les zones et boss du groupe de contenu sélectionné. Sélectionnez un groupe d’Épreuve pour ajouter ses jalons de boss.",
+  "Input UI:": "Interface de saisie :",
+  "Mouse + Keyboard": "Souris + clavier",
+  "Controller": "Manette"
 }

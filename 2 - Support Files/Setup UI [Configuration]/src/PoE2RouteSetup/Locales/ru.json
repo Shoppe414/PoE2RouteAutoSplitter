@@ -294,5 +294,8 @@
   "Act 3 — Any%": "Акт 3 — Any%",
   "Act 4 — 100%": "Акт 4 — 100%",
   "Act 4 — Any%": "Акт 4 — Any%",
-  "Shows only areas and bosses from the selected content group. Select a Trial content group to add its boss milestones.": "Показывает только зоны и боссов выбранной группы контента. Выберите группу Испытания, чтобы добавить этапы с её боссами."
+  "Shows only areas and bosses from the selected content group. Select a Trial content group to add its boss milestones.": "Показывает только зоны и боссов выбранной группы контента. Выберите группу Испытания, чтобы добавить этапы с её боссами.",
+  "Input UI:": "Интерфейс ввода:",
+  "Mouse + Keyboard": "Мышь + клавиатура",
+  "Controller": "Контроллер"
 }

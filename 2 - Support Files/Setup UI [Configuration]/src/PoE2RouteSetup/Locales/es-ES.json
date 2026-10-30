@@ -294,5 +294,8 @@
   "Act 3 — Any%": "Acto 3 — Any%",
   "Act 4 — 100%": "Acto 4 — 100%",
   "Act 4 — Any%": "Acto 4 — Any%",
-  "Shows only areas and bosses from the selected content group. Select a Trial content group to add its boss milestones.": "Muestra solo áreas y jefes del grupo de contenido seleccionado. Selecciona un grupo de Prueba para añadir sus hitos de jefe."
+  "Shows only areas and bosses from the selected content group. Select a Trial content group to add its boss milestones.": "Muestra solo áreas y jefes del grupo de contenido seleccionado. Selecciona un grupo de Prueba para añadir sus hitos de jefe.",
+  "Input UI:": "Interfaz de entrada:",
+  "Mouse + Keyboard": "Ratón + teclado",
+  "Controller": "Mando"
 }

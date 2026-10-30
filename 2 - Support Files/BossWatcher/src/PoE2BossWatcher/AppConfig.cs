@@ -37,6 +37,7 @@ public sealed class AppConfig
 
     public int CaptureFps { get; set; } = 20;
     public int OcrUpscale { get; set; } = 5;
+    public string InputUiMode { get; set; } = "MouseKeyboard";
     public int ConsoleUpdateMs { get; set; } = 200;
 
     // Acquisition is now burst-based. A strong structural boss-bar candidate must be present
@@ -85,6 +86,13 @@ public sealed class AppConfig
     public int OcrBroadRedMinusGreenMin { get; set; } = -10;
     public int OcrBroadGreenMinusBlueMin { get; set; } = -50;
     public double OcrBroadLuminanceMin { get; set; } = 95;
+
+    // Controller renders the boss-name glyphs with a brighter/thinner treatment. The
+    // historical orange/gold mask is readable to a person but fragmented for Tesseract.
+    // Keep KBM calibration untouched and use a profile-specific luminance mask only when
+    // SetupUI explicitly snapshots Controller as the PoE2 input UI.
+    public int ControllerOcrLuminanceMin { get; set; } = 180;
+    public int ControllerOcrBroadLuminanceMin { get; set; } = 170;
 
     public double MinOcrSimilarity { get; set; } = 0.72;
     public int AcquireConsecutiveMatches { get; set; } = 1;
@@ -217,9 +225,12 @@ public sealed class AppConfig
     public void Validate()
     {
         GameLanguage = GameLanguageCatalog.Normalize(GameLanguage);
+        InputUiMode = NormalizeInputUiMode(InputUiMode);
         if (ProcessNames.Length == 0) throw new InvalidOperationException("ProcessNames must contain at least one process name.");
         if (CaptureFps < 1 || CaptureFps > 60) throw new InvalidOperationException("CaptureFps must be 1-60.");
         if (OcrUpscale < 1 || OcrUpscale > 8) throw new InvalidOperationException("OcrUpscale must be 1-8.");
+        if (ControllerOcrLuminanceMin is < 0 or > 255 || ControllerOcrBroadLuminanceMin is < 0 or > 255)
+            throw new InvalidOperationException("Controller OCR luminance thresholds must be 0-255.");
         if (ConsoleUpdateMs < 50 || ConsoleUpdateMs > 5000) throw new InvalidOperationException("ConsoleUpdateMs must be 50-5000.");
         if (MinOcrSimilarity is < 0 or > 1) throw new InvalidOperationException("MinOcrSimilarity must be 0-1.");
         if (OcrTriggerRedRunFraction is < 0 or > 1) throw new InvalidOperationException("OcrTriggerRedRunFraction must be 0-1.");
@@ -327,6 +338,12 @@ public sealed class AppConfig
         BossNameRoi.Validate("BossNameRoi");
         BossFrameRoi.Validate("BossFrameRoi");
         BossHealthRoi.Validate("BossHealthRoi");
+    }
+
+    public static string NormalizeInputUiMode(string? value)
+    {
+        var normalized = (value ?? string.Empty).Trim();
+        return normalized.Equals("Controller", StringComparison.OrdinalIgnoreCase) ? "Controller" : "MouseKeyboard";
     }
 }
 

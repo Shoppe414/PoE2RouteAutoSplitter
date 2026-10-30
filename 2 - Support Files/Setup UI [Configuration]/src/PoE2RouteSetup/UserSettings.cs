@@ -95,9 +95,26 @@ public sealed class PoE2UserSettings
     // independent from SetupUI.DefaultLanguage so UI language and game language may differ.
     public string Language { get; set; } = "en";
 
+    // PoE2 does not dynamically swap its in-game UI between mouse/keyboard and controller.
+    // The runner makes this choice before entering the game, so SetupUI snapshots the same
+    // explicit choice for GameTimeWatcher and BossWatcher to select matching visual profiles.
+    public string InputUiMode { get; set; } = "MouseKeyboard";
+
     public void Validate()
     {
         Language = PoE2GameLanguages.Normalize(Language);
+        InputUiMode = NormalizeInputUiMode(InputUiMode);
+    }
+
+    public static string NormalizeInputUiMode(string? value)
+    {
+        var normalized = (value ?? string.Empty).Trim();
+        if (normalized.Equals("Controller", StringComparison.OrdinalIgnoreCase)) return "Controller";
+        if (normalized.Equals("MouseKeyboard", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("Mouse + Keyboard", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("MouseKeyboard", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("MKB", StringComparison.OrdinalIgnoreCase)) return "MouseKeyboard";
+        return "MouseKeyboard";
     }
 }
 

@@ -1,4 +1,4 @@
-# PoE2 Route AutoSplitter Setup UI — v3.0.0 Release Candidate
+# PoE2 Route AutoSplitter Setup UI — v3.1.0
 
 This is the Windows configuration tool for the Route AutoSplitter package.
 
@@ -18,7 +18,7 @@ The Windows installer asks for the application's default SetupUI language, with 
 
 ## Normal users
 
-Install the ready-to-run `PoE2AS-v3.0.0-Setup.exe` GitHub Release asset.
+Install the ready-to-run `PoE2AS-v3.1.0-Setup.exe` GitHub Release asset.
 
 The installed launcher is:
 
@@ -226,7 +226,7 @@ To build all user tools without creating an installer:
 To create the distributable installer and portable ZIP:
 
 ```powershell
-.\..\Build-Release.ps1 -Version 3.0.0
+.\..\Build-Release.ps1 -Version 3.1.0
 ```
 
 > **Manual-pause protocol note:** v0.4.3 GameTimeWatcher requires an ASL generated from the same package. Re-run the Setup UI after updating and re-browse LiveSplit's Scriptable Auto Splitter component to the newly generated `.asl`.

@@ -1,6 +1,20 @@
-﻿# PoE2 GameTimeWatcher v0.4.5 — structure-first multilingual pause detection
+# PoE2 GameTimeWatcher v0.4.7 — explicit input-UI profiles
 
-## v0.4.5 structure-first multilingual pause detection
+## v0.4.7 Mouse/Keyboard vs Controller profiles
+
+SetupUI now snapshots an explicit `PoE2.InputUiMode` choice. Mouse + Keyboard keeps the existing pause-menu templates and ESC hint; Controller loads a controller-specific pause-menu template/anchor set and uses Controller Start as the acceleration hint. Visual confirmation remains authoritative in both profiles. Controller input edges are debounced for 300 ms to reject Steam/XInput polling chatter.
+
+Live capture now analyzes a centered 16:9 viewport at a constant 1024x576-equivalent surface. Ultrawide clients therefore no longer expand to 2048x576 analysis, and side-bar overlays do not enter the pause-menu detector. Native client geometry/DPI remains in diagnostics.
+
+
+## v0.4.6 fixed-resolution / DPI-aware capture
+
+
+GameTimeWatcher now declares Per-Monitor-V2 DPI awareness and captures the PoE2 client directly into its canonical 576-pixel-high analysis surface. Windows desktop scaling therefore no longer changes the client geometry seen by the watcher, while 1080p, 1440p, 4K, and 8K clients all feed approximately the same amount of image data into the pause detector. Native client dimensions remain available in diagnostics.
+
+Provisional pause/resume timeout resolution also runs after the current visual verification opportunity, preventing a pending transition from being rejected immediately before the same frame confirms it.
+
+### v0.4.5 structure-first multilingual pause detection
 
 GameTimeWatcher now reads the generated `PoE2.Language` setting, but pause recognition is intentionally designed to depend as little as possible on text.
 

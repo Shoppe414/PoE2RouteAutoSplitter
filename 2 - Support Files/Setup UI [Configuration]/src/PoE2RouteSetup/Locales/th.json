@@ -294,5 +294,8 @@
   "Act 3 — Any%": "บท 3 — Any%",
   "Act 4 — 100%": "บท 4 — 100%",
   "Act 4 — Any%": "บท 4 — Any%",
-  "Shows only areas and bosses from the selected content group. Select a Trial content group to add its boss milestones.": "แสดงเฉพาะพื้นที่และบอสจากกลุ่มเนื้อหาที่เลือก เลือกกลุ่มเนื้อหา Trial เพื่อเพิ่มจุดหมายบอสของ Trial นั้น"
+  "Shows only areas and bosses from the selected content group. Select a Trial content group to add its boss milestones.": "แสดงเฉพาะพื้นที่และบอสจากกลุ่มเนื้อหาที่เลือก เลือกกลุ่มเนื้อหา Trial เพื่อเพิ่มจุดหมายบอสของ Trial นั้น",
+  "Input UI:": "UI การป้อนข้อมูล:",
+  "Mouse + Keyboard": "เมาส์ + คีย์บอร์ด",
+  "Controller": "คอนโทรลเลอร์"
 }

@@ -2,7 +2,7 @@
 
 **Path of Exile 2 のキャンペーン・スピードラン**向けのセットアップツール兼 LiveSplit オートスプリッターです。
 
-現在のリリース: **v3.0.0 Release Candidate**
+現在のリリース: **v3.1.0**
 
 PoE2 Route AutoSplitter には、以下の既定ルートおよびカスタムルートが用意されています。
 

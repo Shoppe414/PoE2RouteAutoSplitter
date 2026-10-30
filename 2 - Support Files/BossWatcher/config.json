@@ -111,5 +111,8 @@
   "DualInitialMinCombinedHealthRunFraction": 0.2,
   "SingleOcrWeakCenterConfirmFrames": 8,
   "DualInitialLowHealthConfirmFrames": 8,
-  "MapExitAssistMinMissingMs": 500
+  "MapExitAssistMinMissingMs": 500,
+  "InputUiMode": "MouseKeyboard",
+  "ControllerOcrLuminanceMin": 180,
+  "ControllerOcrBroadLuminanceMin": 170
 }

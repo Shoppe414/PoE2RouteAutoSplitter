@@ -1,3 +1,8 @@
+﻿PoE2BossWatcher v0.3.8 DPI-aware geometry development validation
+- The executable requests PerMonitorV2 DPI awareness through its embedded application manifest/project settings so Windows display scaling should not virtualize GetClientRect/ClientToScreen geometry.
+- Existing height-relative boss capture and OCR algorithms are otherwise unchanged from v0.3.7.
+- No Windows/.NET compile performed in this environment; verify native client dimensions at non-100% scaling on Windows.
+
 PoE2BossWatcher v0.3.7 height-relative boss geometry development validation
 - Live boss capture uses GetClientRect + ClientToScreen and captures only the centered boss ROI inside the PoE2 client. Window title bars, borders, taskbar, and unrelated desktop regions are not part of the ROI.
 - Horizontal boss capture width is derived from client height at 8/9 height. This is exactly equivalent to the historical 50%-client-width crop on 16:9, while 21:9 and 32:9 no longer stretch the boss ROI horizontally.

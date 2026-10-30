@@ -1,11 +1,11 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Drawing;
 
 namespace PoE2BossWatcher;
 
 internal static class Program
 {
-    private const string Version = "0.3.7-height-relative-boss-geometry";
+    private const string Version = "0.3.9-input-ui-profiles";
 
     [STAThread]
     private static async Task<int> Main(string[] args)
@@ -17,7 +17,7 @@ internal static class Program
         var mapDatabaseOverride = GetArgValue(args, "--map-db");
         var localizationDatabaseOverride = GetArgValue(args, "--localization-db");
         var diagnosticDirectoryOverride = GetArgValue(args, "--diagnostic-dir");
-        Console.Title = devConsole ? "PoE2 BossWatcher 0.3.7 - DEV" : "PoE2 BossWatcher 0.3.7";
+        Console.Title = devConsole ? "PoE2 BossWatcher 0.3.8 - DEV" : "PoE2 BossWatcher 0.3.8";
         var baseDir = AppContext.BaseDirectory;
         var configPath = Path.Combine(baseDir, "config.json");
 
@@ -114,7 +114,7 @@ internal static class Program
             events.Debug($"SETTINGS | {settingsStatus}");
             events.Debug($"OCR_LANGUAGE | gameLanguage={ocr.Language.Code} | display={ocr.Language.DisplayName} | tesseract={ocr.Language.TesseractCode}" +
                 $" | canonicalBosses={bosses.Count} | localizedCoverage={localizedBosses.Count} | localizationDb={localizations.DatabaseVersion}");
-            events.Debug($"READY | v={Version} | bosses={bosses.Count} | ocrBosses={localizedBosses.Count} | gameLanguage={ocr.Language.Code} | tesseract={ocr.Language.TesseractCode} | mapDbVersion={mapDatabase.DatabaseVersion} | mapDbEntries={mapDatabase.Maps.Count} | eventFile={eventPath} | contextFile={contextPath} | context={currentContext.Summary} | goneConfirmMs={config.DisappearConfirmMs} | mapGoneConfirmMs={config.MapDisappearConfirmMs} | mapExitAssistMinMissingMs={config.MapExitAssistMinMissingMs}");
+            events.Debug($"READY | v={Version} | bosses={bosses.Count} | ocrBosses={localizedBosses.Count} | gameLanguage={ocr.Language.Code} | inputUiMode={config.InputUiMode} | tesseract={ocr.Language.TesseractCode} | mapDbVersion={mapDatabase.DatabaseVersion} | mapDbEntries={mapDatabase.Maps.Count} | eventFile={eventPath} | contextFile={contextPath} | context={currentContext.Summary} | goneConfirmMs={config.DisappearConfirmMs} | mapGoneConfirmMs={config.MapDisappearConfirmMs} | mapExitAssistMinMissingMs={config.MapExitAssistMinMissingMs}");
 
             GameWindowInfo? game = null;
             Bitmap? lastRaw = null;
@@ -201,11 +201,13 @@ internal static class Program
                     lastGeometryClientWidth = result.ClientWidth;
                     lastGeometryClientHeight = result.ClientHeight;
                     var gcd = GreatestCommonDivisor(result.ClientWidth, result.ClientHeight);
+                    var dpi = NativeMethods.GetDpiForWindow(game.Handle);
+                    var scalePercent = dpi > 0 ? dpi * 100.0 / 96.0 : 0.0;
                     var leftLane = ScreenCapture.ToPixelRect(result.Bitmap.Width, result.Bitmap.Height, ScreenCapture.GetBossNameLaneRoi(config, BossLane.Left));
                     var rightLane = ScreenCapture.ToPixelRect(result.Bitmap.Width, result.Bitmap.Height, ScreenCapture.GetBossNameLaneRoi(config, BossLane.Right));
                     Console.WriteLine();
-                    Console.WriteLine($"DISPLAY_GEOMETRY | client={result.ClientWidth}x{result.ClientHeight} | aspect={result.ClientWidth / gcd}:{result.ClientHeight / gcd} | bossCapture={result.Bitmap.Width}x{result.Bitmap.Height} centered | dualLeft=x{leftLane.Left}-{leftLane.Right} | dualRight=x{rightLane.Left}-{rightLane.Right}");
-                    events.Debug($"DISPLAY_GEOMETRY | client={result.ClientWidth}x{result.ClientHeight} | aspect={result.ClientWidth / gcd}:{result.ClientHeight / gcd} | bossCapture={result.Bitmap.Width}x{result.Bitmap.Height} | dualLeft={leftLane.X},{leftLane.Y},{leftLane.Width},{leftLane.Height} | dualRight={rightLane.X},{rightLane.Y},{rightLane.Width},{rightLane.Height}");
+                    Console.WriteLine($"DISPLAY_GEOMETRY | client={result.ClientWidth}x{result.ClientHeight} | dpi={dpi} scale={scalePercent:F0}% | aspect={result.ClientWidth / gcd}:{result.ClientHeight / gcd} | bossCapture={result.Bitmap.Width}x{result.Bitmap.Height} centered | dualLeft=x{leftLane.Left}-{leftLane.Right} | dualRight=x{rightLane.Left}-{rightLane.Right}");
+                    events.Debug($"DISPLAY_GEOMETRY | client={result.ClientWidth}x{result.ClientHeight} | dpi={dpi} | scale={scalePercent:F0}% | aspect={result.ClientWidth / gcd}:{result.ClientHeight / gcd} | bossCapture={result.Bitmap.Width}x{result.Bitmap.Height} | dualLeft={leftLane.X},{leftLane.Y},{leftLane.Width},{leftLane.Height} | dualRight={rightLane.X},{rightLane.Y},{rightLane.Width},{rightLane.Height}");
                 }
 
                 // Timestamp the pixels immediately after capture.

@@ -16,6 +16,13 @@ DeveloperConsoleDefault: enables developer diagnostic launch behavior for BossWa
 This toggle is exposed only in the SetupUI Settings window. Leave it off for normal runs; enable it when
 troubleshooting or collecting diagnostic logs.
 
+
+PoE2 input UI
+-------------
+The Input UI selector beside Generate / Deploy must match the control scheme selected in PoE2 before entering the game.
+Mouse + Keyboard keeps the original pause-menu templates and boss-name OCR calibration. Controller selects the controller pause-menu template set and a controller-specific bright-luminance boss-name OCR profile.
+Generate / Deploy snapshots this choice as PoE2.InputUiMode in poe2_run_settings.json, so both watcher programs use the same explicit UI profile for the run.
+
 BossWatcher
 -----------
 GoneConfirmMs: identity/single-boss disappearance confirmation (500-30000 ms). Default: 5500 ms.

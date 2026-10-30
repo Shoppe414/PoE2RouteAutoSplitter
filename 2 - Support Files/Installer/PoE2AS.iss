@@ -1,5 +1,5 @@
 #ifndef MyAppVersion
-  #define MyAppVersion "3.0.0"
+  #define MyAppVersion "3.1.0"
 #endif
 #ifndef StageRoot
   #error StageRoot must point to the assembled portable package root.
@@ -57,6 +57,7 @@ Name: "{app}\4-README's_and_Diagnostics\Diagnostics"
 Name: "{app}\4-README's_and_Diagnostics\Diagnostics\images"
 
 [Files]
+Source: "{#StageRoot}\CHANGELOG.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#StageRoot}\1 - User Setup\PoE2RouteSetup.exe"; DestDir: "{app}\1 - User Setup"; Flags: ignoreversion
 Source: "{#StageRoot}\1 - User Setup\PoE2AS-Settings.json"; DestDir: "{app}\1 - User Setup"; Flags: onlyifdoesntexist uninsneveruninstall
 Source: "{#StageRoot}\1 - User Setup\SETTINGS-README.txt"; DestDir: "{app}\1 - User Setup"; Flags: ignoreversion

@@ -21,10 +21,12 @@ internal static class RuntimeSettingsOverlay
                 CommentHandling = JsonCommentHandling.Skip
             });
 
-            if (doc.RootElement.TryGetProperty("PoE2", out var poe2) && poe2.ValueKind == JsonValueKind.Object &&
-                poe2.TryGetProperty("Language", out var languageElement) && languageElement.ValueKind == JsonValueKind.String)
+            if (doc.RootElement.TryGetProperty("PoE2", out var poe2) && poe2.ValueKind == JsonValueKind.Object)
             {
-                config.GameLanguage = languageElement.GetString() ?? config.GameLanguage;
+                if (poe2.TryGetProperty("Language", out var languageElement) && languageElement.ValueKind == JsonValueKind.String)
+                    config.GameLanguage = languageElement.GetString() ?? config.GameLanguage;
+                if (poe2.TryGetProperty("InputUiMode", out var inputModeElement) && inputModeElement.ValueKind == JsonValueKind.String)
+                    config.InputUiMode = AppConfig.NormalizeInputUiMode(inputModeElement.GetString());
             }
 
             if (doc.RootElement.TryGetProperty("GameTimeWatcher", out var section) && section.ValueKind == JsonValueKind.Object)
@@ -49,8 +51,9 @@ internal static class RuntimeSettingsOverlay
                 config.MtxShopThreshold = mtx;
             }
 
+            config.ApplyInputUiProfile();
             config.Validate();
-            return $"shared-settings=applied path={fullPath}; gameLanguage={config.GameLanguage}; provisionalTimeoutMs={config.ProvisionalTimeoutMs}; " +
+            return $"shared-settings=applied path={fullPath}; gameLanguage={config.GameLanguage}; inputUiMode={config.InputUiMode}; provisionalTimeoutMs={config.ProvisionalTimeoutMs}; " +
                    $"structure={config.PauseStackThreshold:F3}; banner={config.PauseBannerThreshold:F3}; resumeText={config.ResumeGameThreshold:F3}; exitText={config.ExitPathOfExileThreshold:F3}; mtx={config.MtxShopThreshold:F3}";
         }
         catch (Exception ex)

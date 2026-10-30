@@ -294,5 +294,8 @@
   "Act 3 — Any%": "アクト3 — Any%",
   "Act 4 — 100%": "アクト4 — 100%",
   "Act 4 — Any%": "アクト4 — Any%",
-  "Shows only areas and bosses from the selected content group. Select a Trial content group to add its boss milestones.": "選択したコンテンツグループのエリアとボスだけを表示します。試練のコンテンツグループを選択すると、そのボスのマイルストーンを追加できます。"
+  "Shows only areas and bosses from the selected content group. Select a Trial content group to add its boss milestones.": "選択したコンテンツグループのエリアとボスだけを表示します。試練のコンテンツグループを選択すると、そのボスのマイルストーンを追加できます。",
+  "Input UI:": "入力UI:",
+  "Mouse + Keyboard": "マウス + キーボード",
+  "Controller": "コントローラー"
 }

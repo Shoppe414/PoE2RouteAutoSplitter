@@ -1,4 +1,4 @@
-PoE2 Route AutoSplitter v3.0.0 Release Candidate
+PoE2 Route AutoSplitter v3.1.0
 Verification Files
 
 This directory centralizes SHA-256 and run-verification material.
@@ -6,7 +6,7 @@ This directory centralizes SHA-256 and run-verification material.
 SOURCE PACKAGE
 --------------
 SOURCE-PACKAGE-SHA256SUMS.txt
-    SHA-256 manifest for the source Release Candidate package.
+    SHA-256 manifest for the source release package.
 
 BossWatcher-CHECKSUMS.sha256
     Component-level SHA-256 manifest for the BossWatcher source/support tree.

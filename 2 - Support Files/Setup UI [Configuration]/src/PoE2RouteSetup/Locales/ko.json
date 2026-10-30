@@ -294,5 +294,8 @@
   "Act 3 — Any%": "3막 — Any%",
   "Act 4 — 100%": "4막 — 100%",
   "Act 4 — Any%": "4막 — Any%",
-  "Shows only areas and bosses from the selected content group. Select a Trial content group to add its boss milestones.": "선택한 콘텐츠 그룹의 지역과 보스만 표시합니다. 시련 콘텐츠 그룹을 선택하면 해당 보스 마일스톤을 추가할 수 있습니다."
+  "Shows only areas and bosses from the selected content group. Select a Trial content group to add its boss milestones.": "선택한 콘텐츠 그룹의 지역과 보스만 표시합니다. 시련 콘텐츠 그룹을 선택하면 해당 보스 마일스톤을 추가할 수 있습니다.",
+  "Input UI:": "입력 UI:",
+  "Mouse + Keyboard": "마우스 + 키보드",
+  "Controller": "컨트롤러"
 }

@@ -173,6 +173,7 @@ public sealed class SetupForm : Form
     private readonly CheckBox _excludeManualPauseCheck = new();
     private readonly Button _gameTimeWatcherButton = new();
     private readonly Button _deployButton = new();
+    private readonly ComboBox _inputUiModeCombo = new();
     private readonly Label _status = new();
 
     public SetupForm()
@@ -1813,7 +1814,9 @@ public sealed class SetupForm : Form
 
     private Control BuildActionPanel()
     {
-        var panel = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, RowCount = 2, ColumnCount = 4, Padding = new Padding(0, 8, 0, 0) };
+        var panel = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, RowCount = 2, ColumnCount = 6, Padding = new Padding(0, 8, 0, 0) };
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -1826,20 +1829,36 @@ public sealed class SetupForm : Form
         _deployButton.Click += (_, _) => DeploySelected();
         panel.Controls.Add(_deployButton, 0, 0);
 
+        var inputModeLabel = new Label
+        {
+            Text = "Input UI:",
+            AutoSize = true,
+            Anchor = AnchorStyles.Left,
+            Padding = new Padding(10, 8, 4, 0)
+        };
+        panel.Controls.Add(inputModeLabel, 1, 0);
+
+        _inputUiModeCombo.DropDownStyle = ComboBoxStyle.DropDownList;
+        _inputUiModeCombo.Width = 165;
+        _inputUiModeCombo.Anchor = AnchorStyles.Left;
+        RebuildInputUiModeItems();
+        _inputUiModeCombo.SelectedIndexChanged += (_, _) => SaveSelectedInputUiMode();
+        panel.Controls.Add(_inputUiModeCombo, 2, 0);
+
         var settingsButton = new Button { Text = "Settings", AutoSize = true, Height = 38, Padding = new Padding(12, 2, 12, 2) };
         settingsButton.Click += (_, _) => OpenUserSettings();
-        panel.Controls.Add(settingsButton, 2, 0);
+        panel.Controls.Add(settingsButton, 4, 0);
 
         var bossWatcher = new Button { Text = "Start BossWatcher", AutoSize = true, Height = 38, Padding = new Padding(12, 2, 12, 2) };
         bossWatcher.Click += (_, _) => StartBossWatcher();
-        panel.Controls.Add(bossWatcher, 3, 0);
+        panel.Controls.Add(bossWatcher, 5, 0);
 
         _excludeManualPauseCheck.Text = "Pause LiveSplit Game Time while PoE2 is manually paused (optional; requires GameTimeWatcher)";
         _excludeManualPauseCheck.AutoSize = true;
         _excludeManualPauseCheck.Anchor = AnchorStyles.Left;
         _excludeManualPauseCheck.CheckedChanged += (_, _) => _gameTimeWatcherButton.Enabled = _excludeManualPauseCheck.Checked;
         panel.Controls.Add(_excludeManualPauseCheck, 0, 1);
-        panel.SetColumnSpan(_excludeManualPauseCheck, 3);
+        panel.SetColumnSpan(_excludeManualPauseCheck, 5);
 
         _gameTimeWatcherButton.Text = "Start GameTimeWatcher";
         _gameTimeWatcherButton.AutoSize = true;
@@ -1847,9 +1866,66 @@ public sealed class SetupForm : Form
         _gameTimeWatcherButton.Padding = new Padding(10, 1, 10, 1);
         _gameTimeWatcherButton.Enabled = false;
         _gameTimeWatcherButton.Click += (_, _) => StartGameTimeWatcher();
-        panel.Controls.Add(_gameTimeWatcherButton, 3, 1);
+        panel.Controls.Add(_gameTimeWatcherButton, 5, 1);
 
         return panel;
+    }
+
+    private void RebuildInputUiModeItems()
+    {
+        var canonical = _userSettings.PoE2.InputUiMode;
+        _inputUiModeCombo.BeginUpdate();
+        try
+        {
+            _inputUiModeCombo.Items.Clear();
+            _inputUiModeCombo.Items.Add(new InputUiModeItem("MouseKeyboard", Localization.Translate("Mouse + Keyboard")));
+            _inputUiModeCombo.Items.Add(new InputUiModeItem("Controller", Localization.Translate("Controller")));
+            _inputUiModeCombo.SelectedIndex = string.Equals(canonical, "Controller", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+        }
+        finally
+        {
+            _inputUiModeCombo.EndUpdate();
+        }
+    }
+
+    private void SaveSelectedInputUiMode()
+    {
+        if (_inputUiModeCombo.SelectedItem is not InputUiModeItem item) return;
+        var normalized = PoE2UserSettings.NormalizeInputUiMode(item.Value);
+        if (string.Equals(_userSettings.PoE2.InputUiMode, normalized, StringComparison.OrdinalIgnoreCase)) return;
+        _userSettings.PoE2.InputUiMode = normalized;
+        _userSettings.Save(_settingsPath);
+        SetStatus($"Input UI mode set to {item.Display}. Generate / Deploy to snapshot this watcher profile for the run.");
+    }
+
+    private string GetSelectedInputUiMode()
+    {
+        if (_inputUiModeCombo.SelectedItem is InputUiModeItem item)
+            return PoE2UserSettings.NormalizeInputUiMode(item.Value);
+        return PoE2UserSettings.NormalizeInputUiMode(_userSettings.PoE2.InputUiMode);
+    }
+
+    private static void ValidateGeneratedInputUiModeSnapshot(string stage, string expectedMode)
+    {
+        var path = Path.Combine(stage, "poe2_run_settings.json");
+        using var document = JsonDocument.Parse(File.ReadAllText(path));
+        if (!document.RootElement.TryGetProperty("PoE2", out var poe2) ||
+            !poe2.TryGetProperty("InputUiMode", out var modeElement) ||
+            modeElement.ValueKind != JsonValueKind.String)
+            throw new InvalidOperationException("Generated run settings are missing PoE2.InputUiMode.");
+
+        var actualMode = PoE2UserSettings.NormalizeInputUiMode(modeElement.GetString());
+        var normalizedExpected = PoE2UserSettings.NormalizeInputUiMode(expectedMode);
+        if (!string.Equals(actualMode, normalizedExpected, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException($"Generated Input UI profile mismatch: expected {normalizedExpected}, got {actualMode}.");
+    }
+
+    private sealed class InputUiModeItem
+    {
+        public string Value { get; }
+        public string Display { get; }
+        public InputUiModeItem(string value, string display) { Value = value; Display = display; }
+        public override string ToString() => Display;
     }
 
     private Control BuildStartPolicyPanel()
@@ -3352,12 +3428,24 @@ public sealed class SetupForm : Form
             else
                 DeployMaps(stage, target, startPolicy);
 
+            // The footer Input UI selector is an explicit per-run choice. Capture it before
+            // reloading the user-editable master settings so the reload cannot silently replace
+            // a visible Controller selection with a stale MouseKeyboard value from disk.
+            var selectedInputUiMode = GetSelectedInputUiMode();
+
             // Reload the user-editable master settings immediately before snapshotting so
             // manual JSON edits made while SetupUI is open are honored on the next Generate.
             _userSettings = UserSettings.LoadOrCreate(_settingsPath, out var generationSettingsWarning);
             if (!string.IsNullOrWhiteSpace(generationSettingsWarning))
                 SetStatus(generationSettingsWarning);
+
+            // The explicit footer selection wins over the reload and is persisted back to the
+            // master settings. This guarantees poe2_run_settings.json matches what the runner
+            // actually selected in SetupUI at Generate / Deploy time.
+            _userSettings.PoE2.InputUiMode = selectedInputUiMode;
+            _userSettings.Save(_settingsPath);
             WriteRunSettingsSnapshot(stage, premade, custom, trials, maps);
+            ValidateGeneratedInputUiModeSnapshot(stage, selectedInputUiMode);
 
             // Run-validation files live outside the disposable LiveSplit Target directory.
             // Commit the generated setup first, then hash the committed files into the
@@ -4172,6 +4260,7 @@ exit 1
             _userSettings.Save(_settingsPath);
             Localization.SetLanguage(_userSettings.SetupUI.DefaultLanguage);
             Localization.Apply(this);
+            RebuildInputUiModeItems();
             RefreshCustomCatalogs();
             RefreshRouteList();
             _areaList.Refresh();
@@ -4489,6 +4578,7 @@ exit 1
                 ? "Start policy: Automatic — first entry into the first map"
                 : "Start policy: " + DescribeStartPolicy(startPolicy))
             .AppendLine($"Manual pause exclusion: {(manualPauseRemoval ? "Enabled" : "Disabled")}")
+            .AppendLine($"Input UI profile: {_userSettings.PoE2.InputUiMode}")
             .AppendLine($"BossWatcher required: {(bossWatcher ? "Yes" : "No")}")
             .AppendLine($"GameTimeWatcher required: {(manualPauseRemoval ? "Yes" : "No")}")
             .AppendLine("Run validation: Enabled by default (SHA-256 event chain + summary + checksum manifest)")

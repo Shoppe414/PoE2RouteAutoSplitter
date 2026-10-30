@@ -2,7 +2,7 @@
 
 **Path of Exile 2 캠페인 스피드런**을 위한 설정 도구이자 LiveSplit 오토스플리터입니다.
 
-현재 릴리스: **v3.0.0 Release Candidate**
+현재 릴리스: **v3.1.0**
 
 PoE2 Route AutoSplitter는 다음과 같은 미리 만든 경로와 사용자 지정 경로를 제공합니다.
 

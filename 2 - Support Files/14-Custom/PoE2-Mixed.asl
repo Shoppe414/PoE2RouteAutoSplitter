@@ -1,6 +1,6 @@
 /*
 Path of Exile 2 Mixed Objective AutoSplitter for LiveSplit
-v1.3.9 configurable zone-start hotfix
+v1.3.11 authoritative load-end queue
 
 Combines Exploration area-completion events from Client.txt with Boss Rush GONE events
 from poe2_boss_events.log. One mixed objective file controls both sources.
@@ -284,6 +284,13 @@ startup
         "^[^ ]+ [^ ]+ (\\d+)(?=.*(?:\\s2caa[0-9A-Fa-f]{4}\\s|Generating level))(?=.*\\[DEBUG\\s+[^\\]]+\\]\\s+.*?(\\d{1,3})\\D+\"([A-Za-z][A-Za-z0-9_]*)\")",
         System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase
     );
+    // Less strict generation-line parser for current Client.txt variants. The stable
+    // 2caa* message-site family and quoted internal area ID remain language-neutral even
+    // when the older [DEBUG ...] prefix/level-number layout changes.
+    vars.areaLooseRegex = new System.Text.RegularExpressions.Regex(
+        "(?:\\s2caa[0-9A-Fa-f]{4}\\s|Generating level).*?area\\s+\"([A-Za-z][A-Za-z0-9_]*)\"",
+        System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase
+    );
     vars.enteredNameRegex = new System.Text.RegularExpressions.Regex(
         "^[^ ]+ [^ ]+ (\\d+).*: You have entered (.+)\\.$",
         System.Text.RegularExpressions.RegexOptions.Compiled
@@ -366,6 +373,10 @@ startup
     vars.gtDebugPath = System.IO.Path.Combine(vars.liveSplitDir, "poe2_gametime_debug.log");
     vars.gtReader = null;
     vars.gtClientPath = "";
+    // Authoritative area transitions parsed by the independent Game Time reader.
+    // The route reader consumes this queue so area progression cannot diverge from
+    // the load-completion records already proven to parse correctly for Game Time.
+    vars.gtAreaTransitionQueue = new System.Collections.Generic.List<string>();
     vars.gtLoadActive = false;
     vars.gtLoadObservedExclusiveSeconds = 0.0;
     vars.gtLoadManualOverlapSeconds = 0.0;
@@ -439,6 +450,7 @@ init
     try { if (vars.gtReader != null) vars.gtReader.Close(); } catch {}
     vars.gtReader = null;
     vars.gtClientPath = "";
+    vars.gtAreaTransitionQueue = new System.Collections.Generic.List<string>();
     vars.gtLoadActive = false;
     vars.gtLoadObservedExclusiveSeconds = 0.0;
     vars.gtLoadManualOverlapSeconds = 0.0;
@@ -752,7 +764,7 @@ init
         vars.configValid = true;
 
         string startName = vars.startAreaId == "" ? "manual" : vars.areaNames[vars.startAreaId];
-        string ready = "READY | v1.3.9-zone-start | Mode=MIXED_" + (vars.ordered ? "ORDERED" : "UNORDERED")
+        string ready = "READY | v1.3.11-loadend-area-queue | Mode=MIXED_" + (vars.ordered ? "ORDERED" : "UNORDERED")
             + " | Objectives=" + vars.objectiveOrder.Count + " | Start=" + startName
             + " | AreaCompletion=" + (vars.areaSuccessorCompletion ? "SUCCESSOR_ENTRY" : "ENTRY")
             + " | LevelObjectives=true | MissedLevelPolicy=SKIP"
@@ -1033,6 +1045,16 @@ update
             var gtEnd = vars.gtLoadEndRegex.Match(gtLine);
             if (gtEnd.Success)
             {
+                string gtCompletedAreaName = gtEnd.Groups[2].Value.Trim();
+                if (gtCompletedAreaName != "")
+                {
+                    vars.gtAreaTransitionQueue.Add(gtCompletedAreaName);
+                    if (settings["debugLog"])
+                        System.IO.File.AppendAllText(vars.debugPath,
+                            System.DateTime.Now.ToString("s") + " GT_AREA_ENQUEUED | area=" + gtCompletedAreaName
+                            + " | queued=" + vars.gtAreaTransitionQueue.Count + System.Environment.NewLine);
+                }
+
                 double gtReportedSeconds = 0.0;
                 bool gtParsed = System.Double.TryParse(
                     gtEnd.Groups[3].Value,
@@ -1579,9 +1601,20 @@ update
 
     if (vars.pendingKey == "")
     {
-        while (vars.reader.Peek() >= 0)
+        while (vars.gtAreaTransitionQueue.Count > 0 || vars.reader.Peek() >= 0)
         {
-            string line = vars.reader.ReadLine();
+            bool fromGtAreaQueue = vars.gtAreaTransitionQueue.Count > 0;
+            string queuedGtAreaName = "";
+            string line = "";
+            if (fromGtAreaQueue)
+            {
+                queuedGtAreaName = vars.gtAreaTransitionQueue[0];
+                vars.gtAreaTransitionQueue.RemoveAt(0);
+            }
+            else
+            {
+                line = vars.reader.ReadLine();
+            }
 
 
             // SetupUI zone-entry fast path. Client.txt format can vary around the
@@ -1830,15 +1863,58 @@ update
 
             string areaId = "";
             string source = "";
+            if (fromGtAreaQueue)
+            {
+                if (vars.nameToAreaId.ContainsKey(queuedGtAreaName))
+                {
+                    areaId = vars.nameToAreaId[queuedGtAreaName];
+                    source = "GameTimeLoadEndQueue";
+                    if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                        System.DateTime.Now.ToString("s") + " GT_AREA_DEQUEUED | area=" + queuedGtAreaName
+                        + " | id=" + areaId + " | remaining=" + vars.gtAreaTransitionQueue.Count + System.Environment.NewLine);
+                }
+                else if (settings["debugLog"])
+                {
+                    System.IO.File.AppendAllText(vars.debugPath,
+                        System.DateTime.Now.ToString("s") + " GT_AREA_UNMAPPED | area=" + queuedGtAreaName + System.Environment.NewLine);
+                }
+            }
             var am = vars.areaRegex.Match(line);
-            if (am.Success) { areaId = am.Groups[3].Value; source = "GeneratingLevel"; }
-            else if (settings["enteredNameFallback"])
+            if (areaId == "" && am.Success) { areaId = am.Groups[3].Value; source = "GeneratingLevel"; }
+            if (areaId == "")
+            {
+                var looseArea = vars.areaLooseRegex.Match(line);
+                if (looseArea.Success)
+                {
+                    areaId = looseArea.Groups[1].Value;
+                    source = "GeneratingLevelLoose";
+                }
+            }
+            if (areaId == "" && settings["enteredNameFallback"])
             {
                 var em = vars.enteredNameRegex.Match(line);
                 if (em.Success)
                 {
                     string displayName = em.Groups[2].Value.Trim();
                     if (vars.nameToAreaId.ContainsKey(displayName)) { areaId = vars.nameToAreaId[displayName]; source = "EnteredName"; }
+                }
+            }
+            // Current PoE2 Client.txt builds reliably expose the destination display
+            // name in the same load-completion record used by the Game Time subsystem.
+            // Reuse that already-tested parser as a route fallback when the stricter
+            // GeneratingLevel / You-have-entered patterns do not match. This keeps area
+            // progression and Game Time consuming the same authoritative transition.
+            if (areaId == "")
+            {
+                var loadEnd = vars.gtLoadEndRegex.Match(line);
+                if (loadEnd.Success)
+                {
+                    string displayName = loadEnd.Groups[2].Value.Trim();
+                    if (vars.nameToAreaId.ContainsKey(displayName))
+                    {
+                        areaId = vars.nameToAreaId[displayName];
+                        source = "LoadEnd";
+                    }
                 }
             }
             if (areaId.StartsWith("Sanctum_1_", System.StringComparison.OrdinalIgnoreCase)) areaId = "Sanctum_1_*";
@@ -2231,6 +2307,7 @@ onReset
     vars.gtCorrectionPending = false;
     vars.gtManualPendingCorrection = System.TimeSpan.Zero;
     vars.gtManualCorrectionPending = false;
+    vars.gtAreaTransitionQueue.Clear();
 
     vars.completed = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
     vars.completedOrder = new System.Collections.Generic.List<string>();

@@ -1,5 +1,5 @@
-﻿param(
-    [string]$Version = '3.0.0',
+param(
+    [string]$Version = '3.1.0',
     [switch]$SkipInstaller,
     [switch]$SkipPortableZip
 )
@@ -8,7 +8,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 if ($Version -notmatch '^\d+\.\d+\.\d+$') {
-    throw "Version must look like 3.0.0. Received: $Version"
+    throw "Version must look like 3.1.0. Received: $Version"
 }
 
 $supportRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -175,6 +175,13 @@ if (Test-Path -LiteralPath $stageBase) { Remove-DirectoryTreeSafe -Path $stageBa
 New-Item -ItemType Directory -Force -Path $artifactsRoot, $portableUserRoot, $portableSupportRoot, $portableVerificationRoot, $portableDocumentationRoot, $portableDiagnosticsRoot, $portableDiagnosticImagesRoot, $portableTarget | Out-Null
 Write-Host "Using short release staging path: $portableRoot"
 
+# Unified project/component history is a package-root document.
+$changeLogSource = Join-Path $releaseRoot 'CHANGELOG.md'
+if (-not (Test-Path -LiteralPath $changeLogSource -PathType Leaf)) {
+    throw "Missing unified package changelog: $changeLogSource"
+}
+Copy-Item -LiteralPath $changeLogSource -Destination (Join-Path $portableRoot 'CHANGELOG.md') -Force
+
 # User launcher and supported user-facing settings.
 Copy-Item -LiteralPath $setupExe -Destination (Join-Path $portableUserRoot 'PoE2RouteSetup.exe') -Force
 foreach ($userFileName in @('PoE2AS-Settings.json', 'SETTINGS-README.txt')) {
@@ -207,8 +214,12 @@ Copy-DirectoryContents -Source $bossPublish -Destination (Join-Path $runtimeBoss
 Copy-Item -LiteralPath (Join-Path $bossRoot 'bosses.txt') -Destination $runtimeBoss -Force
 Copy-Item -LiteralPath (Join-Path $bossRoot 'map-bosses.json') -Destination $runtimeBoss -Force
 Copy-Item -LiteralPath (Join-Path $bossRoot 'boss-localizations.json') -Destination $runtimeBoss -Force
-New-Item -ItemType Directory -Force -Path (Join-Path $runtimeBoss 'BossLists') | Out-Null
-Copy-Item -LiteralPath (Join-Path $bossRoot 'BossLists\support-only.txt') -Destination (Join-Path $runtimeBoss 'BossLists\support-only.txt') -Force
+# Premade Area+Boss routes read their target catalogs directly from BossLists at runtime.
+# Copy the complete directory rather than only support-only.txt; otherwise Campaign 100%,
+# Campaign Any%, and Pinnacle premades can deploy an .lss/.asl pair but fail while building
+# their boss objectives because the corresponding target list is absent from the release.
+$runtimeBossLists = Join-Path $runtimeBoss 'BossLists'
+Copy-DirectoryContents -Source (Join-Path $bossRoot 'BossLists') -Destination $runtimeBossLists
 
 # Optional GameTimeWatcher runtime. It is only used when the runner elects to
 # pause LiveSplit Game Time along with PoE2's real pause menu / MTX Shop.
@@ -289,7 +300,40 @@ if (-not (Test-Path -LiteralPath (Join-Path $portableUserRoot 'PoE2RouteSetup.ex
 if (-not (Test-Path -LiteralPath (Join-Path $portableUserRoot 'PoE2AS-Settings.json') -PathType Leaf)) { throw 'Staged user settings file is missing.' }
 if (-not (Test-Path -LiteralPath (Join-Path $portableUserRoot 'SETTINGS-README.txt') -PathType Leaf)) { throw 'Staged settings README is missing.' }
 if (-not (Test-Path -LiteralPath (Join-Path $runtimeBoss 'publish\PoE2BossWatcher.exe') -PathType Leaf)) { throw 'Staged BossWatcher executable is missing.' }
+
+# These lists are selected dynamically by SetupUI code rather than ui-manifest.json, so
+# validate them explicitly. This prevents a release from passing assembly validation while
+# an entire premade boss route is unusable.
+$requiredBossLists = @(
+    'campaign-100.txt',
+    'campaign-any-v0.5.txt',
+    'pinnacle-v0.5.txt',
+    'support-only.txt'
+)
+foreach ($bossList in $requiredBossLists) {
+    $required = Join-Path $runtimeBossLists $bossList
+    if (-not (Test-Path -LiteralPath $required -PathType Leaf)) {
+        throw "Staged runtime is missing required BossWatcher list: BossLists\$bossList"
+    }
+}
 if (-not (Test-Path -LiteralPath (Join-Path $runtimeGameTime 'publish\PoE2GameTimeWatcher.exe') -PathType Leaf)) { throw 'Staged GameTimeWatcher executable is missing.' }
+$requiredGameTimeTemplates = @(
+    'pause-menu-stack.png',
+    'pause-resume-game.png',
+    'pause-menu-tight.png',
+    'pause-exit-path-of-exile.png',
+    'controller-pause-menu-stack.png',
+    'controller-pause-resume-game.png',
+    'controller-pause-menu-tight.png',
+    'controller-pause-exit-path-of-exile.png',
+    'mtx-shop.png'
+)
+foreach ($templateName in $requiredGameTimeTemplates) {
+    $required = Join-Path $runtimeGameTime ("publish\templates\$templateName")
+    if (-not (Test-Path -LiteralPath $required -PathType Leaf)) {
+        throw "Staged GameTimeWatcher template is missing: $templateName"
+    }
+}
 if (-not (Test-Path -LiteralPath $portableVerificationRoot -PathType Container)) { throw 'Staged verification directory is missing.' }
 if (-not (Test-Path -LiteralPath $portableDocumentationRoot -PathType Container)) { throw 'Staged README/diagnostics directory is missing.' }
 if (-not (Test-Path -LiteralPath $portableDiagnosticImagesRoot -PathType Container)) { throw 'Staged diagnostic images directory is missing.' }

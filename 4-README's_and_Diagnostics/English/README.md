@@ -2,7 +2,7 @@
 
 A setup tool and LiveSplit autosplitter for **Path of Exile 2 campaign speedrunning**.
 
-Current release: **v3.0.0 Release Candidate**.
+Current release: **v3.1.0**.
 
 PoE2 Route AutoSplitter provides premade and custom routes for:
 

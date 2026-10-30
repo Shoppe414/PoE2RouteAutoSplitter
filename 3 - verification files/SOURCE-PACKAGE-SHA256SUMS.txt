@@ -1,13 +1,9 @@
-# PoE2 Route AutoSplitter v3.0.0 Release Candidate
-# Source-package SHA-256 manifest. Paths are relative to the package root.
-# This manifest intentionally excludes itself because a file cannot contain a stable checksum of its own final contents.
-412c1338c2104f5866484bc1c65d01a0657d28d5a2b2df4c047468cec39becb9  .github/workflows/build-release.yml
+bafc1b539b20a845477f76aaf7a739aa097d41f1e3d663c7a8784cca3ef21ca2  .github/workflows/build-release.yml
 d70d95232710c013fb488f9a23f625830f2e3fc6726d7a7d04ccb669cf358385  .gitignore
-b668473435b15375fe539b7f5bf19d1010697407a5037211e14824c09696fbcf  1 - User Setup/PoE2AS-Settings.json
-7b9bf5251a6b374eab2f2a8a3ea03f6fb1ca63ab27134a8302684ce74c52b27f  1 - User Setup/README.txt
-983f9f623d6e36c93c73c57aaa45d591b556e8e81d88cef6ef8f7f559b33a1bf  1 - User Setup/SETTINGS-README.txt
+b68ac00807a47d94c85cb44007f8abcc9d38fc28e8fa5c3aada7b7e2194a6d70  1 - User Setup/PoE2AS-Settings.json
+96002f624a6076f96ddbcbb48ce232ba635eeb3febbedc7192880a73e7499bbb  1 - User Setup/README.txt
+6459ebc0887c530d64f5396f685843b8fd41909e024d1f4386a96bfb74f0c935  1 - User Setup/SETTINGS-README.txt
 ef575c702b8f2aa2991d2c767a9305a64d72b834907041d56eca13ab8b28e421  2 - Support Files/01-Ordered/Campaign100-Ordered.lss
-3c0cb31fe2efa5e33b6764c0331cef3ad7cf93a73b729e934889b56a7899ea16  2 - Support Files/01-Ordered/ENGINE_CHANGELOG.md
 22c21513b78c9aaac095d3131e6630a759aaf120807c98142bdc16b534693346  2 - Support Files/01-Ordered/PoE2-Route.asl
 e24d1de5d7dbaa41e1cdf9a98e595f658419b1949c1ab0a07ad86889a9f8dff8  2 - Support Files/01-Ordered/README.md
 8a24a66a8651d3a1b139ce27d9e29007747f53c455943d99201e91127037b5ad  2 - Support Files/01-Ordered/layouts/A1-Practice-Ordered.lss
@@ -27,7 +23,6 @@ b6183ac1edd1eac79a4a522d547ede2cc367776ca3439bfc6bb0d2206e7ef31f  2 - Support Fi
 df15f6b16fe74e7dcadd78c07a3decb531af70a33e8c0da57d026d30c4a74117  2 - Support Files/01-Ordered/tools/Test-ClientLog.ps1
 dcf5006f3a5c08b12a5a8053131241442f49702940a2e4e70374cb87a560d578  2 - Support Files/01-Ordered/zones.csv
 630520fcb8cc0e1d5ba8bf75a17ebf826b9090938d84845daf0c05c838c4640b  2 - Support Files/02-Flexible/Campaign-Flexible.lss
-821d4b087c6ac20c8e0c09a448363124858e194f4c39457440bc725de3eafbf3  2 - Support Files/02-Flexible/ENGINE_CHANGELOG.md
 59086940bf4250e9b5fe66f015076ac2c8fec2c8709edaa8ea3d41cd2a62d2ce  2 - Support Files/02-Flexible/PoE2-Flexible.asl
 8fb63f09e5f22e7a392e7a4fd53a258a7fa11038d9a43c6949b159749aba1507  2 - Support Files/02-Flexible/README.md
 d37188eb77dc3c1b5ae6b42ce9134c6428ea1e3f0f28652286573ed448fa1ae9  2 - Support Files/02-Flexible/poe2_area_groups.txt
@@ -117,16 +112,16 @@ f25fe0ae3afed3eb4579f4df53dc6c1edf70ebb1410d71de8f464babe92bd77a  2 - Support Fi
 539fe9842b9ebfe54a8be4cd308ca0fac6e4000594972e31691ab91182c11996  2 - Support Files/11-Pinnacle-Pre/PoE2-Pinnacle-Pre.asl
 a3f4b1da556ef90986bcf37c6b2ee5d0469ecdc40716cb6fb72c3f1f194d77c1  2 - Support Files/11-Pinnacle-Pre/README.txt
 fb76826ef222463836d3f797795d6b6f6fda11210cb65b5a54a6164f05f100c6  2 - Support Files/12-Mixed100-Dyn/Mixed100-Dyn.lss
-67cadb672ba6f6ea08bb104c62ddc3e7854d1d522b409fb1c06a49d6d71a3a2a  2 - Support Files/12-Mixed100-Dyn/PoE2-Mixed.asl
+81fb117c51995c2a3d4e9cbc1e9510bac3dcbeeddcb4a3b9bb6cb562a8c46e8b  2 - Support Files/12-Mixed100-Dyn/PoE2-Mixed.asl
 8b3ed35ef6314c9de388c77f8ff4fc7c7f74ddca9893d9449cfd084cca481284  2 - Support Files/12-Mixed100-Dyn/README.md
 deed3fb71eca5f013f19a194a211b68106d9a1a719a086edd7dc1ff1fd092c26  2 - Support Files/12-Mixed100-Dyn/poe2_mixed_route.txt
 8cf993d0b0c6c82b574d2c51e2798e4beefd330d71067dbcc01524067c5cfa36  2 - Support Files/13-MixedAny-Dyn/MixedAny-v0.5-Dyn.lss
-67cadb672ba6f6ea08bb104c62ddc3e7854d1d522b409fb1c06a49d6d71a3a2a  2 - Support Files/13-MixedAny-Dyn/PoE2-Mixed.asl
+81fb117c51995c2a3d4e9cbc1e9510bac3dcbeeddcb4a3b9bb6cb562a8c46e8b  2 - Support Files/13-MixedAny-Dyn/PoE2-Mixed.asl
 02399343d86faa02f117932aa4a163da69f10c433c82cb13316b142e16d24aa4  2 - Support Files/13-MixedAny-Dyn/README.md
 29a18c884aec70d482ee34d6b759e359c4f4718311f908578665f099993ffb2d  2 - Support Files/13-MixedAny-Dyn/poe2_mixed_route.txt
 30170ecd7b456050f5d8215b709fc079fff242088405bada3eb7472bdb96ca07  2 - Support Files/14-Custom/Custom-Mixed-Example.lss
 414f13b702913767effd04f4ed645d106a92c6439232fbfd91b01d8fb4393428  2 - Support Files/14-Custom/Gen-MixedLayout.ps1
-7dfb2739fdfc214f201571d1d78a38b244a316df539bcbc0862ab105839a0796  2 - Support Files/14-Custom/PoE2-Mixed.asl
+34878341fc234469abef241e59cedba5c2c1c233b64b7591e997e2cc9766593c  2 - Support Files/14-Custom/PoE2-Mixed.asl
 b7b38c66907af929044909103a19689cc27ccdfc38ac42aefcaa38ebfa31fc2a  2 - Support Files/14-Custom/README.md
 72584090834556020a2bce672803496d3f4b59523df372aae2d3d6cb454a653a  2 - Support Files/14-Custom/poe2_mixed_route.txt
 e055e75f8debc7106080084e27e91187074541fa339881fda9a0e010a244a6e7  2 - Support Files/BossWatcher/BossLists/README.md
@@ -137,7 +132,6 @@ dbffa772f5524b19f2f6c4972e741a057935c3056d80358a91822760d5264e25  2 - Support Fi
 899a0cb2c4a4b544f78d2ab8bebf7169c8d13211927e1e7553bc430383e63036  2 - Support Files/BossWatcher/BossLists/pinnacle-v0.5.txt
 e59ca392436384e7ef78d31b6274fdf19fe99aefe0754ebae364380e412deb06  2 - Support Files/BossWatcher/BossLists/support-only.txt
 bc405c40d3cccfbfc53766b9466ca876504b5fb643686af5f19612009079b8da  2 - Support Files/BossWatcher/Build.ps1
-bf027d9eab09a6385d73188d2b81b4a5664d3e248bbb0d9ad55aebeb1b6d63c0  2 - Support Files/BossWatcher/CHANGELOG.md
 044b721ec274e6a5ad404b647e55660ceca1fea427fb3505d282a8991ad95845  2 - Support Files/BossWatcher/Calibration/README.txt
 e7c5ec27e2c32575ab10fe0af3e6a24d2d41d7ecd7713102ab82b5395e0e628a  2 - Support Files/BossWatcher/Calibration/dual_iktab_ekbab_left_broad.png
 933de0cbc3770a862f3e5eae7bfb490c0205ffbabf2aa3316121e9cf1c883da8  2 - Support Files/BossWatcher/Calibration/dual_iktab_ekbab_left_gold.png
@@ -146,15 +140,15 @@ b7d0fd076127ad9196af51fa8252efd78c73c8f8256eefdd5b5601530a5deab3  2 - Support Fi
 0a06bec1507f82c0b8c9a2f75254481f9748ae3cfc0092e2bce37b4db7d80c9c  2 - Support Files/BossWatcher/Calibration/dual_iktab_ekbab_right_broad.png
 58295c4c90ad9266d632aef5171b8ad10b7dd62dfe87fc4116ac68f26a7da092  2 - Support Files/BossWatcher/Calibration/dual_iktab_ekbab_right_gold.png
 0d9043de0aff9a42e1f51fd4fd80096a015e74f6d7a3b500f47f77778e9da6bd  2 - Support Files/BossWatcher/MAP-BOSS-DATABASE.md
-a4abd345f9393f295e1a307858e4033d4a06433f036cd9966e8e8fb9484cbed0  2 - Support Files/BossWatcher/README.md
+b14c2acd16f5a1f6e206f1a08b843db9d2b619a47bef066291b79debc7120dce  2 - Support Files/BossWatcher/README.md
 87f47745541d6f0f882f4059c5b0ef33cb60ec793931d878c75ccf3d636cb215  2 - Support Files/BossWatcher/Run-Source.ps1
 c676327ff04128ad952d67136fecd8878be356e5768a6c781973541af2f2b3b5  2 - Support Files/BossWatcher/Setup-OCR.ps1
-1d3c64458d6a4b7147ae644cbef19b574bd1bf00d8294a62d6cfb6faba10b271  2 - Support Files/BossWatcher/VALIDATION.txt
+ea40ef9fa8d787359d6187eb9e089e24314d83adb90c3c7e02581a28b5f7f79b  2 - Support Files/BossWatcher/VALIDATION.txt
 832c9c9b9997fcc0fefdfaf49650a361a531e311defc2d52251ed192e8464c78  2 - Support Files/BossWatcher/boss-localizations.json
 85ad6a853655dc4b212ccbe488b45363835da1fb515e35ab7134620fabfbc16a  2 - Support Files/BossWatcher/bosses.txt
-e0ae63ee8ee371d79f1f653cfe65605f9392158218fcf1f43e3a795eea4d5936  2 - Support Files/BossWatcher/config.json
+c989cd06db4f6ee3202b8ca6a06ae08e5488d813b67f2573ee54627b45b214de  2 - Support Files/BossWatcher/config.json
 dcef8ea02b9ffdb996bf5ae36485e394feb037fc7fabc3e8583022da960a9491  2 - Support Files/BossWatcher/map-bosses.json
-3facaad1eb4c3e8e7ca7eaeef7121126439f76bc89d211d2496c6512278fe019  2 - Support Files/BossWatcher/src/PoE2BossWatcher/AppConfig.cs
+cd83438806d7e7a6fe3e30dcc4584d73f6debf8490066b56268e52464e4d68de  2 - Support Files/BossWatcher/src/PoE2BossWatcher/AppConfig.cs
 13356dfde892199d69cda77f0fedaa611fe6d39703c000ecffed83e344cc61b8  2 - Support Files/BossWatcher/src/PoE2BossWatcher/BossBarMetrics.cs
 95b5b0d52ba019b457165e684c8a7e1937520102b52c3662c4796918391c94a5  2 - Support Files/BossWatcher/src/PoE2BossWatcher/BossContextReader.cs
 68b43d66cc7fecf579e8ff1603497e310ed10e0436105398626f9041de132dcb  2 - Support Files/BossWatcher/src/PoE2BossWatcher/BossDefinitions.cs
@@ -170,68 +164,72 @@ eeb6448a8c1f8c89978f63e48da77a49cb860b5b5da9bdd9d05c0ea4c873dbfb  2 - Support Fi
 357b9705bbc0d15525017dcecd132d2d0fc9c8b3c5c214c36511719128485a8d  2 - Support Files/BossWatcher/src/PoE2BossWatcher/GameWindowFinder.cs
 926f4afc0e37b32521873cb421c56ff1bef1b17d493c70a50bb9e89ee4cf678f  2 - Support Files/BossWatcher/src/PoE2BossWatcher/GenericMapBossTracker.cs
 1bc2ad63c10f14c86fa049a6032abb1d71d66cc01598ef5a5a57a9f00fd43dd0  2 - Support Files/BossWatcher/src/PoE2BossWatcher/MapBossDatabase.cs
-497d109d555db5ffc9c531e28bd0b326f9cf0937e6219120c507d21cb748e123  2 - Support Files/BossWatcher/src/PoE2BossWatcher/NativeMethods.cs
+4f2c13e465e9982407028b6f77923abb7ddc42220847d68560e4d6181ee810fa  2 - Support Files/BossWatcher/src/PoE2BossWatcher/NativeMethods.cs
 50d386e21860dc52ba58cbd0b12990c460a57f47f1cf52036bdbc9e103d20afe  2 - Support Files/BossWatcher/src/PoE2BossWatcher/OcrLaneHistory.cs
 a36999154a007502c577cb99dcf02675ca9e444bf111396442a65a135c580e87  2 - Support Files/BossWatcher/src/PoE2BossWatcher/OcrService.cs
 c2d810fa45844db13d7e6f6321e996f17d4141503aa95f85a0cb0e67246e63db  2 - Support Files/BossWatcher/src/PoE2BossWatcher/PathResolver.cs
-95254a9b20623e72eae093908d290145ace31cfed480fba13081bc16bc41a986  2 - Support Files/BossWatcher/src/PoE2BossWatcher/PoE2BossWatcher.csproj
-8e9b6aacc551e1f48bf19d0b7530911e72bbcbcd18f0cd1738186a19233c1978  2 - Support Files/BossWatcher/src/PoE2BossWatcher/Program.cs
-80e90d8c19eab60ff12824bfd64c048785664ee8fad1eb9ddf304daa812e755f  2 - Support Files/BossWatcher/src/PoE2BossWatcher/RuntimeSettingsOverlay.cs
-60a9afb72acd36ef948cef29f66a966295bf752da8daae468dc18317f6b3d078  2 - Support Files/BossWatcher/src/PoE2BossWatcher/ScreenCapture.cs
+900334018c5a96ce22c6e43a6eeb8f67addba1bb8e9e1258c816d18c3dc95a69  2 - Support Files/BossWatcher/src/PoE2BossWatcher/PoE2BossWatcher.csproj
+96ab007f206ae0cabea54973fafef959c7f7ac93087c7610664be85b8a9aae1c  2 - Support Files/BossWatcher/src/PoE2BossWatcher/Program.cs
+8b4f2bbac29d9632ab2ee8496cc60ff3b16ae8b6aa84f0b41ca8adecac72c1aa  2 - Support Files/BossWatcher/src/PoE2BossWatcher/RuntimeSettingsOverlay.cs
+9832eb51e8c1f43cd885830294c15c37515882afc68bc68bfa28ee954339f3fe  2 - Support Files/BossWatcher/src/PoE2BossWatcher/ScreenCapture.cs
 469f419edf707dbbc4cbd8a82b3a47b964fe3ac4bc9e4f62b9785df55e03e30c  2 - Support Files/BossWatcher/src/PoE2BossWatcher/TemporalRunCollapse.cs
+b5883c561fde218dbd14b8171dcbd10afdcff3db154a8fa710fc38264d6290f5  2 - Support Files/BossWatcher/src/PoE2BossWatcher/app.manifest
 7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2  2 - Support Files/BossWatcher/tessdata/eng.traineddata
-d84d180e8dda9affd70c8a2f3e180a5a9ffec9c886fc608d5107e22c37e66d09  2 - Support Files/Build-Release.ps1
+9e5c356a01aa736afbdb3ad77662689f997055a0dbcfda2942ba943532e9fea1  2 - Support Files/Build-Release.ps1
 8364770990d2dc5e752eeca666d0977565964a47846247ed986f2fd770eaa93a  2 - Support Files/Build-Tools.ps1
-dce51eb25807f408e5469f25aa2d8efd58ed837a1fbca2360f6992a1ead26e38  2 - Support Files/CHANGELOG.md
-a8659a91d5697ad726bfe8fd6c58e956160a5a277ed3cb5a0057aab557a7783d  2 - Support Files/GameTimeWatcher/Build.ps1
-2fb1439b33c1d0e4895c06f49c56f81808a8775554b532bf661a48907233c48f  2 - Support Files/GameTimeWatcher/CHANGELOG.md
-4f555d297d64dc50797f361267383a294067e0f5def39a81e0be1cb885124626  2 - Support Files/GameTimeWatcher/README.md
+95a37d1b84d06cb22c14bea34b4a7882891d399cee982687c303490f1f9a7831  2 - Support Files/GameTimeWatcher/Build.ps1
+1c2e08c728736b31bfaa16b37ef049957b3ef4b2ae2da0690eba1570a48973c3  2 - Support Files/GameTimeWatcher/README.md
 9a239a9096916c3cbbf32da894f8d3e8bcdd8bb43259afb3d657c9c096ad90a4  2 - Support Files/GameTimeWatcher/Run-Diagnostic.cmd
-9a3e72b7efa194b0b549eafab47473d6f245e339f85454ae113af62fb9b1864b  2 - Support Files/GameTimeWatcher/Run-Diagnostic.ps1
+4a8926091cc53cff0738627300dc0e0fd2a991c2dcfe5e7072bc2b81c22f7867  2 - Support Files/GameTimeWatcher/Run-Diagnostic.ps1
 aaf70bbd72844cd6894783cf9c6b3dd2da94549d0fbefd4f19601aca6e7c507f  2 - Support Files/GameTimeWatcher/Run-Source.ps1
-55b387e8ece5ec2c31e2df0bcda33e7a96df20117490173519887acb75b3b75e  2 - Support Files/GameTimeWatcher/VALIDATION.txt
-38790f333b5302c3ba601a66c0d596f8f865e5ed1b9669ec52d8a412e78e027e  2 - Support Files/GameTimeWatcher/config.json
-70cd7424d0c681daf64af486a47a4458747be4d9d88e88fcf89fcf9aa55cb8e5  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/AppConfig.cs
+505215faa9989e8601c9e0e1c4e2cf96288e8a471e23d5d64db2236a6494655b  2 - Support Files/GameTimeWatcher/VALIDATION.txt
+66bb7194a118bd4c2582c1fe75fa74825979b45edf06f8d676d8cc64f8cd78cf  2 - Support Files/GameTimeWatcher/config.json
+02b3b4d0d8ffeb6782beac8e3a338c77debef1d1df3974606f7147387a64fd14  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/AppConfig.cs
 2e0f86bf2f5c9d39f6933f3390e251b3a7673c9cf5211d4d28ba752a6073c7b2  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/DiagnosticLogger.cs
 cfbf89d790df966302493373d28669ae15ab9cf6e1f9f128dafdc1107028362f  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/GameWindowFinder.cs
-174aea2c818785145869a6987c07254c311476df0ae57315cc2bbfada5832522  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/MenuInputMonitor.cs
+64494bebe5536486cb640f1c0e505c1ccff66f1759dc4aba37b0c41d684856e5  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/MenuInputMonitor.cs
 366f5ed0df3982343e2bb593c520693361a30381c2cad136fc9a412fc78ab0b9  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/Models.cs
-32dfd77595586226eba51a152d6f9dbf13b298962e825fa36073593e5a9e2978  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/NativeMethods.cs
-8f0e7bfbd09f769bd1b6341fff4a7d63cb9705c251ef4431372a6e68a6e304f3  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/PoE2GameTimeWatcher.csproj
-935b5e78104049d58813cb35c02bae18527ad0a8b32f4af2d1ebd3d513a7f4b6  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/Program.cs
-0f0d3647e9f01ac592fd4723ffb73ffafb32a5195887ee9e3d59e2d8cadfc154  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/RuntimeSettingsOverlay.cs
-b1c450b9d4dc522cd34e6f7ca27a6857c1f32ffbf0dc0e7b3624817206168e56  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/ScreenCapture.cs
+d2e89bd0db8816d321e3210851a4c4fd1fa159c099a9eb65f356fcd291525a01  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/NativeMethods.cs
+44db7d813e6724eca6ef49a4d1a91a2d5c64d7ca574615be19d546b692a7c940  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/PoE2GameTimeWatcher.csproj
+cc2adee7406d97f65825fe95e15fc8f1b8f9970b3519b4ea42c67cddb1acceef  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/Program.cs
+f476812fa6892364a08f31a6de575587b2288ab375888a6936ad3f1f63c802ea  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/RuntimeSettingsOverlay.cs
+3a516971a35cef8018a9c3ee0b33a467c995eaada6bfba25727a7a683e6d4ed5  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/ScreenCapture.cs
 c76b94f053815dacdba01272f48a443ce541173313986cdc2de6c1e633215422  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/StateWriter.cs
-7f0ae859070201a56c498cfa8f8de5f4eae946a8031e992690ac14a8f40baf6f  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/TemplateMatcher.cs
+bbc78e31e864bf44d73985bb7069009b43167387c78e2e77cb00eaef7283220f  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/TemplateMatcher.cs
+b5883c561fde218dbd14b8171dcbd10afdcff3db154a8fa710fc38264d6290f5  2 - Support Files/GameTimeWatcher/src/PoE2GameTimeWatcher/app.manifest
+f1ef44b1a302b376f3332c967fc7b5ecc76f62d1ded2940181b3ffaab4f6ff70  2 - Support Files/GameTimeWatcher/templates/controller-pause-exit-path-of-exile.png
+bf0fb8a0f31c8d1a5241bdc17684c27a670a36dab60745358025d75e9e42f9c8  2 - Support Files/GameTimeWatcher/templates/controller-pause-menu-stack.png
+41fed14c14664628fb9295df32453c1ce34bcd3571805edbea837ec2c6ec7565  2 - Support Files/GameTimeWatcher/templates/controller-pause-menu-tight.png
+d5a8b2f2414ed43811341f8c635c28658d5626fbcf210aaa3b475edcd24ab420  2 - Support Files/GameTimeWatcher/templates/controller-pause-resume-game.png
 1e626d8d48ef31ea4b15a9677e9fcacab49c22f112944bfd671e1ffa52c5539a  2 - Support Files/GameTimeWatcher/templates/mtx-shop.png
 c129c21a2f76194d152078d744d2e81e777ff8acf9d73e987d73e1eef7ab343a  2 - Support Files/GameTimeWatcher/templates/pause-exit-path-of-exile.png
 ceb499cc7c045d0d021a1e9af768fb713ec0eaef3e95ae27139931482ecc0d91  2 - Support Files/GameTimeWatcher/templates/pause-menu-stack.png
 3094fa3f36fc2b9ecfe2dfba3f6af5397fa0051798d4a19d6e537de2f9a708aa  2 - Support Files/GameTimeWatcher/templates/pause-menu-tight.png
 3094fa3f36fc2b9ecfe2dfba3f6af5397fa0051798d4a19d6e537de2f9a708aa  2 - Support Files/GameTimeWatcher/templates/pause-menu.png
 7e7005ef0adb3d34a011cd62ab5c71f771a139e35b6fc571fc49cb98f017b79a  2 - Support Files/GameTimeWatcher/templates/pause-resume-game.png
-76c603be6ce88de2aebbac2fca6eb7a6f1cb82d9e117bf806deba6c9a5ab2cde  2 - Support Files/Installer/PoE2AS.iss
-d60b86daacf147392f030dfab3ab76df058cf79ed6d65dab8ad63e0786847b60  2 - Support Files/Installer/README.md
-5600fdc78ee077ae67f0edb7816e84c6bc58df61aa0e4256603e8cac1f2f92b4  2 - Support Files/README.md
-df4c043ebf30f1cb3e2e16ea523f417fb89479c14028e777c4a3209c67387837  2 - Support Files/START-HERE.txt
+b3010a4e837ba79ae875dae8f81d4487ff12473ae0a2257911b65d2a5db98056  2 - Support Files/Installer/PoE2AS.iss
+6d2fba9a436dad3b71c7e89e633778bdc8091842bfec9771614e52ce70520190  2 - Support Files/Installer/README.md
+33213a4e02c0379ff33f79f7e8866c0e4ce2c7fb2097a2b975d162cc3da24f8a  2 - Support Files/README.md
+ee6a41bbfb878639ca6bc1909be025be4bf51159acb1e025b7c6fad506c1c760  2 - Support Files/START-HERE.txt
 bf1cff4824418718acc9a7f4b6f76f2e17f80194fb4e1556a002aef1724ae436  2 - Support Files/Setup UI [Configuration]/Build.ps1
-eef16777b8c398e39e3e201026cb4943f777d8819bef29d450ac7d704ed31cab  2 - Support Files/Setup UI [Configuration]/README.md
-4e6915665b6e7212511617f4c31bd93c28f7c807e32dcffe8805adae63a7541d  2 - Support Files/Setup UI [Configuration]/Refresh-ProperNouns.ps1
+bddd9997ed5ce20241bb6f299aa83d2df1094a2f1b748229942609a0f393299c  2 - Support Files/Setup UI [Configuration]/README.md
+3558495e4d783a6b271a5b91f02614aa8476b57ee49f202a015cebfc71b04e3f  2 - Support Files/Setup UI [Configuration]/Refresh-ProperNouns.ps1
 b35119755a074cff6290bc57c3afe34f172645e0e91f781c5b48387c97a33afe  2 - Support Files/Setup UI [Configuration]/Run-Source.ps1
 0a876dd203a7f555ad497756120e62ba26f0f2ef04401797d7c6f95caaa40e13  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/LiveSplitFiles.cs
-6ea6e9de162d829ab856dab90d90b87fcb6174cb07bb083a2e3fc4e89463ae1b  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/de.json
-ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/en.json
-a5dee4b290bb3dc2ef5398d2c03a36fc349487d63ae15254a34a3654d2774d0d  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/es-ES.json
-65267ed01b9eebcd542b6d2a17a44c167354e9e8d83a09ce7154243c62d0716d  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/fr.json
-5ad391ebb76729f68d2b1a550a83e7059fc97fe88e09f71c17934158a7f81783  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/ja.json
-c836180491f30430eb605a5ce1dd89217efb5b31f3ac4191ce8750dffa089839  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/ko.json
-906c8eb3777d358eb7938baee315a415e8ebbc44b16c84857993e8535b19e08c  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/pt-BR.json
-f9d60a930e5d2e89916a69ff05f8738d9cde25c38743f4f20de640906b9190df  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/ru.json
-c80c17e5741701872809992df1e33ad7c2b257df913f4bb49ce0f97360e59ff5  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/th.json
+f957d6dd327379c9b6a002073fe1415a4a12677cd4e12d68e1aeeee92213ec95  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/de.json
+2e9422342d99b46911667c23fd530640ec9b544095756cda25dd88f9bbc1f738  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/en.json
+d34cde25895a7b02d652f2de074c860aa8256cbb6409e7c0a42e3013a427685d  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/es-ES.json
+99dd1e196530732b1f9169546d9386c5448d045c3c9e906f88735f90e67dfa3e  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/fr.json
+d8d191c8da9e3fe4e8b5b3b450bf69d5bd036c52f5d7e229bfadcf3a43db16f3  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/ja.json
+e4b3b9e1b3426830b9ae16c02b3553eedddbb2345f411c14abba0e02f8e6f578  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/ko.json
+ed0cf5308638c8a8c299ffdba624ccdda13f85bd36c7eaac8dc4ab9752d295b9  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/pt-BR.json
+366d0a8cfbaee2974b5045851ee737e4b45f91ac40ec70a2373fd8ff70e332bb  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/ru.json
+e003a7a7dfd159809da583ac40cac47a3a99c4da3b48be82291e96ff7294b4bc  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Locales/th.json
 75580141be5ea8e8cf187a054466f15d53af137fe3840c0e76622db4f9dfef5d  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Localization.cs
 a70d8dd993a6bfa6547a2c1fd8a0bbccdc848011b140b1dc60acb62d22090f9e  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Models.cs
 d67ee02d825ec86fa3198e68e0a4d825fc469443cc3cbd86859d8130055a4764  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/PackageData.cs
 de1f1c3fc664ab7f7f0330cb53f0e5a377dfdad43eced5496fb7a87a12c0afe4  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/PoE2GameLanguages.cs
-46aee2e7fe48bb963d757ab38aca05ba125972a95cd4df0cc7807db0ea822181  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/PoE2RouteSetup.csproj
+606dd3d92919e3d682f9987066e90e716a70c5aa669b0411e333b96b712cc81f  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/PoE2RouteSetup.csproj
 6a00c112104b6841b82eda064981fa16dbf8233b34bd30b7f5e4ab062ce8a499  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/Program.cs
 6acfa9e2322b4de7c9cd60b7b29c8c90c99a697134a1557e06ba505ed2e82460  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/ProperNouns/README.md
 ee42cfb114d7b2eee002e562e4c0a539e627e99f47086376721fbbfffb2c0c6f  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/ProperNouns/de.json
@@ -242,12 +240,12 @@ eb45f389958d6e60515f1098e087c9329c874dd64e348eec762982e57fd03965  2 - Support Fi
 755c594062f5b98a360c2999365015c6b3551ad58ce649f3c2bda6d270816341  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/ProperNouns/pt-BR.json
 f0d769d6272049e90a7aa4aadbd1edb503839ba8befa7751877cc96dffcaacb3  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/ProperNouns/ru.json
 2ed4740a7b37f2a2378da7c64cec47736a3dd77d20bfbb1cdaec6e3d5e7fdc87  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/ProperNouns/th.json
-48e38d00b391a9e2330dfb9c28ffe0cb04d867ca3702422573921b7b97d3efaf  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/SetupForm.cs
-dc1be9ba6ed9f431180a9fcfb6da94fdf83fe0b6abc206465ecf267f13b4260c  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/UserSettings.cs
+08ef251d11af43ba19769e93e2746b9d92eb3d889a9edcc4054e0b2a18031358  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/SetupForm.cs
+7b151b9f4dc6d782a353a07941ae793ea2f2234297771d28ecc6c3927b532534  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/UserSettings.cs
 922f662ed1b7802ad85bc2341fe2610dd5c543cb84feb30c1761b7ca12a91c6a  2 - Support Files/Setup UI [Configuration]/src/PoE2RouteSetup/UserSettingsDialog.cs
-8fa84eb71f53ea11ab6e8f708cd1ea7b0655ecd98090f15b2ce9c9faf911d490  2 - Support Files/Setup UI [Configuration]/ui-manifest.json
-d72f426396f3165e78a899ba6324d9a1bd8708026a5d778a5c4aa530485c2b0b  3 - verification files/BossWatcher-CHECKSUMS.sha256
-e39c9d9e80667e954f2e69954de54119204d3083e9200c62afa4ccd92e75d5f6  3 - verification files/README.txt
+1757f3f1e1915738f9e4cf56696675adfd33de5ca1aa804ba02b66033352a0f8  2 - Support Files/Setup UI [Configuration]/ui-manifest.json
+65aa102431cd0df8d87c72a1affb9f7eafef3357e904088ca130496381661132  3 - verification files/BossWatcher-CHECKSUMS.sha256
+05ae0eea1c42f8d740aa3e040b43b84f61db2b91ebe2a71e278f05c44ddbfbc4  3 - verification files/README.txt
 0b272444be41080543c48d20a08e62e716e997940ab1af2e91de46ad7f94fd19  3 - verification files/Verify-SHA256.ps1
 45f2ebae56b71fb5d89a6556f8225f917470b973f95b31c343a235400b41e644  4-README's_and_Diagnostics/Diagnostics/AREA-LOCALIZATION-HOTFIX-STATIC-VALIDATION.txt
 4dbf0096a27c95d655bb5c43153226b3c441c9c874c731fc04fe74fc8f0b6f57  4-README's_and_Diagnostics/Diagnostics/AREA-LOCALIZATION-HOTFIX-TEST-NOTES.md
@@ -293,7 +291,7 @@ cd1c6da3f680b15b1d4519df18c2d9f7d6748a199a1d8ea4ec5452497bcf226b  4-README's_and
 f99db65c967d7a0bc34d87785ec57bb68048a66794d9bfeeec741be108b90b22  4-README's_and_Diagnostics/Diagnostics/PROPER-NOUN-REFRESH-HOTFIX-TEST-NOTES.md
 97399d3b7a8858aac8d8a44bcadfca94754efae40d97ab20b443fe104d3bef79  4-README's_and_Diagnostics/Diagnostics/PROPER-NOUN-REFRESH-MAXPATH-HOTFIX-STATIC-VALIDATION.txt
 47f4d83ccf422212fc382fc6ef8c7280f536d36c3b2f69c6697652f711de9a6c  4-README's_and_Diagnostics/Diagnostics/PROPER-NOUN-REFRESH-MAXPATH-HOTFIX-TEST-NOTES.md
-4772ad27c13a87ee3b979b211d4662b5be2f8330a5e69f9d3a408fde050b1725  4-README's_and_Diagnostics/Diagnostics/README.txt
+2ff4f2f7738b37514685858e0ca000ba7a41170d8db69255f65108340124ddfc  4-README's_and_Diagnostics/Diagnostics/README.txt
 95bb5c1c49c127239b374ea02799ed818bcb20be5221f21f19b139a800a6d189  4-README's_and_Diagnostics/Diagnostics/RUN-AUDIT-TEST-NOTES.md
 cfd812696db8c794c8f937264d48c734200c265ba15c550adc2bf0302658171e  4-README's_and_Diagnostics/Diagnostics/SETTINGS-START-LOCALIZATION-FIX-STATIC-VALIDATION.txt
 7fa966494a5bb90344ef60bab48898d77643398436a4c863570bfeae05bd28f1  4-README's_and_Diagnostics/Diagnostics/SETTINGS-START-LOCALIZATION-FIX-TEST-NOTES.md
@@ -310,13 +308,13 @@ d63bec105eb4217246f2f0b05259f26fbc314a413faed876aba3d8ce5ba386f0  4-README's_and
 e699e189742f5ad8e98b2127023fbb5c9e6dab4d219af478f76cb076de53377f  4-README's_and_Diagnostics/Diagnostics/VAAL-RUINS-UI-POLICY-STATIC-VALIDATION.txt
 bca347cfa35e6ce11a18fa79fe3efe9a8660f5eb17fc9a3c3d0b8fe39c1e2b92  4-README's_and_Diagnostics/Diagnostics/VAAL-RUINS-UI-POLICY-TEST-NOTES.md
 2af1ff0ee131e6f5d1bf58d5f7edb188fd5aab34291401f9b8306ba5f55cc2f3  4-README's_and_Diagnostics/Diagnostics/images/README.txt
-7e25189ce51b2baa37c0cb23789a565b722c7646bfda6599c9a71e3e01d365e5  4-README's_and_Diagnostics/English/README.md
-4a7e2b21951189075bcfccfecfd9fc6798cdb2e480ba035eb677640047b94e47  4-README's_and_Diagnostics/French/README.md
-731a429c28c0f4ec6b71546c94cfca96583f7950d2beeaeb07a6e2e1786c8a57  4-README's_and_Diagnostics/German/README.md
-188ed2cee15d26fc24fbb4344774b378c3b2419335b3063cd9da2fd693231bae  4-README's_and_Diagnostics/Japanese/README.md
-a878522811b400b9d77a21fbad84f6a0dce39ef08ae9d0cdab4797616cb8981a  4-README's_and_Diagnostics/Korean/README.md
-81b5da11f9a1e20f66f183df9a63e738eb453b0f3f95226a4cae3de91c6ab915  4-README's_and_Diagnostics/Portuguese (Brazil)/README.md
-eab0d91fc3e9b53e40187b84907bdc0b71fd54b5f2c683b4d86875c73129b5f8  4-README's_and_Diagnostics/Russian/README.md
-ffc2df9b57a30f05faa0f1c18c7d046a52636020843ec6f0e3b48277e6dbcc80  4-README's_and_Diagnostics/Spanish (Spain)/README.md
-620dbf0cee43b8c8b01a5f0bad5e8abd7fd3d8627c97b02813593c2b5364f4f0  4-README's_and_Diagnostics/Thai/README.md
-1478a909ed2c7ad571f60a27ddf2a6c983b8270d40f7aa5f9acfef58f8861eca  RELEASE-NOTES-v3.0.0-RC.md
+b8b57d9aec5f1e3c80ba19bdfcb28691c6a590aad9cf1795aec9cb8445b6c9cb  4-README's_and_Diagnostics/English/README.md
+2eb03ae1e91625a5e4b59eeebbaef69ff37a2696c30e941b31a3839b7bde4487  4-README's_and_Diagnostics/French/README.md
+1069cec9acbafb3e9e01c660561ae886f36bf7ada93ba72a7d9ec2535bce7db5  4-README's_and_Diagnostics/German/README.md
+7c84372de48320377a5d30adf4b4cd3298b14d6e7f9fa72594622700ccfaf92d  4-README's_and_Diagnostics/Japanese/README.md
+812adb7d8d211579846e1b65b0258b55557d0b66f2621eab934013bb48383bf4  4-README's_and_Diagnostics/Korean/README.md
+d1d4c1b868113cc9e48d18b008cca56a41c9627ae380eeba0fa0d121c86c9269  4-README's_and_Diagnostics/Portuguese (Brazil)/README.md
+b49fa02b511982555465b28a2a48f9d3f89ac8743241915789a7dbc48d926ece  4-README's_and_Diagnostics/Russian/README.md
+26a69b07abd49c24a98d5c85b8f034fd62fd75399263b1dfec1574c3a4d779d7  4-README's_and_Diagnostics/Spanish (Spain)/README.md
+d5a1b9d19f94977459067226e38b6ba1851a83ea246409054c4ad05e56a2a966  4-README's_and_Diagnostics/Thai/README.md
+f948dda77da068c45c4ff81ca05b0a2a44151db3aa4c214cc7b80ad47c876e82  CHANGELOG.md

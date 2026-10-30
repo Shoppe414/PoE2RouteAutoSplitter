@@ -1,4 +1,4 @@
-﻿namespace PoE2GameTimeWatcher;
+namespace PoE2GameTimeWatcher;
 
 /// <summary>
 /// Polls ESC / controller Start independently of image analysis so short key presses
@@ -15,10 +15,14 @@ public sealed class MenuInputMonitor : IDisposable
     private long _lastInputUtcTicks;
     private readonly object _sourceGate = new();
     private string _lastSource = "none";
+    private readonly bool _controllerMode;
+    private long _lastAcceptedEdgeTicks;
+    private const int EdgeDebounceMs = 300;
 
-    public MenuInputMonitor(DiagnosticLogger diagnostics, Action<MenuInputSnapshot>? onEdge = null)
+    public MenuInputMonitor(DiagnosticLogger diagnostics, string inputUiMode, Action<MenuInputSnapshot>? onEdge = null)
     {
         _diagnostics = diagnostics;
+        _controllerMode = string.Equals(inputUiMode, "Controller", StringComparison.OrdinalIgnoreCase);
         _onEdge = onEdge;
         _thread = new Thread(PollLoop)
         {
@@ -48,14 +52,23 @@ public sealed class MenuInputMonitor : IDisposable
         {
             try
             {
-                bool escDown = (NativeMethods.GetAsyncKeyState(0x1B) & 0x8000) != 0;
-                bool controllerStartDown = IsControllerStartDown();
+                bool escDown = !_controllerMode && (NativeMethods.GetAsyncKeyState(0x1B) & 0x8000) != 0;
+                bool controllerStartDown = _controllerMode && IsControllerStartDown();
                 bool escEdge = escDown && !lastEscDown;
                 bool controllerEdge = controllerStartDown && !lastControllerStartDown;
 
                 if (escEdge || controllerEdge)
                 {
                     var utc = DateTime.UtcNow;
+                    var previousTicks = Interlocked.Read(ref _lastAcceptedEdgeTicks);
+                    if (previousTicks > 0 && (utc.Ticks - previousTicks) < TimeSpan.FromMilliseconds(EdgeDebounceMs).Ticks)
+                    {
+                        lastEscDown = escDown;
+                        lastControllerStartDown = controllerStartDown;
+                        Thread.Sleep(5);
+                        continue;
+                    }
+                    Interlocked.Exchange(ref _lastAcceptedEdgeTicks, utc.Ticks);
                     var source = escEdge ? "ESC" : "ControllerStart";
                     lock (_sourceGate) _lastSource = source;
                     Interlocked.Exchange(ref _lastInputUtcTicks, utc.Ticks);

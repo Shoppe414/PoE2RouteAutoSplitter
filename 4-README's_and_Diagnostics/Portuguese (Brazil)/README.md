@@ -2,7 +2,7 @@
 
 Uma ferramenta de configuração e autosplitter do LiveSplit para **speedruns da campanha de Path of Exile 2**.
 
-Versão atual: **v3.0.0 Release Candidate**.
+Versão atual: **v3.1.0**.
 
 O PoE2 Route AutoSplitter oferece rotas predefinidas e personalizadas para:
 

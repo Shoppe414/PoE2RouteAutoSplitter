@@ -1,4 +1,9 @@
-# Path of Exile 2 BossWatcher v0.3.6 / Localized OCR + Maps exit assist
+# Path of Exile 2 BossWatcher v0.3.9 / Explicit input-UI OCR profiles
+
+## v0.3.9 Controller boss-name OCR profile
+
+SetupUI now snapshots `PoE2.InputUiMode`. Mouse + Keyboard retains the existing orange/gold OCR calibration unchanged. Controller uses a separate bright-luminance acquisition mask calibrated from the supplied controller boss-name rendering; this preserves the thinner/brighter controller glyph strokes that were fragmented by the KBM gold mask. The boss ID catalog, completion/disappearance rules, and LiveSplit event semantics are unchanged.
+
 
 BossWatcher is the visual boss-completion tracker used by Boss Rush, mixed, Trials, and Maps setups. Localized OCR uses the selected PoE2 **game language** while downstream rules continue to use invariant boss IDs. Deterministic ordinary maps require database-backed OCR identity so unrelated/event boss UI cannot qualify the map. v0.3.6 also adds a guarded external-exit assist for runners who portal out immediately after a verified map-boss kill.
 
@@ -186,7 +191,7 @@ The Git source tree does not commit the compiled binary. `Build-Release.ps1` and
 - `src/PoE2BossWatcher/` — watcher source;
 - `Calibration/` — retained calibration captures;
 - `Run-Source.ps1` — source launch with optional `-DevConsole` and `-EventFile`;
-- `CHANGELOG.md` — release changes;
+- `../../CHANGELOG.md` — unified project and component change timeline;
 - `VALIDATION.txt` — validation report;
 - `..\..\3 - verification files\BossWatcher-CHECKSUMS.sha256` — BossWatcher source/package file hashes.
 

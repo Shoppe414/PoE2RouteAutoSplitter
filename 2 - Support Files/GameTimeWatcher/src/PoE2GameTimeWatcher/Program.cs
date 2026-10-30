@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.Text;
@@ -7,7 +7,7 @@ namespace PoE2GameTimeWatcher;
 
 internal static class Program
 {
-    private const string Version = "0.4.5-structure-first";
+    private const string Version = "0.4.7-input-ui-profiles";
 
     [STAThread]
     private static int Main(string[] args)
@@ -44,13 +44,14 @@ internal static class Program
                 $"inputFastMs={config.InputFastModeMs} inputHintMs={config.InputHintWindowMs} heartbeatMs={config.HeartbeatMs} provisionalTimeoutMs={config.ProvisionalTimeoutMs} " +
                 $"stackThreshold={config.PauseStackThreshold:F4} resumeThreshold={config.ResumeGameThreshold:F4} bannerThreshold={config.PauseBannerThreshold:F4} " +
                 $"exitThreshold={config.ExitPathOfExileThreshold:F4} mtxThreshold={config.MtxShopThreshold:F4} " +
-                $"gameLanguage={config.GameLanguage} detectorPolicy=structure-first/banner-second/text-low-weight " +
+                $"gameLanguage={config.GameLanguage} inputUiMode={config.InputUiMode} detectorPolicy=structure-first/banner-second/text-low-weight " +
                 $"foregroundRequired={config.RequireForegroundForNewDetection}");
 
             using var matcher = new TemplateMatcher(config, configDir);
             diagnostics.Log("TEMPLATES_LOADED",
                 $"stack={config.PauseStackTemplate} resume={config.ResumeGameTemplate} banner={config.PauseBannerTemplate} exit={config.ExitPathOfExileTemplate} " +
-                $"mtx={config.MtxShopTemplate} canonicalHeight={config.CanonicalHeight}");
+                $"mtx={config.MtxShopTemplate} canonicalHeight={config.CanonicalHeight} profile={config.InputUiMode} " +
+                $"anchors=stack:{config.PauseStackExpectedY},resume:{config.ResumeExpectedY},banner:{config.PauseBannerExpectedY},exit:{config.ExitExpectedY}");
 
             if (!string.IsNullOrWhiteSpace(testImage))
             {
@@ -90,7 +91,7 @@ internal static class Program
             Console.WriteLine("Loading-screen Game Time is handled directly by the ASL from Client.txt.");
             Console.WriteLine($"State file: {Path.GetFullPath(stateFile)}");
             Console.WriteLine($"Runtime settings: {settingsStatus}");
-            Console.WriteLine($"PoE2 game language: {config.GameLanguage} (pause structure is primary; paused-state banner is secondary; English text templates are low-weight only)");
+            Console.WriteLine($"PoE2 game language: {config.GameLanguage} | input UI: {config.InputUiMode} (explicit SetupUI profile)");
             if (diagnostics.Enabled) Console.WriteLine($"Diagnostic directory: {diagnostics.DirectoryPath} | images: {diagnosticImageDirectory}");
             if (!devConsole) Console.WriteLine("Use --dev-console to show detector scores continuously.");
 
@@ -203,7 +204,7 @@ internal static class Program
             // gameplay provisionally pauses; ESC/Start from the confirmed pause menu
             // provisionally resumes. ESC inside MTX remains paused because it normally
             // returns to the pause menu rather than gameplay.
-            using var menuInputMonitor = new MenuInputMonitor(diagnostics, edge =>
+            using var menuInputMonitor = new MenuInputMonitor(diagnostics, config.InputUiMode, edge =>
             {
                 bool gamePresent;
                 bool foreground;
@@ -294,8 +295,11 @@ internal static class Program
                     {
                         lastPid = window.ProcessId;
                         SafeStateLog(writer, $"GAME_CONNECTED process={window.ProcessName} pid={window.ProcessId}", diagnostics, devConsole);
-                        diagnostics.Log("GAME_CONNECTED", $"process={window.ProcessName} pid={window.ProcessId} hwnd=0x{window.Handle.ToInt64():X}");
-                        Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} GAME_CONNECTED | {window.ProcessName} pid={window.ProcessId}");
+                        var windowDpi = NativeMethods.GetDpiForWindow(window.Handle);
+                        var windowScalePercent = windowDpi > 0 ? windowDpi * 100.0 / 96.0 : 0.0;
+                        diagnostics.Log("GAME_CONNECTED",
+                            $"process={window.ProcessName} pid={window.ProcessId} hwnd=0x{window.Handle.ToInt64():X} dpi={windowDpi} scale={windowScalePercent:F0}%");
+                        Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} GAME_CONNECTED | {window.ProcessName} pid={window.ProcessId} | dpi={windowDpi} scale={windowScalePercent:F0}%");
                     }
 
                     bool foreground = NativeMethods.GetForegroundWindow() == window.Handle;
@@ -306,39 +310,25 @@ internal static class Program
                         heartbeatState = stableState;
                     }
 
-                    // A provisional input state is intentionally temporary. If the visual
-                    // detector never confirms the requested transition, resolve it back to
-                    // the last stable visual state. The ASL will refund/re-remove the
-                    // provisional interval using the pending-state timestamps.
-                    var wireBeforeCapture = GetWireSnapshot();
-                    if (wireBeforeCapture.OriginTicks > 0 &&
-                        (now.Ticks - wireBeforeCapture.OriginTicks) >= TimeSpan.FromMilliseconds(config.ProvisionalTimeoutMs).Ticks)
-                    {
-                        if (wireBeforeCapture.State == "PENDING_PAUSE" && stableState == ManualPauseVisualState.Running)
-                        {
-                            PublishWireState("RUNNING", "pause-candidate-rejected", wireBeforeCapture.OriginTicks);
-                            diagnostics.Log("PROVISIONAL_REJECTED", $"state=PENDING_PAUSE ageMs={(now.Ticks - wireBeforeCapture.OriginTicks) / (double)TimeSpan.TicksPerMillisecond:F1}");
-                        }
-                        else if (wireBeforeCapture.State == "PENDING_RUN" && stableState != ManualPauseVisualState.Running)
-                        {
-                            PublishWireState("PAUSED", "resume-candidate-rejected", wireBeforeCapture.OriginTicks);
-                            diagnostics.Log("PROVISIONAL_REJECTED", $"state=PENDING_RUN ageMs={(now.Ticks - wireBeforeCapture.OriginTicks) / (double)TimeSpan.TicksPerMillisecond:F1}");
-                        }
-                    }
-
                     if (now >= nextCapture && (!config.RequireForegroundForNewDetection || foreground))
                     {
                         nextCapture = now.AddMilliseconds(1000.0 / activeCaptureFps);
                         try
                         {
                             var frameStartUtc = DateTime.UtcNow;
-                            using var cap = capture.CaptureRoi(window, new NormalizedRect(0, 0, 1, 1), false);
+                            // Analyze every display mode at the same vertical resolution.
+                            // ScreenCapture performs the downscale during capture, avoiding a full
+                            // 4K/8K bitmap resize before the 576-high template matcher runs.
+                            using var cap = capture.CaptureAnalysisViewport(
+                                window, false,
+                                Math.Max(1, (int)Math.Round(config.CanonicalHeight * (16.0 / 9.0))),
+                                config.CanonicalHeight);
                             if (cap != null)
                             {
                                 var analyzeWatch = Stopwatch.StartNew();
                                 bool detailedScores = (devConsole && DateTime.UtcNow >= nextDevStatus) ||
                                     (diagnostics.Enabled && DateTime.UtcNow >= nextDiagnosticStatus);
-                                var detection = matcher.Analyze(cap.Bitmap, stableState, recentMenuInput, detailedScores);
+                                var detection = matcher.Analyze(cap.Bitmap, stableState, recentMenuInput, detailedScores, frameIsCanonicalContent: true);
                                 analyzeWatch.Stop();
                                 lastAnalyzeMs = analyzeWatch.Elapsed.TotalMilliseconds;
                                 lastPauseScore = detection.PauseMenuScore;
@@ -377,7 +367,7 @@ internal static class Program
                                             $"candidate-{DateTime.Now:yyyyMMdd-HHmmss-fff}-r{lastResumeScore:F3}-b{lastBannerScore:F3}-e{lastExitScore:F3}-m{lastMtxScore:F3}.png");
                                         candidateBitmap.Save(candidatePath, System.Drawing.Imaging.ImageFormat.Png);
                                         diagnostics.Log("CANDIDATE_SCREENSHOT",
-                                            $"path={candidatePath} analyzeMs={lastAnalyzeMs:F1} client={cap.ClientWidth}x{cap.ClientHeight} " +
+                                            $"path={candidatePath} analyzeMs={lastAnalyzeMs:F1} client={cap.ClientWidth}x{cap.ClientHeight} analysis={cap.Bitmap.Width}x{cap.Bitmap.Height} " +
                                             $"content={detection.ContentBounds} stack={lastStackScore:F4} resume={lastResumeScore:F4} banner={lastBannerScore:F4} " +
                                             $"exit={lastExitScore:F4} mtx={lastMtxScore:F4}");
                                     }
@@ -449,7 +439,7 @@ internal static class Program
                                     diagnostics.Log("STATE_CHANGE",
                                         $"old={old} new={stableState} reason={reason} pause={lastPauseScore:F4} stack={lastStackScore:F4} " +
                                         $"resume={lastResumeScore:F4} banner={lastBannerScore:F4} exit={lastExitScore:F4} mtx={lastMtxScore:F4} " +
-                                        $"client={cap.ClientWidth}x{cap.ClientHeight} content={detection.ContentBounds} analyzeMs={lastAnalyzeMs:F1} " +
+                                        $"client={cap.ClientWidth}x{cap.ClientHeight} analysis={cap.Bitmap.Width}x{cap.Bitmap.Height} content={detection.ContentBounds} analyzeMs={lastAnalyzeMs:F1} " +
                                         $"inputAgeMs={(lastMenuInputUtc == DateTime.MinValue ? -1 : (DateTime.UtcNow - lastMenuInputUtc).TotalMilliseconds):F1} confirmFrames={needed}");
                                     // Resolve any provisional state before diagnostic PNG encoding.
                                     // In v0.4.1 full-resolution diagnostic screenshots could add
@@ -489,9 +479,9 @@ internal static class Program
                                     }
                                 }
 
-                                // Diagnostic screenshots are intentionally last. They may take
-                                // hundreds of milliseconds to PNG-encode at 5120x1440, but by this
-                                // point provisional/confirmed wire state has already been published.
+                                // Diagnostic screenshots are intentionally last. The watcher now
+                                // captures at canonical analysis height, but PNG encoding still must
+                                // never delay provisional/confirmed wire-state publication.
                                 if (diagnostics.Enabled && diagnosticImageDirectory is not null &&
                                     menuProbeIndex >= 0 && menuProbeIndex < menuProbeDelaysMs.Length &&
                                     DateTime.UtcNow >= menuProbeStart.AddMilliseconds(menuProbeDelaysMs[menuProbeIndex]))
@@ -503,7 +493,7 @@ internal static class Program
                                             $"s{lastStackScore:F3}-r{lastResumeScore:F3}-b{lastBannerScore:F3}-e{lastExitScore:F3}-m{lastMtxScore:F3}.png");
                                         cap.Bitmap.Save(probePath, System.Drawing.Imaging.ImageFormat.Png);
                                         diagnostics.Log("MENU_PROBE_SCREENSHOT",
-                                            $"path={probePath} delayMs={menuProbeDelaysMs[menuProbeIndex]} client={cap.ClientWidth}x{cap.ClientHeight} " +
+                                            $"path={probePath} delayMs={menuProbeDelaysMs[menuProbeIndex]} client={cap.ClientWidth}x{cap.ClientHeight} analysis={cap.Bitmap.Width}x{cap.Bitmap.Height} " +
                                             $"content={detection.ContentBounds} stack={lastStackScore:F4} resume={lastResumeScore:F4} " +
                                             $"banner={lastBannerScore:F4} exit={lastExitScore:F4} mtx={lastMtxScore:F4}");
                                     }
@@ -523,6 +513,29 @@ internal static class Program
                             if (devConsole) Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} CAPTURE_ERROR | {ex.GetType().Name}: {ex.Message}");
                         }
                     }
+                    // Resolve expired provisional input only AFTER giving the current visual
+                    // frame a chance to confirm it. Previously timeout resolution ran before
+                    // capture/analysis, allowing PENDING_PAUSE -> RUNNING to be published only
+                    // a few hundred milliseconds before that same frame confirmed PauseMenu.
+                    var resolveNow = DateTime.UtcNow;
+                    var wireAfterCapture = GetWireSnapshot();
+                    if (wireAfterCapture.OriginTicks > 0 &&
+                        (resolveNow.Ticks - wireAfterCapture.OriginTicks) >= TimeSpan.FromMilliseconds(config.ProvisionalTimeoutMs).Ticks)
+                    {
+                        if (wireAfterCapture.State == "PENDING_PAUSE" && stableState == ManualPauseVisualState.Running)
+                        {
+                            PublishWireState("RUNNING", "pause-candidate-rejected", wireAfterCapture.OriginTicks);
+                            diagnostics.Log("PROVISIONAL_REJECTED",
+                                $"state=PENDING_PAUSE ageMs={(resolveNow.Ticks - wireAfterCapture.OriginTicks) / (double)TimeSpan.TicksPerMillisecond:F1}");
+                        }
+                        else if (wireAfterCapture.State == "PENDING_RUN" && stableState != ManualPauseVisualState.Running)
+                        {
+                            PublishWireState("PAUSED", "resume-candidate-rejected", wireAfterCapture.OriginTicks);
+                            diagnostics.Log("PROVISIONAL_REJECTED",
+                                $"state=PENDING_RUN ageMs={(resolveNow.Ticks - wireAfterCapture.OriginTicks) / (double)TimeSpan.TicksPerMillisecond:F1}");
+                        }
+                    }
+
                     // If PoE2 loses foreground while paused, retain the last confirmed state.
                     // This is necessary for breaks where the runner pauses and alt-tabs away.
                 }

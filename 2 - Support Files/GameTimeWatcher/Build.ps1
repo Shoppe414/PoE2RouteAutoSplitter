@@ -13,7 +13,7 @@ try {
     }
     New-Item -ItemType Directory -Force -Path $publish | Out-Null
 
-    Write-Host 'Publishing self-contained PoE2 GameTimeWatcher v0.4.4...'
+    Write-Host 'Publishing self-contained PoE2 GameTimeWatcher v0.4.7...'
     & dotnet restore $project -r win-x64 --artifacts-path $tempArtifacts --disable-build-servers
     if ($LASTEXITCODE -ne 0) { throw "dotnet restore failed with exit code $LASTEXITCODE." }
 
@@ -27,11 +27,10 @@ try {
     Copy-Item -LiteralPath (Join-Path $root 'config.json') -Destination (Join-Path $publish 'config.json') -Force
     $publishTemplates = Join-Path $publish 'templates'
     New-Item -ItemType Directory -Force -Path $publishTemplates | Out-Null
-    Copy-Item -LiteralPath (Join-Path $root 'templates\pause-menu-stack.png') -Destination (Join-Path $publishTemplates 'pause-menu-stack.png') -Force
-    Copy-Item -LiteralPath (Join-Path $root 'templates\pause-resume-game.png') -Destination (Join-Path $publishTemplates 'pause-resume-game.png') -Force
-    Copy-Item -LiteralPath (Join-Path $root 'templates\pause-menu-tight.png') -Destination (Join-Path $publishTemplates 'pause-menu-tight.png') -Force
-    Copy-Item -LiteralPath (Join-Path $root 'templates\pause-exit-path-of-exile.png') -Destination (Join-Path $publishTemplates 'pause-exit-path-of-exile.png') -Force
-    Copy-Item -LiteralPath (Join-Path $root 'templates\mtx-shop.png') -Destination (Join-Path $publishTemplates 'mtx-shop.png') -Force
+    Get-ChildItem -LiteralPath (Join-Path $root 'templates') -Filter '*.png' -File | ForEach-Object {
+        Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $publishTemplates $_.Name) -Force
+    }
+
 
     $publishedExe = Join-Path $publish 'PoE2GameTimeWatcher.exe'
     $publishedConfig = Join-Path $publish 'config.json'
@@ -40,7 +39,11 @@ try {
     $publishedPauseBannerTemplate = Join-Path $publish 'templates\pause-menu-tight.png'
     $publishedExitTemplate = Join-Path $publish 'templates\pause-exit-path-of-exile.png'
     $publishedMtxTemplate = Join-Path $publish 'templates\mtx-shop.png'
-    foreach ($required in @($publishedExe, $publishedConfig, $publishedStackTemplate, $publishedResumeTemplate, $publishedPauseBannerTemplate, $publishedExitTemplate, $publishedMtxTemplate)) {
+    $publishedControllerStackTemplate = Join-Path $publish 'templates\controller-pause-menu-stack.png'
+    $publishedControllerResumeTemplate = Join-Path $publish 'templates\controller-pause-resume-game.png'
+    $publishedControllerPauseBannerTemplate = Join-Path $publish 'templates\controller-pause-menu-tight.png'
+    $publishedControllerExitTemplate = Join-Path $publish 'templates\controller-pause-exit-path-of-exile.png'
+    foreach ($required in @($publishedExe, $publishedConfig, $publishedStackTemplate, $publishedResumeTemplate, $publishedPauseBannerTemplate, $publishedExitTemplate, $publishedMtxTemplate, $publishedControllerStackTemplate, $publishedControllerResumeTemplate, $publishedControllerPauseBannerTemplate, $publishedControllerExitTemplate)) {
         if (-not (Test-Path -LiteralPath $required -PathType Leaf)) {
             throw "Required GameTimeWatcher runtime file was not found after publish: $required"
         }

@@ -1,3 +1,7 @@
+﻿v0.4.6-fixed-analysis-dpi development validation
+-------------------------------------------------
+Static validation confirms the watcher requests PerMonitorV2 DPI awareness, preserves native client dimensions for diagnostics, and requests a canonical-height capture (576 px by default) before template analysis. Provisional timeout rejection is ordered after the current capture/analysis opportunity. No Windows/.NET compile was available in this environment; Windows field validation is required to confirm physical 3840x2160 geometry remains native at non-100% desktop scaling and to measure live analysis latency.
+
 v0.4.5-structure-first development validation
 ---------------------------------------------
 Static source/package validation passed for the structure-first multilingual pause detector. No Windows/.NET compile was performed here. Verified source lexical structure, structure/banner/text evidence weights (68/24/4/4), non-English skipping of English Resume/Exit text searches, JSON integrity, and shared game-language propagation. The new masked structure score requires live threshold calibration across languages/resolutions.

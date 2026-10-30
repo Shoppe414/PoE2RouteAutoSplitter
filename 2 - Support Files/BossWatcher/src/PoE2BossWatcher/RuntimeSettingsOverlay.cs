@@ -21,10 +21,12 @@ internal static class RuntimeSettingsOverlay
                 CommentHandling = JsonCommentHandling.Skip
             });
 
-            if (doc.RootElement.TryGetProperty("PoE2", out var poe2) && poe2.ValueKind == JsonValueKind.Object &&
-                poe2.TryGetProperty("Language", out var languageElement) && languageElement.ValueKind == JsonValueKind.String)
+            if (doc.RootElement.TryGetProperty("PoE2", out var poe2) && poe2.ValueKind == JsonValueKind.Object)
             {
-                config.GameLanguage = GameLanguageCatalog.Normalize(languageElement.GetString());
+                if (poe2.TryGetProperty("Language", out var languageElement) && languageElement.ValueKind == JsonValueKind.String)
+                    config.GameLanguage = GameLanguageCatalog.Normalize(languageElement.GetString());
+                if (poe2.TryGetProperty("InputUiMode", out var inputModeElement) && inputModeElement.ValueKind == JsonValueKind.String)
+                    config.InputUiMode = AppConfig.NormalizeInputUiMode(inputModeElement.GetString());
             }
 
             var goneMs = config.DisappearConfirmMs;
@@ -53,7 +55,7 @@ internal static class RuntimeSettingsOverlay
             config.MapDisappearConfirmMs = mapGoneMs;
             config.MapExitAssistMinMissingMs = mapExitAssistMs;
             config.Validate();
-            return $"shared-settings=applied path={fullPath}; gameLanguage={config.GameLanguage}; GoneConfirmMs={goneMs}; MapGoneConfirmMs={mapGoneMs}; MapExitAssistMinMissingMs={mapExitAssistMs}";
+            return $"shared-settings=applied path={fullPath}; gameLanguage={config.GameLanguage}; inputUiMode={config.InputUiMode}; GoneConfirmMs={goneMs}; MapGoneConfirmMs={mapGoneMs}; MapExitAssistMinMissingMs={mapExitAssistMs}";
         }
         catch (Exception ex)
         {

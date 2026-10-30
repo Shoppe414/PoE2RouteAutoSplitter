@@ -16,6 +16,7 @@ public sealed class AppConfig
     public int ConfirmRunningFrames { get; set; } = 2;
     public bool RequireForegroundForNewDetection { get; set; } = true;
     public string GameLanguage { get; set; } = "en";
+    public string InputUiMode { get; set; } = "MouseKeyboard";
 
     // Structure-first policy: the centered four-button pause-menu geometry is the
     // strongest signal, followed by the GAME PAUSED-style banner region. English
@@ -31,6 +32,18 @@ public sealed class AppConfig
     public string PauseBannerTemplate { get; set; } = "templates/pause-menu-tight.png";
     public string ExitPathOfExileTemplate { get; set; } = "templates/pause-exit-path-of-exile.png";
     public string MtxShopTemplate { get; set; } = "templates/mtx-shop.png";
+
+    // Controller mode uses a different pause-menu layout. SetupUI snapshots the user's
+    // explicit input-UI choice, then RuntimeSettingsOverlay selects these templates/anchors.
+    public string ControllerPauseStackTemplate { get; set; } = "templates/controller-pause-menu-stack.png";
+    public string ControllerResumeGameTemplate { get; set; } = "templates/controller-pause-resume-game.png";
+    public string ControllerPauseBannerTemplate { get; set; } = "templates/controller-pause-menu-tight.png";
+    public string ControllerExitPathOfExileTemplate { get; set; } = "templates/controller-pause-exit-path-of-exile.png";
+
+    public int PauseStackExpectedY { get; set; } = 116;
+    public int ResumeExpectedY { get; set; } = 127;
+    public int PauseBannerExpectedY { get; set; } = 78;
+    public int ExitExpectedY { get; set; } = 290;
 
     [JsonIgnore]
     public static readonly JsonSerializerOptions JsonOptions = new()
@@ -55,6 +68,7 @@ public sealed class AppConfig
     public void Validate()
     {
         GameLanguage = NormalizeGameLanguage(GameLanguage);
+        InputUiMode = NormalizeInputUiMode(InputUiMode);
         if (ProcessNames.Length == 0) throw new InvalidOperationException("ProcessNames must not be empty.");
         if (CaptureFps is < 1 or > 30) throw new InvalidOperationException("CaptureFps must be 1-30.");
         if (FastCaptureFps is < 1 or > 60) throw new InvalidOperationException("FastCaptureFps must be 1-60.");
@@ -70,6 +84,29 @@ public sealed class AppConfig
             throw new InvalidOperationException("Template thresholds must be 0-1.");
         if (CanonicalHeight is < 360 or > 1440)
             throw new InvalidOperationException("CanonicalHeight must be 360-1440.");
+        if (PauseStackExpectedY < 0 || ResumeExpectedY < 0 || PauseBannerExpectedY < 0 || ExitExpectedY < 0)
+            throw new InvalidOperationException("Pause-menu expected Y coordinates must be non-negative.");
+    }
+
+    public void ApplyInputUiProfile()
+    {
+        InputUiMode = NormalizeInputUiMode(InputUiMode);
+        if (!InputUiMode.Equals("Controller", StringComparison.OrdinalIgnoreCase)) return;
+
+        PauseStackTemplate = ControllerPauseStackTemplate;
+        ResumeGameTemplate = ControllerResumeGameTemplate;
+        PauseBannerTemplate = ControllerPauseBannerTemplate;
+        ExitPathOfExileTemplate = ControllerExitPathOfExileTemplate;
+        PauseStackExpectedY = 136;
+        ResumeExpectedY = 138;
+        PauseBannerExpectedY = 90;
+        ExitExpectedY = 354;
+    }
+
+    public static string NormalizeInputUiMode(string? value)
+    {
+        var normalized = (value ?? string.Empty).Trim();
+        return normalized.Equals("Controller", StringComparison.OrdinalIgnoreCase) ? "Controller" : "MouseKeyboard";
     }
 
     private static string NormalizeGameLanguage(string? code)

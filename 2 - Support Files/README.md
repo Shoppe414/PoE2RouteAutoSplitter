@@ -1,4 +1,4 @@
-# Path of Exile 2 Route AutoSplitter for LiveSplit — v3.0.0 Release Candidate
+# Path of Exile 2 Route AutoSplitter for LiveSplit — v3.1.0
 
 ## Run validation / SHA-256 audit logging
 
@@ -33,7 +33,7 @@ Generated ASLs use canonical internal Area IDs and map seeds as runtime identity
 
 ## Compact package paths
 
-This release uses a short archive root (`PoE2AS-v3.0.0`) and compact support names such as `01-Ordered`, `04-Checklist`, `BossWatcher`, and `GameTimeWatcher`. Generated .NET `bin` and `obj` folders are intentionally excluded from the release archive.
+This release uses a short archive root (`PoE2AS-v3.1.0`) and compact support names such as `01-Ordered`, `04-Checklist`, `BossWatcher`, and `GameTimeWatcher`. Generated .NET `bin` and `obj` folders are intentionally excluded from the release archive.
 
 The established runtime anchors `1 - User Setup`, `2 - Support Files`, `Setup UI [Configuration]`, and `LiveSplit Target` are retained. Version 3 adds `3 - verification files` and `4-README's_and_Diagnostics` as top-level release directories.
 
@@ -41,12 +41,12 @@ The established runtime anchors `1 - User Setup`, `2 - Support Files`, `Setup UI
 
 Download and run:
 
-`PoE2AS-v3.0.0-Setup.exe`
+`PoE2AS-v3.1.0-Setup.exe`
 
 The installer uses the four-directory v3 runtime:
 
 ```text
-PoE2AS-v3.0.0
+PoE2AS-v3.1.0
 ├── 1 - User Setup
 │   ├── PoE2RouteSetup.exe
 │   └── LiveSplit Target\
@@ -166,14 +166,14 @@ BossWatcher handles identity-based Boss Rush / trial / Pinnacle events and the M
 Compiled executables are intentionally not committed to Git. GitHub Releases
 contain:
 
-- `PoE2AS-v3.0.0-Setup.exe`
-- `PoE2AS-v3.0.0.zip`
+- `PoE2AS-v3.1.0-Setup.exe`
+- `PoE2AS-v3.1.0.zip`
 - `SHA256SUMS.txt`
 
 ## Automated GitHub release
 
 `.github\workflows\build-release.yml` runs for lowercase version tags such
-as `v3.0.0` and can also be started manually. It builds the Setup UI,
+as `v3.1.0` and can also be started manually. It builds the Setup UI,
 BossWatcher, and optional GameTimeWatcher, assembles the four-directory runtime,
 creates the portable ZIP and installer, and generates SHA-256 checksums.
 
@@ -190,7 +190,7 @@ Requirements:
 From `2 - Support Files`:
 
 ```powershell
-.\Build-Release.ps1 -Version 3.0.0
+.\Build-Release.ps1 -Version 3.1.0
 ```
 
 For development-only user-tool builds:
@@ -223,3 +223,6 @@ wake-up/setup period and first NPC interaction are intentionally untimed.
 Pinnacle modes 10-11 remain manual-start.
 
 **v0.4.3 manual-pause integration:** after updating, regenerate the setup and reselect the generated `.asl` in LiveSplit. The provisional timestamp protocol requires the matching ASL and GameTimeWatcher build.
+
+
+Version history: see the package-root CHANGELOG.md.

@@ -25,5 +25,14 @@
   "PauseBannerTemplate": "templates/pause-menu-tight.png",
   "ExitPathOfExileTemplate": "templates/pause-exit-path-of-exile.png",
   "MtxShopTemplate": "templates/mtx-shop.png",
-  "ProvisionalTimeoutMs": 1200
+  "ProvisionalTimeoutMs": 1200,
+  "InputUiMode": "MouseKeyboard",
+  "ControllerPauseStackTemplate": "templates/controller-pause-menu-stack.png",
+  "ControllerResumeGameTemplate": "templates/controller-pause-resume-game.png",
+  "ControllerPauseBannerTemplate": "templates/controller-pause-menu-tight.png",
+  "ControllerExitPathOfExileTemplate": "templates/controller-pause-exit-path-of-exile.png",
+  "PauseStackExpectedY": 116,
+  "ResumeExpectedY": 127,
+  "PauseBannerExpectedY": 78,
+  "ExitExpectedY": 290
 }

@@ -143,9 +143,12 @@ public sealed class ScreenCapture
                         var g = (int)sp[1];
                         var r = (int)sp[2];
 
-                        var isText = mode == OcrPreprocessMode.Gold
-                            ? IsBossNamePixel(r, g, b, config)
-                            : IsBroadBossNamePixel(r, g, b, config);
+                        var isController = config.InputUiMode.Equals("Controller", StringComparison.OrdinalIgnoreCase);
+                        var isText = isController
+                            ? IsControllerBossNamePixel(r, g, b, config, mode)
+                            : mode == OcrPreprocessMode.Gold
+                                ? IsBossNamePixel(r, g, b, config)
+                                : IsBroadBossNamePixel(r, g, b, config);
                         var v = isText ? (byte)255 : (byte)0;
                         dp[0] = v;
                         dp[1] = v;
@@ -335,6 +338,15 @@ public sealed class ScreenCapture
             parent.Y + parent.Height * child.Y,
             parent.Width * child.Width,
             parent.Height * child.Height);
+
+    private static bool IsControllerBossNamePixel(int r, int g, int b, AppConfig config, OcrPreprocessMode mode)
+    {
+        var luminance = (int)Math.Round(0.299 * r + 0.587 * g + 0.114 * b);
+        var threshold = mode == OcrPreprocessMode.Gold
+            ? config.ControllerOcrLuminanceMin
+            : config.ControllerOcrBroadLuminanceMin;
+        return luminance >= threshold;
+    }
 
     public static bool IsBossNamePixel(int r, int g, int b, AppConfig config)
         => r >= config.OcrRedMin

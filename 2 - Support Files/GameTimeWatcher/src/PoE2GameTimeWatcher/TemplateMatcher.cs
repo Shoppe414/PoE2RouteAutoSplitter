@@ -60,9 +60,12 @@ public sealed class TemplateMatcher : IDisposable
         Bitmap frame,
         ManualPauseVisualState stableState = ManualPauseVisualState.Running,
         bool inputHint = false,
-        bool detailedDiagnostics = false)
+        bool detailedDiagnostics = false,
+        bool frameIsCanonicalContent = false)
     {
-        var content = GetContentBounds(frame);
+        var content = frameIsCanonicalContent
+            ? new Rectangle(0, 0, frame.Width, frame.Height)
+            : GetContentBounds(frame);
         using var canonical = Canonicalize(frame, content, _config.CanonicalHeight);
         var source = ExtractGray(canonical);
 
@@ -202,16 +205,16 @@ public sealed class TemplateMatcher : IDisposable
     // the tested display modes. Search a conservative local window around those
     // known anchors instead of scanning most of the upper half of the frame.
     private double SearchPauseStack(GrayImage source) => SearchCenteredMultiScaleStructureAt(source, _pauseStackScales,
-        expectedY: 116, verticalTolerance: 26, horizontalTolerance: 18, searchStep: 2, sampleStep: 2, earlyStopScore: 0.92);
+        expectedY: _config.PauseStackExpectedY, verticalTolerance: 28, horizontalTolerance: 18, searchStep: 2, sampleStep: 2, earlyStopScore: 0.92);
 
     private double SearchResume(GrayImage source) => SearchCenteredMultiScaleAt(source, _resumeScales,
-        expectedY: 127, verticalTolerance: 24, horizontalTolerance: 16, searchStep: 2, sampleStep: 2, earlyStopScore: 0.92);
+        expectedY: _config.ResumeExpectedY, verticalTolerance: 26, horizontalTolerance: 16, searchStep: 2, sampleStep: 2, earlyStopScore: 0.92);
 
     private double SearchBanner(GrayImage source) => SearchCenteredBannerPresence(source, _pauseBannerScales,
-        expectedY: 78, verticalTolerance: 24, horizontalTolerance: 18, searchStep: 2, sampleStep: 2, earlyStopScore: 0.96);
+        expectedY: _config.PauseBannerExpectedY, verticalTolerance: 26, horizontalTolerance: 18, searchStep: 2, sampleStep: 2, earlyStopScore: 0.96);
 
     private double SearchExit(GrayImage source) => SearchCenteredMultiScaleAt(source, _exitScales,
-        expectedY: 290, verticalTolerance: 30, horizontalTolerance: 18, searchStep: 2, sampleStep: 2, earlyStopScore: 0.92);
+        expectedY: _config.ExitExpectedY, verticalTolerance: 34, horizontalTolerance: 18, searchStep: 2, sampleStep: 2, earlyStopScore: 0.92);
 
     private double SearchMtx(GrayImage source) => SearchNcc(source, _mtxGray,
         0, 28, 38, 78, 2, 2);
