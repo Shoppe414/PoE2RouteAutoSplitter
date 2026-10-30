@@ -19,7 +19,3 @@ Version 3.0.0 promotes the accumulated route, localization, diagnostics, and Bos
 - `2 - Support Files` — route data, BossWatcher, GameTimeWatcher, build tools, and installer sources/runtime support.
 - `3 - verification files` — package/runtime SHA-256 manifests, setup-validation manifests, per-run audit logs/summaries/checksum manifests, and verification helpers.
 - `4-README's_and_Diagnostics` — README translations plus centralized diagnostics; diagnostic PNGs are stored in `Diagnostics\images`.
-
-## Release-candidate note
-
-This is a release candidate and should receive another field-validation pass across campaign, trials, maps, manual pause, localized SetupUI display, and common display aspect ratios before the final v3.0.0 release is tagged.
