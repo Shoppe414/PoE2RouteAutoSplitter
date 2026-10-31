@@ -1,11 +1,12 @@
 {
-  "Version": "3.1.0",
+  "Version": "3.2.0",
   "AreaCatalog": "01-Ordered/zones.csv",
   "BossCatalog": "BossWatcher/bosses.txt",
   "BossSupportOnlyList": "BossWatcher/BossLists/support-only.txt",
   "CustomAslSource": "14-Custom/PoE2-Mixed.asl",
   "BossWatcherDirectory": "BossWatcher",
   "GameTimeWatcherDirectory": "GameTimeWatcher",
+  "CaptureHostDirectory": "CaptureHost",
   "Presets": [
     {
       "DisplayName": "Campaign 100% - Ordered",

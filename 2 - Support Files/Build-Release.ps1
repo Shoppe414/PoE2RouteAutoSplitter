@@ -1,5 +1,5 @@
 param(
-    [string]$Version = '3.1.0',
+    [string]$Version = '3.2.0',
     [switch]$SkipInstaller,
     [switch]$SkipPortableZip
 )
@@ -8,7 +8,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 if ($Version -notmatch '^\d+\.\d+\.\d+$') {
-    throw "Version must look like 3.1.0. Received: $Version"
+    throw "Version must look like 3.2.0. Received: $Version"
 }
 
 $supportRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -17,6 +17,7 @@ $userRoot = Join-Path $releaseRoot '1 - User Setup'
 $setupUiRoot = Join-Path $supportRoot 'Setup UI [Configuration]'
 $bossRoot = Join-Path $supportRoot 'BossWatcher'
 $gameTimeRoot = Join-Path $supportRoot 'GameTimeWatcher'
+$captureRoot = Join-Path $supportRoot 'CaptureHost'
 $installerRoot = Join-Path $supportRoot 'Installer'
 $verificationRoot = Join-Path $releaseRoot '3 - verification files'
 $documentationRoot = Join-Path $releaseRoot "4-README's_and_Diagnostics"
@@ -153,6 +154,10 @@ Write-Host 'Building self-contained Setup UI...'
 & (Join-Path $setupUiRoot 'Build.ps1')
 if ($LASTEXITCODE -ne 0) { throw "Setup UI build failed with exit code $LASTEXITCODE." }
 
+Write-Host 'Building shared Windows Graphics CaptureHost...'
+& (Join-Path $captureRoot 'Build.ps1')
+if ($LASTEXITCODE -ne 0) { throw "CaptureHost build failed with exit code $LASTEXITCODE." }
+
 Write-Host 'Building self-contained BossWatcher...'
 & (Join-Path $bossRoot 'Build.ps1')
 if ($LASTEXITCODE -ne 0) { throw "BossWatcher build failed with exit code $LASTEXITCODE." }
@@ -166,9 +171,12 @@ $bossPublish = Join-Path $bossRoot 'publish'
 $bossExe = Join-Path $bossPublish 'PoE2BossWatcher.exe'
 $gameTimePublish = Join-Path $gameTimeRoot 'publish'
 $gameTimeExe = Join-Path $gameTimePublish 'PoE2GameTimeWatcher.exe'
+$capturePublish = Join-Path $captureRoot 'publish'
+$captureExe = Join-Path $capturePublish 'PoE2CaptureHost.exe'
 if (-not (Test-Path -LiteralPath $setupExe)) { throw "Missing built Setup UI: $setupExe" }
 if (-not (Test-Path -LiteralPath $bossExe)) { throw "Missing built BossWatcher: $bossExe" }
 if (-not (Test-Path -LiteralPath $gameTimeExe)) { throw "Missing built GameTimeWatcher: $gameTimeExe" }
+if (-not (Test-Path -LiteralPath $captureExe)) { throw "Missing built CaptureHost: $captureExe" }
 
 if (Test-Path -LiteralPath $artifactsRoot) { Remove-DirectoryTreeSafe -Path $artifactsRoot }
 if (Test-Path -LiteralPath $stageBase) { Remove-DirectoryTreeSafe -Path $stageBase }
@@ -221,6 +229,12 @@ Copy-Item -LiteralPath (Join-Path $bossRoot 'boss-localizations.json') -Destinat
 $runtimeBossLists = Join-Path $runtimeBoss 'BossLists'
 Copy-DirectoryContents -Source (Join-Path $bossRoot 'BossLists') -Destination $runtimeBossLists
 
+# Shared Windows Graphics Capture runtime. BossWatcher and GameTimeWatcher both
+# consume this one capture session through named shared-memory frame channels.
+$runtimeCaptureHost = Join-Path $portableSupportRoot 'CaptureHost'
+New-Item -ItemType Directory -Force -Path $runtimeCaptureHost | Out-Null
+Copy-DirectoryContents -Source $capturePublish -Destination (Join-Path $runtimeCaptureHost 'publish')
+
 # Optional GameTimeWatcher runtime. It is only used when the runner elects to
 # pause LiveSplit Game Time along with PoE2's real pause menu / MTX Shop.
 $runtimeGameTime = Join-Path $portableSupportRoot 'GameTimeWatcher'
@@ -258,10 +272,11 @@ Client.txt [LOADING SCREEN] duration records. Campaign setups starting in The
 Riverbank arm on G1_1 entry and begin timing on the Wounded Man's final opening
 Client.txt line: Reach... Clearfell... Find the Miller...
 
-BossWatcher is installed under 2 - Support Files and is started from the Setup UI
-for Boss Rush / mixed modes. GameTimeWatcher is also installed there, but is only
-needed when the user enables the optional setting to pause LiveSplit Game Time while
-PoE2 is manually paused (pause menu / MTX Shop). If Developer console diagnostics
+CaptureHost is installed under 2 - Support Files and is started hidden by the Setup UI.
+It owns the single Windows Graphics Capture session shared by BossWatcher and
+GameTimeWatcher. BossWatcher is started from the Setup UI for Boss Rush / mixed
+modes. GameTimeWatcher is only needed when the user enables the optional setting to
+pause LiveSplit Game Time while PoE2 is manually paused (pause menu / MTX Shop). If Developer console diagnostics
 is enabled, Start GameTimeWatcher launches the external crash watchdog and stores
 diagnostic logs under 4-README's_and_Diagnostics\Diagnostics and PNG captures under its images subfolder.
 
@@ -290,6 +305,9 @@ foreach ($relative in @([string]$runtimeManifest.AreaCatalog, [string]$runtimeMa
     $required = Join-Path $portableSupportRoot ($relative.Replace('/', [IO.Path]::DirectorySeparatorChar))
     if (-not (Test-Path -LiteralPath $required -PathType Leaf)) { throw "Staged runtime is missing catalog/custom file: $relative" }
 }
+if ([string]$runtimeManifest.CaptureHostDirectory -ne 'CaptureHost') {
+    throw 'Staged manifest CaptureHostDirectory is invalid.'
+}
 if ([string]$runtimeManifest.GameTimeWatcherDirectory -ne 'GameTimeWatcher') {
     throw 'Staged manifest GameTimeWatcherDirectory is invalid.'
 }
@@ -316,6 +334,7 @@ foreach ($bossList in $requiredBossLists) {
         throw "Staged runtime is missing required BossWatcher list: BossLists\$bossList"
     }
 }
+if (-not (Test-Path -LiteralPath (Join-Path $runtimeCaptureHost 'publish\PoE2CaptureHost.exe') -PathType Leaf)) { throw 'Staged CaptureHost executable is missing.' }
 if (-not (Test-Path -LiteralPath (Join-Path $runtimeGameTime 'publish\PoE2GameTimeWatcher.exe') -PathType Leaf)) { throw 'Staged GameTimeWatcher executable is missing.' }
 $requiredGameTimeTemplates = @(
     'pause-menu-stack.png',

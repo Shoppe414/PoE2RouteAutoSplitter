@@ -5,9 +5,9 @@
     "PathOfExile_x64Steam",
     "PathOfExile_x64"
   ],
-  "CaptureFps": 10,
-  "FastCaptureFps": 30,
-  "InputFastModeMs": 1500,
+  "CaptureFps": 15,
+  "FastCaptureFps": 40,
+  "InputFastModeMs": 2000,
   "InputHintWindowMs": 750,
   "HeartbeatMs": 250,
   "ConfirmPausedFrames": 2,

@@ -1,4 +1,4 @@
-# PoE2 Route AutoSplitter Setup UI — v3.1.0
+# PoE2 Route AutoSplitter Setup UI — v3.2.0
 
 This is the Windows configuration tool for the Route AutoSplitter package.
 
@@ -18,7 +18,7 @@ The Windows installer asks for the application's default SetupUI language, with 
 
 ## Normal users
 
-Install the ready-to-run `PoE2AS-v3.1.0-Setup.exe` GitHub Release asset.
+Install the ready-to-run `PoE2AS-v3.2.0-Setup.exe` GitHub Release asset.
 
 The installed launcher is:
 
@@ -226,7 +226,7 @@ To build all user tools without creating an installer:
 To create the distributable installer and portable ZIP:
 
 ```powershell
-.\..\Build-Release.ps1 -Version 3.1.0
+.\..\Build-Release.ps1 -Version 3.2.0
 ```
 
 > **Manual-pause protocol note:** v0.4.3 GameTimeWatcher requires an ASL generated from the same package. Re-run the Setup UI after updating and re-browse LiveSplit's Scriptable Auto Splitter component to the newly generated `.asl`.
@@ -235,3 +235,18 @@ To create the distributable installer and portable ZIP:
 ## PoE2 game language
 
 Settings includes a PoE2 **game language** selector independent from the SetupUI display language. Generate / Deploy writes the selected code into `poe2_run_settings.json`, copies the current boss-localization database into `poe2_boss_localizations.json`, and includes its version/SHA-256 in the generated settings snapshot. BossWatcher is launched with that exact localization snapshot. GameTimeWatcher reads the same game-language value but uses structure-first pause detection.
+
+
+### v3.2.0 WGC anonymous boss resolution policy
+
+When BossWatcher confirms that a single boss UI appeared and disappeared but cannot recover its identity, it emits an `ANON_GONE` timing event. Generated routes apply only narrowly safe resolvers:
+
+- **Sekhemas:** recognized floor context provides deterministic fallback for Rattlecage (Floor 1), Ashar (Floor 3), and Zarokh (Floor 4). Floor 2 uses its two-boss occurrence/elimination rules because Hadi/Rafiq kill order is not fixed.
+- **Trial of Chaos:** dynamic boss slots accept a structurally verified anonymous occurrence; if exactly one earlier slot is unidentified and two of Uxmal/Chetza/Bahlak are later known, the missing identity is retroactively renamed by no-repeat elimination.
+- **Ordered/custom ordered routes:** an otherwise unresolved boss objective may split provisionally. One or more consecutive provisional boss objectives are confirmed when a later named boss matches the next expected route boss. A contradictory named boss disables further anonymous fallback and requires manual Undo/reconciliation.
+- **Unordered/general campaign:** no area-to-boss identity assumption is made.
+
+## Generated runtime state files
+
+Generated routes now maintain `poe2_load_state.txt` in `LiveSplit Target` in addition to the existing pause/context/event files. The ASL writes `LOADING`/`RUNNING` from authoritative Client.txt load boundaries; BossWatcher reads it to suppress boss acquisition during loading screens. SetupUI treats the file as generated runtime state and replaces/cleans it with the active target.
+

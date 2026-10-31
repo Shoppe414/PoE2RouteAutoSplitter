@@ -2,7 +2,7 @@
 
 Un outil de configuration et un autosplitter LiveSplit pour le **speedrun de la campagne de Path of Exile 2**.
 
-Version actuelle : **v3.1.0**.
+Version actuelle : **v3.2.0**.
 
 PoE2 Route AutoSplitter fournit des itinéraires prédéfinis et personnalisés pour :
 
@@ -470,3 +470,10 @@ Les captures PNG de diagnostic sont stockées dans :
 **PoE2 Route AutoSplitter 3.x**
 
 La version 3 ajoute la prise en charge multilingue de SetupUI et de la langue du jeu, les noms localisés officiels des boss et des zones lorsqu’ils sont disponibles, des politiques étendues pour la campagne, les épreuves, les Ruines vaal et les cartes, la centralisation des diagnostics et des fichiers de vérification, ainsi qu’une géométrie de capture BossWatcher adaptative basée sur la hauteur pour les clients de jeu 16:9, ultralarges et super-ultralarges.
+
+## Fiabilité de la détection des boss et solutions de secours pour les éliminations très rapides
+
+BossWatcher bloque désormais l’acquisition des boss pendant les écrans de chargement et vérifie la géométrie de l’interface à l’échelle d’un boss avant l’OCR. Les barres de vie des ennemis ordinaires et les images de chargement très riches en doré sont donc rejetées avant de pouvoir devenir des événements de boss anonymes. L’OCR du nom retire aussi les longues lignes du cadre et isole le groupe de texte centré avant la reconnaissance.
+
+L’OCR reste le mécanisme principal d’identification. Si un boss vérifié disparaît avant que l’OCR ne l’identifie, les horodatages structurels sont conservés et seules des solutions de secours sûres et spécifiques à la route sont utilisées : les routes ordonnées/personnalisées ordonnées peuvent effectuer une séparation provisoire confirmée par l’ordre ultérieur ; Sekhemas utilise sa séquence déterministe d’étages ; le Trial of Chaos peut utiliser l’élimination sans répétition. Les routes de campagne non ordonnées ne déduisent pas un boss à partir de la zone actuelle.
+

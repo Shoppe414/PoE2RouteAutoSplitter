@@ -1,4 +1,16 @@
-﻿PoE2BossWatcher v0.3.8 DPI-aware geometry development validation
+PoE2BossWatcher v0.4.3 structural geometry hardening development validation
+- Single-boss encounter timing is structurally armed before OCR identity resolution.
+- Strong single-boss signatures can arm from one captured frame; weaker candidates retain the existing multi-frame gates.
+- Anonymous presence/disappearance uses the learned boss-name spatial template; health fill remains diagnostic only.
+- A bounded 24-frame native boss-ROI ring buffer preserves short encounters for delayed identity OCR.
+- Post-disappearance OCR runs on a dedicated below-normal-priority background thread with its own Tesseract engine.
+- Live OCR remains primary; buffered OCR uses best retained gold/broad frames plus temporal fallback.
+- A named GONE event still requires a resolved BossDefinition. Unresolved structural encounters emit identity-free ANON_GONE records; BossWatcher itself never guesses a boss identity.
+- SEEN is timestamped to structural first-seen and GONE to firstMissing even when identity resolves later.
+- Static validation: BossWatcher C# lexical/delimiter checks passed; all package JSON parsed.
+- No Windows/.NET compile performed in this environment; rebuild and in-game validation are required.
+
+PoE2BossWatcher v0.3.8 DPI-aware geometry development validation
 - The executable requests PerMonitorV2 DPI awareness through its embedded application manifest/project settings so Windows display scaling should not virtualize GetClientRect/ClientToScreen geometry.
 - Existing height-relative boss capture and OCR algorithms are otherwise unchanged from v0.3.7.
 - No Windows/.NET compile performed in this environment; verify native client dimensions at non-100% scaling on Windows.
@@ -99,3 +111,18 @@ BUILD / RUNTIME LIMITATION
 --------------------------
 No .NET SDK/compiler or PowerShell runtime is installed in the validation environment, so the Windows project was not compiled or live-tested here.
 Use Setup-OCR.ps1 and Build.ps1 on Windows with .NET 10 SDK to publish the executable, then perform an in-game verification pass.
+
+
+v0.4.2 anonymous handoff checks
+- ANON_GONE is emitted only after the same structural disappearance confirmation used by named GONE.
+- ANON_GONE carries the original firstMissing timestamp; confirmation delay remains verification-only.
+- Buffered OCR rejection diagnostics report the nearest known boss even below MinOcrSimilarity without lowering the production threshold.
+- Route-level resolvers are intentionally outside BossWatcher: Sekhemas fixed-position, Chaos no-repeat elimination, and ordered-route provisional confirmation are handled by PoE2-Mixed.asl.
+
+v0.4.3 structural hardening checks
+- Full-ROI `GlobalHealthRedRunFraction` is computed before OCR lane decisions.
+- Single acquisition requires configured boss-scale global health structure and rejects excessive name/center gold density.
+- Dual topology requires independent full-ROI left/right health structure before lane OCR.
+- `poe2_load_state.txt` LOADING suppresses/cancels identity and map tracking.
+- Single OCR masks remove long horizontal artifacts and blank distant components outside the centered text cluster.
+- WinForms watcher DPI mode is defined only by `ApplicationHighDpiMode=PerMonitorV2`; manifest duplicates were removed to avoid WFO0003.

@@ -1,5 +1,32 @@
 # PoE2 Route AutoSplitter — Unified Changelog
 
+## v3.2.0 — Structural geometry hardening / load suppression / OCR isolation (BossWatcher 0.4.3)
+
+- Promoted the validated structural-geometry-hardening WGC build to **v3.2.0** after successful field testing. No detector-policy changes were introduced by the promotion itself; v3.2.0 is the release version for this validated code line.
+- Updated SetupUI, CaptureHost, installer, release-build defaults, GitHub release workflow defaults, package documentation, localized README version labels, verification metadata, and source-package naming to 3.2.0.
+- Added an ASL-owned `poe2_load_state.txt` protocol. Every generated/source ASL marks `LOADING` at authoritative Client.txt load start and `RUNNING` at load completion. BossWatcher cancels existing acquisition/tracking and suppresses new boss events while the state is `LOADING`, preventing loading-screen artwork from becoming an anonymous boss.
+- Added full-ROI health-run geometry before OCR-lane analysis. A single-boss candidate must now exhibit a boss-scale coherent health structure across the complete capture, preventing ordinary centered enemy health bars from looking full-width merely because they fill a local OCR lane. Dual topology also requires independent boss-scale left/right full-ROI health structure before lane OCR is allowed.
+- Added upper plausibility bounds for boss-name gold density. Extremely gold-heavy loading art/UI is rejected before anonymous arming.
+- Retained the fast one-frame path for real boss bars, but it now requires both the prior inner health/name signal and the new boss-scale full-ROI structure.
+- Applied the same boss-scale sanity gate to generic map structural acquisition.
+- Hardened OCR preprocessing by removing long horizontal frame/border artifacts from single-boss masks as well as dual lanes, then blanking distant mask components outside the centered text cluster while preserving mask dimensions for temporal OCR. Tesseract remains in `SingleLine` mode and the 0.72 identity threshold is unchanged.
+- Preserved anonymous timing, ring buffering, post-disappearance OCR, ordered/custom provisional resolution, Sekhemas deterministic fallback, Chaos no-repeat elimination, and `firstMissing` backdating semantics.
+- Consolidated release/change history into this root `CHANGELOG.md`; it is the sole package changelog.
+- Updated all localized user READMEs to document load suppression, boss-scale structural validation, fail-closed unresolved behavior, and the specialized ordered/Sekhemas/Chaos fallback policies.
+- Removed legacy DPI-awareness declarations from the WinForms watcher manifests while retaining `<ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>` in the projects, eliminating the .NET 10 `WFO0003` duplicate-DPI warning without changing effective DPI behavior.
+
+
+### Anonymous route-resolution iteration (BossWatcher 0.4.2 / Mixed ASL 1.3.12)
+
+- Unresolved structurally verified single-boss defeats now emit `ANON_GONE` instead of being discarded. The event preserves structural first-seen and `firstMissing` timing.
+- Buffered post-disappearance OCR now logs per-frame/per-mask text, confidence, nearest boss candidate, similarity, and acceptance threshold without relaxing OCR matching.
+- Generated mixed/custom routes add specialized resolution policies:
+  - Sekhemas fixed-floor deterministic fallback for Floors 1, 3, and 4; Floor 2 uses two-boss occurrence/elimination handling.
+  - Chaos anonymous occurrence support plus retroactive no-repeat identity elimination when the remaining identity is mathematically unique.
+  - Ordered/custom ordered routes may advance an unidentified boss provisionally and confirm contiguous provisional predecessors when the next named boss matches route order.
+  - Contradictions disable further provisional anonymous fallback and require manual Undo/reconciliation; automatic LiveSplit rollback is intentionally not attempted.
+- Dynamic/unordered campaign routing does not infer boss identity from area alone.
+
 This is the single authoritative change timeline for the package. It consolidates the former project, BossWatcher, GameTimeWatcher, ordered-engine, flexible-engine, and v3.0.0 RC release-note histories. Entries are newest first. Component versions are retained where they are useful for identifying the code that shipped with a project release.
 
 ## v3.1.0 — Controller profiles, display-scaling hardening, fixed-cost pause analysis, and reliable mixed-route area progression
@@ -9,6 +36,35 @@ This is the single authoritative change timeline for the package. It consolidate
 - Promoted the validated buildfix9 line from the v3.0.0 Release Candidate series to **v3.1.0**.
 - Updated SetupUI, installer, release-build defaults, GitHub release workflow defaults, package documentation, verification metadata, and user-facing version labels to 3.1.0.
 - Replaced the scattered changelog/release-note files with this unified timeline.
+
+### Shared Windows Graphics Capture transport
+
+- Replaced the independent BossWatcher and GameTimeWatcher GDI screen-acquisition paths with one hidden `PoE2CaptureHost` process using a persistent Windows Graphics Capture session for the PoE2 window.
+- BossWatcher and GameTimeWatcher now consume separate shared-memory frame channels from that single capture source rather than each copying the screen independently.
+- The WGC session uses a free-threaded Direct3D11 capture frame pool; pause-frame scaling is isolated on a below-normal-priority background worker so it cannot block boss-frame publication.
+- Preserved Per-Monitor-V2/client-area geometry: WGC window frames are translated back to the PoE2 client rectangle before boss or pause ROIs are derived.
+- Removed `CopyFromScreen`, desktop `GetDC`, and `StretchBlt` screen acquisition from the watcher capture paths. `System.Drawing` remains only for detector/OCR bitmap processing.
+- Existing boss identity logic, pause classification, route logic, and `firstMissing` split-time backdating are intentionally unchanged in this transport-only refactor.
+
+### BossWatcher anonymous structural arming / delayed identity OCR
+
+- Decoupled single-boss encounter timing from boss-name OCR. A structurally valid boss UI now arms an anonymous encounter immediately; OCR resolves identity independently instead of deciding whether an encounter exists.
+- Added a strong one-frame structural arm path for very short encounters (`redRun >= 0.75` and centered name signal `>= 0.06`). Weaker candidates keep the existing multi-frame confirmation gates.
+- Added a bounded 24-frame native boss-ROI ring buffer and best-frame selection for delayed identity recovery. The buffer is frame-driven and independent of Tesseract cadence.
+- Added asynchronous post-disappearance OCR on a dedicated Tesseract engine so capture/timing can continue while identity is recovered from retained frames. Buffered identity uses per-frame gold/broad OCR followed by temporal-mask fallback.
+- Anonymous disappearance is measured with the learned boss-name spatial template, which does not require knowing the boss identity. Health-fill collapse remains diagnostic only and cannot itself complete an encounter.
+- Live OCR remains the primary identity mechanism. If it resolves while the boss is still present, tracking transitions into the existing known-boss path without changing the structurally recorded encounter start.
+- If identity resolves only after disappearance, `SEEN` is emitted using the original structural first-seen timestamp and `GONE` uses the original `firstMissing` timestamp; the 5.5 s verification window and delayed OCR therefore do not inflate the recorded fight/split time.
+- Structural evidence alone cannot emit a named boss completion. An unresolved anonymous encounter is dropped after the configured identity-resolution timeout rather than guessing a boss ID.
+
+### Timing accuracy and sampling/performance tuning
+
+- Fixed boss split backdating being silently skipped when the watcher confirmation delay exceeded the ASL safety cap. The previous ASL guard accepted at most 5.0 seconds while the normal disappearance confirmation is 5.5 seconds; boss and mixed route scripts now allow a 45-second sanity window, preserving the original `firstMissing` timestamp under supported confirmation settings.
+- Raised BossWatcher capture sampling from 20 FPS to 30 FPS to reduce boss-bar disappearance quantization from roughly 50 ms to roughly 33 ms before the verification window begins.
+- Raised GameTimeWatcher normal pause sampling from 10 FPS to 15 FPS and fast/menu-transition sampling from 30 FPS to 40 FPS; the menu-input fast window is extended from 1.5 s to 2.0 s to improve rapid exit/re-entry handling.
+- Kept pause scaling isolated on the existing below-normal-priority background worker and retained newest-frame-only queuing so increased pause sampling cannot build a stale-frame backlog.
+- Optimized the pause bilinear scaler by caching horizontal source-coordinate/weight maps for stable viewport dimensions and unrolling the fixed BGR24 channel loop, reducing repeated per-pixel arithmetic and temporary work in the highest-frequency pause path.
+- No additional GPU compute/offload stage was added: WGC/D3D11 already performs capture/cropping on the GPU, while adding a separate compute pipeline for the relatively small detector viewport would add synchronization/transfer complexity without a demonstrated net gain.
 
 ### Mixed Area + Boss routes
 
@@ -53,8 +109,9 @@ This is the single authoritative change timeline for the package. It consolidate
 
 ### Component identities in this release line
 
-- GameTimeWatcher: `0.4.7-input-ui-profiles`.
-- BossWatcher: `0.3.9-input-ui-profiles`.
+- GameTimeWatcher: `0.5.0-wgc-shared-capture`.
+- BossWatcher: `0.4.1-anonymous-structural-arming`.
+- Shared CaptureHost: package `3.1.0`, WGC/D3D11 transport.
 - Generated/custom mixed route after the area-queue fix: `v1.3.11-loadend-area-queue`.
 - Legacy mixed dynamic route area-queue line: `v1.2.4-loadend-area-queue`.
 

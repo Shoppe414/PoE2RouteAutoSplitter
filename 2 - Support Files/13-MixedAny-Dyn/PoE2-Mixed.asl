@@ -283,6 +283,8 @@ startup
     settings.Add("gameTimeLoads", true, "Game Time: remove Client.txt-reported loading screens");
     settings.Add("manualPauseRemoval", false, "Game Time: pause with PoE2 pause menu / MTX shop (requires GameTimeWatcher)"); // SETUP_MANUAL_PAUSE_DEFAULT
     vars.gtManualPauseStatePath = System.IO.Path.Combine(vars.liveSplitDir, "poe2_manual_pause_state.txt");
+    vars.gtLoadStatePath = System.IO.Path.Combine(vars.liveSplitDir, "poe2_load_state.txt");
+    try { System.IO.File.WriteAllText(vars.gtLoadStatePath, "RUNNING"); } catch { }
     vars.gtDebugPath = System.IO.Path.Combine(vars.liveSplitDir, "poe2_gametime_debug.log");
     vars.gtReader = null;
     vars.gtClientPath = "";
@@ -795,6 +797,7 @@ update
                 if (!vars.gtLoadActive)
                 {
                     vars.gtLoadActive = true;
+                    try { System.IO.File.WriteAllText(vars.gtLoadStatePath, "LOADING"); } catch { }
                     vars.gtLoadObservedExclusiveSeconds = 0.0;
                     vars.gtLoadManualOverlapSeconds = 0.0;
                     vars.gtLoadSampleUtc = System.DateTime.MinValue;
@@ -868,6 +871,7 @@ update
                 }
 
                 vars.gtLoadActive = false;
+                try { System.IO.File.WriteAllText(vars.gtLoadStatePath, "RUNNING"); } catch { }
                 vars.gtLoadObservedExclusiveSeconds = 0.0;
                 vars.gtLoadManualOverlapSeconds = 0.0;
                 vars.gtLoadSampleUtc = System.DateTime.MinValue;
@@ -1243,7 +1247,7 @@ onSplit
                             else
                             {
                                 System.TimeSpan wallDelay = System.DateTimeOffset.Now - vars.pendingFirstMissing;
-                                if (wallDelay >= System.TimeSpan.Zero && wallDelay <= System.TimeSpan.FromSeconds(5))
+                                if (wallDelay >= System.TimeSpan.Zero && wallDelay <= System.TimeSpan.FromSeconds(45))
                                 {
                                     System.TimeSpan adjustedReal = completedSegment.SplitTime.RealTime.Value - wallDelay;
                                     if (adjustedReal < System.TimeSpan.Zero) adjustedReal = System.TimeSpan.Zero;

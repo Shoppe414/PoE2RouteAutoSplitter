@@ -11,6 +11,7 @@ public sealed class SetupManifest
     public string CustomAslSource { get; set; } = "";
     public string BossWatcherDirectory { get; set; } = "";
     public string GameTimeWatcherDirectory { get; set; } = "";
+    public string CaptureHostDirectory { get; set; } = "CaptureHost";
     public List<PresetDefinition> Presets { get; set; } = [];
 
     public static SetupManifest Load(string path)

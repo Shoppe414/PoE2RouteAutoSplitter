@@ -1,4 +1,4 @@
-PoE2 Route AutoSplitter v3.1.0
+PoE2 Route AutoSplitter v3.2.0
 Verification Files
 
 This directory centralizes SHA-256 and run-verification material.

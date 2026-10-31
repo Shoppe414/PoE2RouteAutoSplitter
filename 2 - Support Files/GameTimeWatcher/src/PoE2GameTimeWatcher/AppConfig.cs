@@ -6,9 +6,9 @@ namespace PoE2GameTimeWatcher;
 public sealed class AppConfig
 {
     public string[] ProcessNames { get; set; } = ["PathOfExileSteam", "PathOfExile", "PathOfExile_x64Steam", "PathOfExile_x64"];
-    public int CaptureFps { get; set; } = 10;
-    public int FastCaptureFps { get; set; } = 30;
-    public int InputFastModeMs { get; set; } = 1500;
+    public int CaptureFps { get; set; } = 15;
+    public int FastCaptureFps { get; set; } = 40;
+    public int InputFastModeMs { get; set; } = 2000;
     public int InputHintWindowMs { get; set; } = 750;
     public int HeartbeatMs { get; set; } = 250;
     public int ProvisionalTimeoutMs { get; set; } = 1200;

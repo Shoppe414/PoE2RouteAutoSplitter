@@ -28,7 +28,7 @@ $poe2dbLanguageCodes = @('tw', 'cn', 'us', 'kr', 'ko', 'jp', 'ja', 'ru', 'po', '
 
 function Get-WebText([string]$Url, [string]$Referer = 'https://poe2db.tw/us/') {
     $headers = @{
-        'User-Agent' = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/138 Safari/537.36 PoE2RouteAutoSplitter/3.1.0'
+        'User-Agent' = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/138 Safari/537.36 PoE2RouteAutoSplitter/3.2.0'
         'Accept' = '*/*'
         'Referer' = $Referer
     }

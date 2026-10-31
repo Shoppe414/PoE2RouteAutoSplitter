@@ -4102,6 +4102,7 @@ exit 1
             "poe2_boss_events.log",
             "poe2_boss_context.txt",
             "poe2_manual_pause_state.txt",
+            "poe2_load_state.txt",
             "poe2_mixed_route_status.txt",
             "poe2_mixed_route_debug.log",
             "poe2_run_current.txt"
@@ -4407,6 +4408,60 @@ exit 1
         return path;
     }
 
+    private void EnsureCaptureHostRunning()
+    {
+        var existing = Process.GetProcessesByName("PoE2CaptureHost");
+        try
+        {
+            if (existing.Any(p => !p.HasExited)) return;
+        }
+        finally
+        {
+            foreach (var process in existing) process.Dispose();
+        }
+
+        var hostRoot = Resolve(string.IsNullOrWhiteSpace(_manifest.CaptureHostDirectory)
+            ? "CaptureHost"
+            : _manifest.CaptureHostDirectory);
+        var exeCandidates = new[]
+        {
+            Path.Combine(hostRoot, "publish", "PoE2CaptureHost.exe"),
+            Path.Combine(hostRoot, "PoE2CaptureHost.exe")
+        };
+        var exe = exeCandidates.FirstOrDefault(File.Exists)
+            ?? throw new FileNotFoundException("PoE2CaptureHost.exe was not found. In 2 - Support Files\\CaptureHost, run Build.ps1.");
+
+        var bossRoot = Resolve(_manifest.BossWatcherDirectory);
+        var gameTimeRoot = Resolve(_manifest.GameTimeWatcherDirectory);
+        var bossConfig = new[]
+        {
+            Path.Combine(bossRoot, "publish", "config.json"),
+            Path.Combine(bossRoot, "config.json")
+        }.FirstOrDefault(File.Exists)
+            ?? throw new FileNotFoundException("BossWatcher config.json was not found for CaptureHost.");
+        var gameTimeConfig = new[]
+        {
+            Path.Combine(gameTimeRoot, "publish", "config.json"),
+            Path.Combine(gameTimeRoot, "config.json")
+        }.FirstOrDefault(File.Exists)
+            ?? throw new FileNotFoundException("GameTimeWatcher config.json was not found for CaptureHost.");
+
+        var releaseRoot = Directory.GetParent(Path.GetFullPath(_packageRoot))?.FullName
+            ?? throw new DirectoryNotFoundException("Could not locate the package root for CaptureHost diagnostics.");
+        var diagnosticDirectory = Path.Combine(releaseRoot, "4-README's_and_Diagnostics", "Diagnostics");
+        Directory.CreateDirectory(diagnosticDirectory);
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = exe,
+            Arguments = $"--boss-config {QuoteArgument(bossConfig)} --gametime-config {QuoteArgument(gameTimeConfig)} --diagnostic-dir {QuoteArgument(diagnosticDirectory)}",
+            WorkingDirectory = Path.GetDirectoryName(exe)!,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            WindowStyle = ProcessWindowStyle.Hidden
+        });
+    }
+
     private void StartBossWatcher()
     {
         try
@@ -4414,6 +4469,8 @@ exit 1
             var target = Path.GetFullPath(_targetText.Text.Trim());
             if (!Directory.Exists(target) || !File.Exists(Path.Combine(target, "SETUP_INFO.txt")))
                 throw new InvalidOperationException("Deploy a setup first so the target directory contains an active generated setup.");
+
+            EnsureCaptureHostRunning();
 
             if (Process.GetProcessesByName("PoE2BossWatcher").Any(p => !p.HasExited))
             {
@@ -4469,6 +4526,8 @@ exit 1
             var target = Path.GetFullPath(_targetText.Text.Trim());
             if (!Directory.Exists(target) || !File.Exists(Path.Combine(target, "SETUP_INFO.txt")))
                 throw new InvalidOperationException("Deploy a setup first so the target directory contains an active generated setup.");
+
+            EnsureCaptureHostRunning();
 
             var existingWatchers = Process.GetProcessesByName("PoE2GameTimeWatcher");
             try

@@ -8,6 +8,9 @@ public sealed record BossBarMetrics(
     double LightFraction,
     double FrameGoldFraction,
     double NameGoldFraction,
+    double GlobalHealthRedRunFraction,
+    double LeftGlobalHealthRedRunFraction,
+    double RightGlobalHealthRedRunFraction,
     double HealthRedRunFraction,
     double LeftHealthRedRunFraction,
     double RightHealthRedRunFraction,
@@ -47,6 +50,9 @@ public sealed record BossBarMetrics(
         long leftNameGold = 0;
         long rightNameGold = 0;
         long centerNameGold = 0;
+        var longestGlobalHealthRun = 0;
+        var longestLeftGlobalHealthRun = 0;
+        var longestRightGlobalHealthRun = 0;
         var longestHealthRun = 0;
         var longestLeftHealthRun = 0;
         var longestRightHealthRun = 0;
@@ -59,6 +65,9 @@ public sealed record BossBarMetrics(
                 for (var y = 0; y < data.Height; y++)
                 {
                     var row = (byte*)data.Scan0 + y * data.Stride;
+                    var currentGlobalHealthRun = 0;
+                    var currentLeftGlobalHealthRun = 0;
+                    var currentRightGlobalHealthRun = 0;
                     var currentHealthRun = 0;
                     var currentLeftRun = 0;
                     var currentRightRun = 0;
@@ -96,10 +105,42 @@ public sealed record BossBarMetrics(
                                 x >= centerNameGap.Left && x < centerNameGap.Right) centerNameGold++;
                         }
 
-                        if (!inHealthRow || x < healthRoi.Left || x >= healthRoi.Right)
+                        if (!inHealthRow)
                             continue;
 
                         var isRed = IsHealthRedPixel(r, g, b);
+                        if (isRed)
+                        {
+                            currentGlobalHealthRun++;
+                            if (currentGlobalHealthRun > longestGlobalHealthRun) longestGlobalHealthRun = currentGlobalHealthRun;
+                        }
+                        else
+                        {
+                            currentGlobalHealthRun = 0;
+                        }
+
+                        if (x < data.Width / 2)
+                        {
+                            if (isRed)
+                            {
+                                currentLeftGlobalHealthRun++;
+                                if (currentLeftGlobalHealthRun > longestLeftGlobalHealthRun) longestLeftGlobalHealthRun = currentLeftGlobalHealthRun;
+                            }
+                            else currentLeftGlobalHealthRun = 0;
+                        }
+                        else
+                        {
+                            if (isRed)
+                            {
+                                currentRightGlobalHealthRun++;
+                                if (currentRightGlobalHealthRun > longestRightGlobalHealthRun) longestRightGlobalHealthRun = currentRightGlobalHealthRun;
+                            }
+                            else currentRightGlobalHealthRun = 0;
+                        }
+
+                        if (x < healthRoi.Left || x >= healthRoi.Right)
+                            continue;
+
                         if (isRed)
                         {
                             currentHealthRun++;
@@ -157,7 +198,11 @@ public sealed record BossBarMetrics(
             leftNameFraction >= config.DualLayoutMinLaneNameGoldFraction &&
             rightNameFraction >= config.DualLayoutMinLaneNameGoldFraction &&
             centerNameFraction <= config.DualLayoutMaxCenterNameGoldFraction;
+        var leftGlobalRunFraction = bitmap.Width > 0 ? (double)longestLeftGlobalHealthRun / bitmap.Width : 0;
+        var rightGlobalRunFraction = bitmap.Width > 0 ? (double)longestRightGlobalHealthRun / bitmap.Width : 0;
         var dualSignature = dualNameSignature &&
+            leftGlobalRunFraction >= config.DualBossMinGlobalLaneHealthRunFraction &&
+            rightGlobalRunFraction >= config.DualBossMinGlobalLaneHealthRunFraction &&
             (leftRunFraction >= config.DualLayoutMinLaneHealthRunFraction ||
              rightRunFraction >= config.DualLayoutMinLaneHealthRunFraction);
 
@@ -166,6 +211,9 @@ public sealed record BossBarMetrics(
             includeDiagnostics && fullTotal > 0 ? (double)light / fullTotal : 0,
             includeDiagnostics && frameTotal > 0 ? (double)frameGold / frameTotal : 0,
             nameTotal > 0 ? (double)nameGold / nameTotal : 0,
+            bitmap.Width > 0 ? (double)longestGlobalHealthRun / bitmap.Width : 0,
+            leftGlobalRunFraction,
+            rightGlobalRunFraction,
             healthRoi.Width > 0 ? (double)longestHealthRun / healthRoi.Width : 0,
             leftRunFraction,
             rightRunFraction,

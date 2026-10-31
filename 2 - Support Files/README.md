@@ -1,4 +1,4 @@
-# Path of Exile 2 Route AutoSplitter for LiveSplit — v3.1.0
+# Path of Exile 2 Route AutoSplitter for LiveSplit — v3.2.0
 
 ## Run validation / SHA-256 audit logging
 
@@ -33,7 +33,7 @@ Generated ASLs use canonical internal Area IDs and map seeds as runtime identity
 
 ## Compact package paths
 
-This release uses a short archive root (`PoE2AS-v3.1.0`) and compact support names such as `01-Ordered`, `04-Checklist`, `BossWatcher`, and `GameTimeWatcher`. Generated .NET `bin` and `obj` folders are intentionally excluded from the release archive.
+This release uses a short archive root (`PoE2AS-v3.2.0`) and compact support names such as `01-Ordered`, `04-Checklist`, `BossWatcher`, and `GameTimeWatcher`. Generated .NET `bin` and `obj` folders are intentionally excluded from the release archive.
 
 The established runtime anchors `1 - User Setup`, `2 - Support Files`, `Setup UI [Configuration]`, and `LiveSplit Target` are retained. Version 3 adds `3 - verification files` and `4-README's_and_Diagnostics` as top-level release directories.
 
@@ -41,12 +41,12 @@ The established runtime anchors `1 - User Setup`, `2 - Support Files`, `Setup UI
 
 Download and run:
 
-`PoE2AS-v3.1.0-Setup.exe`
+`PoE2AS-v3.2.0-Setup.exe`
 
 The installer uses the four-directory v3 runtime:
 
 ```text
-PoE2AS-v3.1.0
+PoE2AS-v3.2.0
 ├── 1 - User Setup
 │   ├── PoE2RouteSetup.exe
 │   └── LiveSplit Target\
@@ -157,6 +157,10 @@ Sekhemas and Chaos are independent opt-ins on the Premade tab. The user chooses 
 
 Custom routes can combine supported areas, bosses, levels, and opt-in trial boss milestones. The catalog is filtered by Act / Interlude / Pinnacle and hides internal IDs; Areas and Bosses both provide **Add All** for the currently visible filtered list. Ordered routes support repeated copies of the same boss through unique occurrence objectives; dynamic/unordered routes use a user-selected eligible boss pool plus a configurable encounter target (defaulting to the current 40-boss campaign-required baseline). Deployment is staged before the active target is touched. Replacing a non-empty target requires confirmation.
 
+## Shared Windows Graphics Capture
+
+Version 3.2.0 uses one hidden `PoE2CaptureHost` Windows Graphics Capture session for visual sampling. BossWatcher and GameTimeWatcher consume shared-memory frame channels instead of performing independent GDI screen captures. The detector/event contracts remain unchanged.
+
 ## BossWatcher
 
 BossWatcher handles identity-based Boss Rush / trial / Pinnacle events and the Maps structural boss-bar mode. Ordinary Maps context bypasses OCR and boss-name matching; selected Pinnacle objectives keep the identity/OCR path. Normal console output reports meaningful encounter/completion events, while `--dev-console` retains verbose diagnostics.
@@ -166,14 +170,14 @@ BossWatcher handles identity-based Boss Rush / trial / Pinnacle events and the M
 Compiled executables are intentionally not committed to Git. GitHub Releases
 contain:
 
-- `PoE2AS-v3.1.0-Setup.exe`
-- `PoE2AS-v3.1.0.zip`
+- `PoE2AS-v3.2.0-Setup.exe`
+- `PoE2AS-v3.2.0.zip`
 - `SHA256SUMS.txt`
 
 ## Automated GitHub release
 
 `.github\workflows\build-release.yml` runs for lowercase version tags such
-as `v3.1.0` and can also be started manually. It builds the Setup UI,
+as `v3.2.0` and can also be started manually. It builds the Setup UI,
 BossWatcher, and optional GameTimeWatcher, assembles the four-directory runtime,
 creates the portable ZIP and installer, and generates SHA-256 checksums.
 
@@ -190,7 +194,7 @@ Requirements:
 From `2 - Support Files`:
 
 ```powershell
-.\Build-Release.ps1 -Version 3.1.0
+.\Build-Release.ps1 -Version 3.2.0
 ```
 
 For development-only user-tool builds:
@@ -226,3 +230,8 @@ Pinnacle modes 10-11 remain manual-start.
 
 
 Version history: see the package-root CHANGELOG.md.
+
+## Boss detection hardening
+
+The v3.2.0 WGC source now uses an ASL-owned `poe2_load_state.txt` handoff plus full-ROI boss-scale geometry before BossWatcher OCR. Loading screens and ordinary enemy bars are rejected before anonymous boss arming. Boss-name masks also remove long frame artifacts and isolate centered text. Ordered/custom provisional resolution, Sekhemas deterministic fallback, Chaos no-repeat elimination, and fail-closed unordered routing are unchanged.
+

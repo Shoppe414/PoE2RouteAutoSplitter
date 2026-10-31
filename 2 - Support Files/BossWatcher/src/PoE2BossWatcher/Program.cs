@@ -5,7 +5,7 @@ namespace PoE2BossWatcher;
 
 internal static class Program
 {
-    private const string Version = "0.3.9-input-ui-profiles";
+    private const string Version = "0.4.3-structural-geometry-hardening";
 
     [STAThread]
     private static async Task<int> Main(string[] args)
@@ -17,7 +17,7 @@ internal static class Program
         var mapDatabaseOverride = GetArgValue(args, "--map-db");
         var localizationDatabaseOverride = GetArgValue(args, "--localization-db");
         var diagnosticDirectoryOverride = GetArgValue(args, "--diagnostic-dir");
-        Console.Title = devConsole ? "PoE2 BossWatcher 0.3.8 - DEV" : "PoE2 BossWatcher 0.3.8";
+        Console.Title = devConsole ? $"PoE2 BossWatcher {Version} - DEV" : $"PoE2 BossWatcher {Version}";
         var baseDir = AppContext.BaseDirectory;
         var configPath = Path.Combine(baseDir, "config.json");
 
@@ -49,6 +49,9 @@ internal static class Program
             var tessParent = Path.GetFullPath(Path.IsPathRooted(config.TessdataParent)
                 ? config.TessdataParent
                 : Path.Combine(baseDir, config.TessdataParent));
+            // Post-disappearance OCR creates a dedicated worker engine. Persist the resolved
+            // absolute tessdata parent into runtime config so the worker is independent of CWD.
+            config.TessdataParent = tessParent;
             using var ocr = new OcrService(tessParent, config.GameLanguage);
 
             var eventPath = string.IsNullOrWhiteSpace(eventFileOverride)
@@ -64,6 +67,9 @@ internal static class Program
                 : Path.GetFullPath(contextFileOverride);
             var contextReader = new BossContextReader(contextPath);
             var currentContext = contextReader.Read();
+            var loadStatePath = Path.Combine(Path.GetDirectoryName(eventPath)!, "poe2_load_state.txt");
+            var loadStateReader = new LoadStateReader(loadStatePath);
+            var loadSuppressed = false;
             var debugDir = diagnosticDirectory is not null
                 ? Path.Combine(diagnosticDirectory, "images")
                 : Path.GetFullPath(Path.IsPathRooted(config.DebugDirectory)
@@ -73,7 +79,7 @@ internal static class Program
             var tracker = new BossEncounterTracker(config, events, imageWriter, ocr, matcher);
             var mapTracker = new GenericMapBossTracker(config, events, imageWriter, ocr, mapDatabase, localizations, config.GameLanguage);
             var finder = new GameWindowFinder(config.ProcessNames);
-            var capture = new ScreenCapture();
+            using var capture = new ScreenCapture();
 
             if (devConsole)
             {
@@ -92,8 +98,10 @@ internal static class Program
                 Console.WriteLine("Identity context: OCR uses the selected PoE2 game language and only verified localized names. Missing localization coverage is not guessed.");
                 Console.WriteLine($"Boss capture: centered X; width={config.BossCaptureWidthHeightRatio:F4} x client-height; Y={config.BossRoi.Y:P1}, H={config.BossRoi.Height:P1}");
                 Console.WriteLine("Window capture: PoE2 CLIENT AREA only (title bar, borders, taskbar, and the rest of the desktop are excluded).");
-                Console.WriteLine($"Single OCR gate: redRun>={config.OcrTriggerRedRunFraction:P0}, name>={config.OcrMinNameGoldPixelFraction:P1}, frames={config.OcrCandidateConsecutiveFrames}");
-                Console.WriteLine($"Dual topology: lane anchors>={config.DualLayoutMinLaneNameGoldFraction:P1}, center gap<={config.DualLayoutMaxCenterNameGoldFraction:P1}, lane health>={config.DualLayoutMinLaneHealthRunFraction:P0}, initial frames={config.DualLayoutConfirmFrames}");
+                Console.WriteLine($"Single structural arm: globalRun>={config.SingleBossMinGlobalHealthRunFraction:P0}, redRun>={config.OcrTriggerRedRunFraction:P0}, name={config.OcrMinNameGoldPixelFraction:P1}-{config.SingleBossMaxNameGoldFraction:P0}, centerName<={config.SingleBossMaxCenterNameGoldFraction:P0}; strong one-frame innerRun>={config.AnonymousStrongArmRedRunFraction:P0}");
+                Console.WriteLine($"Load suppression: {loadStatePath} (LOADING cancels/suppresses boss acquisition and completion)");
+                Console.WriteLine($"Anonymous ROI buffer: {config.AnonymousRoiBufferFrames} frames; post-disappearance OCR uses best {config.AnonymousPostOcrFrames} frames on a dedicated worker; identity timeout={config.AnonymousIdentityResolveTimeoutMs}ms");
+                Console.WriteLine($"Dual topology: lane anchors>={config.DualLayoutMinLaneNameGoldFraction:P1}, center gap<={config.DualLayoutMaxCenterNameGoldFraction:P1}, global lane run>={config.DualBossMinGlobalLaneHealthRunFraction:P0}, initial frames={config.DualLayoutConfirmFrames}");
                 Console.WriteLine($"Dual add hardening: run>={config.DualAddMinCombinedHealthRunFraction:P0}, frames={config.DualAddConfirmFrames}");
                 Console.WriteLine($"Dual removal: UI-presence only, confirm={config.DualRemovalConfirmMs}ms; survivor OCR for recentered bars; 2->0 confirm={config.DualBothGoneConfirmMs}ms; health fill is diagnostic only");
                 Console.WriteLine($"OCR acquisition: fresh-frame cycle={config.OcrAcquisitionCycleMs}ms; gold -> broad -> temporal({config.OcrTemporalFrameCount} frames after {config.OcrTemporalFallbackAfterFailedCycles} failed cycles)");
@@ -103,6 +111,7 @@ internal static class Program
                 Console.WriteLine("Topology is evaluated before disappearance logic, but SINGLE->DUAL requires a strong persistent health structure.");
                 Console.WriteLine("Dual names are OCRed independently from LEFT/RIGHT half-lanes; resolved lanes stop OCR immediately.");
                 Console.WriteLine("Live OCR uses narrow gold first, broader lane-local text second, then short temporal composites only after repeated failures.");
+                Console.WriteLine("Single-boss timing is structurally armed before OCR identity; identity remains mandatory before a named GONE event is emitted.");
                 Console.WriteLine("Broad gold/frame metric remains diagnostic only.");
                 Console.WriteLine("Keys: [S] save current ROI/mask, [R] reset tracking, [Q] quit");
             }
@@ -139,6 +148,7 @@ internal static class Program
             {
                 var loopStart = Stopwatch.GetTimestamp();
                 var now = DateTimeOffset.Now;
+                capture.KeepAlive(config.CaptureFps);
 
                 var nextContext = contextReader.Read();
                 if (nextContext != currentContext)
@@ -235,10 +245,30 @@ internal static class Program
                 // Name, health-run, lane anchors and dual topology are always evaluated.
                 // Expensive broad diagnostics are only collected at console cadence.
                 var metrics = BossBarMetrics.Analyze(result.Bitmap, config, includeDiagnostics: consoleDue);
-                if (currentContext.Mode == BossDetectionMode.Map)
-                    mapTracker.Observe(now, result.Bitmap, metrics, currentContext);
-                else if (currentContext.Mode == BossDetectionMode.Identity)
-                    tracker.Observe(now, result.Bitmap, metrics);
+                var loading = loadStateReader.IsLoading();
+                if (loading)
+                {
+                    if (!loadSuppressed)
+                    {
+                        tracker.ResetTracking("load-state active");
+                        mapTracker.ResetTracking("load-state active");
+                        events.Debug("LOAD_SUPPRESSION_START | source=poe2_load_state.txt");
+                        loadSuppressed = true;
+                    }
+                }
+                else
+                {
+                    if (loadSuppressed)
+                    {
+                        events.Debug("LOAD_SUPPRESSION_END | source=poe2_load_state.txt");
+                        loadSuppressed = false;
+                    }
+
+                    if (currentContext.Mode == BossDetectionMode.Map)
+                        mapTracker.Observe(now, result.Bitmap, metrics, currentContext);
+                    else if (currentContext.Mode == BossDetectionMode.Identity)
+                        tracker.Observe(now, result.Bitmap, metrics);
+                }
 
                 if (config.SaveDebugFrameEverySeconds > 0 && now >= lastPeriodicSave.AddSeconds(config.SaveDebugFrameEverySeconds))
                 {
@@ -271,6 +301,7 @@ internal static class Program
                         $"\r[{now:HH:mm:ss.fff}] Ctx={contextLabel,-3} State={state,-15}" +
                         $" track={Trim(tracked, 34),-34}" +
                         $" dual={dual}" +
+                        $" gRun={metrics.GlobalHealthRedRunFraction,6:P1}" +
                         $" run={metrics.HealthRedRunFraction,6:P1}" +
                         $" laneRun=L{metrics.LeftHealthRedRunFraction,5:P0}/R{metrics.RightHealthRedRunFraction,5:P0}" +
                         $" laneName=L{metrics.LeftLaneNameGoldFraction,5:P1}/C{metrics.CenterNameGoldFraction,5:P1}/R{metrics.RightLaneNameGoldFraction,5:P1}" +

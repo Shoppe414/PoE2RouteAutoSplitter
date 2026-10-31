@@ -2,7 +2,7 @@
 
 Una herramienta de configuración y autosplitter de LiveSplit para **speedruns de la campaña de Path of Exile 2**.
 
-Versión actual: **v3.1.0**.
+Versión actual: **v3.2.0**.
 
 PoE2 Route AutoSplitter ofrece rutas predefinidas y personalizadas para:
 
@@ -462,3 +462,10 @@ Las capturas PNG de diagnóstico se almacenan en:
 **PoE2 Route AutoSplitter 3.x**
 
 La versión 3 añade compatibilidad multilingüe para SetupUI y el idioma del juego, nombres localizados y verificados de jefes y zonas cuando están disponibles, políticas ampliadas para Campaña, Pruebas, Ruinas Vaal y Mapas, diagnósticos y archivos de verificación centralizados y una geometría de captura adaptativa de BossWatcher basada en la altura para clientes de juego 16:9, ultrapanorámicos y superultrapanorámicos.
+
+## Fiabilidad de detección de jefes y alternativas para derrotas muy rápidas
+
+BossWatcher ahora bloquea la adquisición de jefes durante las pantallas de carga y valida la geometría de la interfaz a escala de jefe antes del OCR. Las barras de vida de enemigos normales y las imágenes de carga con mucho dorado se descartan antes de poder convertirse en eventos de jefe anónimo. El OCR del nombre también elimina líneas largas del marco y aísla el grupo de texto centrado antes del reconocimiento.
+
+El OCR sigue siendo el mecanismo principal de identidad. Si un jefe verificado desaparece antes de que el OCR resuelva su nombre, se conservan las marcas de tiempo estructurales y solo se usan alternativas seguras específicas de la ruta: las rutas ordenadas/personalizadas ordenadas pueden hacer un split provisional y confirmarlo mediante el orden posterior; Sekhemas usa su secuencia determinista de pisos; Trial of Chaos puede usar eliminación sin repetición. Las rutas generales de campaña sin orden no deducen un jefe solo por la zona actual.
+

@@ -23,25 +23,6 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     internal static extern uint GetDpiForWindow(IntPtr hWnd);
 
-
-    internal const int HALFTONE = 4;
-    internal const uint SRCCOPY = 0x00CC0020;
-
-    [DllImport("user32.dll")]
-    internal static extern IntPtr GetDC(IntPtr hWnd);
-
-    [DllImport("user32.dll")]
-    internal static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
-
-    [DllImport("gdi32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool StretchBlt(
-        IntPtr hdcDest, int xDest, int yDest, int wDest, int hDest,
-        IntPtr hdcSrc, int xSrc, int ySrc, int wSrc, int hSrc, uint rop);
-
-    [DllImport("gdi32.dll")]
-    internal static extern int SetStretchBltMode(IntPtr hdc, int mode);
-
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool IsIconic(IntPtr hWnd);

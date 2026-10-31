@@ -30,7 +30,7 @@
     "Width": 0.4,
     "Height": 0.3
   },
-  "CaptureFps": 20,
+  "CaptureFps": 30,
   "OcrUpscale": 5,
   "ConsoleUpdateMs": 200,
   "OcrTriggerRedRunFraction": 0.08,
@@ -99,6 +99,12 @@
   "OcrTemporalFallbackAfterFailedCycles": 2,
   "OcrFailureDiagnosticAfterCycles": 4,
   "OcrFailureDiagnosticIntervalMs": 15000,
+  "AnonymousRoiBufferFrames": 24,
+  "AnonymousPostOcrFrames": 8,
+  "AnonymousStrongArmRedRunFraction": 0.75,
+  "AnonymousStrongArmCenterNameGoldFraction": 0.06,
+  "AnonymousOcrRetryMs": 900,
+  "AnonymousIdentityResolveTimeoutMs": 6000,
   "OcrBroadRedMin": 105,
   "OcrBroadGreenMin": 70,
   "OcrBroadBlueMax": 220,
@@ -114,5 +120,10 @@
   "MapExitAssistMinMissingMs": 500,
   "InputUiMode": "MouseKeyboard",
   "ControllerOcrLuminanceMin": 180,
-  "ControllerOcrBroadLuminanceMin": 170
+  "ControllerOcrBroadLuminanceMin": 170,
+  "SingleBossMinGlobalHealthRunFraction": 0.5,
+  "SingleBossMaxNameGoldFraction": 0.2,
+  "SingleBossMaxCenterNameGoldFraction": 0.35,
+  "SingleOcrHorizontalArtifactMinFraction": 0.18,
+  "DualBossMinGlobalLaneHealthRunFraction": 0.15
 }

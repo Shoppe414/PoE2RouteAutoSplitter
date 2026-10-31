@@ -172,7 +172,9 @@ public sealed class BossTracker
         BossBarMetrics metrics,
         OcrRead? ocr = null,
         double similarity = 1.0,
-        bool emitSeen = true)
+        bool emitSeen = true,
+        DateTimeOffset? encounterStartOverride = null,
+        BossBarMetrics? seenMetricsOverride = null)
     {
         _tracked = boss;
         _firstMissing = null;
@@ -205,7 +207,8 @@ public sealed class BossTracker
             _trackedNameBaseline * _config.TrackedNameReturnedRelativeFraction);
 
         if (emitSeen)
-            _events.BossSeen(_tracked, now, ocr ?? new OcrRead("", 0), metrics, similarity, BossLane.Single);
+            _events.BossSeen(_tracked, encounterStartOverride ?? now, ocr ?? new OcrRead("", 0),
+                seenMetricsOverride ?? metrics, similarity, BossLane.Single);
 
         _events.Debug($"TRACK_ARMED | boss={_tracked.Id}" +
             $" | emitSeen={emitSeen}" +

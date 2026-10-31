@@ -151,3 +151,8 @@ You can also run the watcher from an already-open PowerShell window:
 - `templates\mtx-shop.png`
 
 The individual Resume/Banner/Exit templates remain in the runtime as corroborating diagnostics/fallbacks, but v0.3.9 uses the multi-button stack as the primary pause-menu signal.
+
+## Shared loading-state handoff
+
+The generated ASL is authoritative for Client.txt load boundaries and writes `poe2_load_state.txt` beside the generated LiveSplit files. BossWatcher consumes this state to suppress boss acquisition during loading screens. This is separate from `poe2_manual_pause_state.txt`; GameTimeWatcher continues to own only the optional pause-menu/MTX state protocol.
+

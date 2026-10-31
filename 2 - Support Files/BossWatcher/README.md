@@ -1,4 +1,28 @@
-# Path of Exile 2 BossWatcher v0.3.9 / Explicit input-UI OCR profiles
+# Path of Exile 2 BossWatcher v0.4.3 / Structural geometry hardening
+
+## v0.4.3 structural geometry / load suppression
+
+- Suppresses acquisition/tracking while generated ASLs report `LOADING` through `poe2_load_state.txt`.
+- Requires full-ROI boss-scale single geometry before OCR and independent full-ROI left/right structure before dual OCR.
+- Rejects implausibly gold-dense name regions before anonymous arming.
+- Removes long horizontal frame artifacts from all OCR masks and isolates the centered single-name text cluster before `SingleLine` OCR.
+- Keeps v0.4.2 anonymous timing, buffered OCR diagnostics, `ANON_GONE`, and route-specific resolution semantics unchanged.
+
+## v0.4.2 unresolved encounter handoff / buffered OCR diagnostics
+
+- Structurally verified single-boss encounters that remain unidentified now emit `ANON_GONE` instead of being discarded.
+- `ANON_GONE` preserves `encounterStart`, `firstMissing`, verification timing, and fight duration; route scripts decide whether a specialized resolver may consume it.
+- Buffered OCR logs every selected frame/mask attempt, Tesseract confidence, nearest known boss, similarity, threshold, and accepted/rejected status. Production OCR thresholds are unchanged.
+- General campaign routes remain fail-closed unless an ordered route explicitly uses provisional sequence confirmation. Trial-specific deterministic rules live in the mixed-route ASL, not BossWatcher.
+
+## v0.4.1 anonymous structural arming / delayed identity OCR
+
+Single-boss encounter timing is no longer gated on Tesseract finishing before the boss dies. A strong single-boss UI can arm anonymously from one captured frame; weaker candidates retain the existing multi-frame structural confirmation. The watcher immediately records the structural first-seen timestamp and learns the spatial boss-name template even though the boss ID is still unknown.
+
+Live OCR remains the primary identity path. While identity is unresolved, BossWatcher keeps a bounded native-resolution boss-ROI ring buffer. If the UI disappears first, the learned template starts the normal disappearance verification window immediately, while a dedicated background Tesseract engine OCRs the best retained frames (gold, broad, then temporal composite fallback). A named `GONE` event is emitted only after identity is resolved; structural evidence alone cannot create a boss split.
+
+This specifically removes the old race where `AcquireSingle` cancelled when the boss UI vanished before OCR had matched a name. `SEEN` is timestamped to the original structural first-seen frame and `GONE` continues to use the original `firstMissing` frame, so delayed identity resolution does not inflate fight or split time.
+
 
 ## v0.3.9 Controller boss-name OCR profile
 
@@ -65,7 +89,7 @@ Example:
 [17:43:09.771] Defeated: Count Geonor | Fight time: 51.667 s
 ```
 
-The fight timer begins when BossWatcher emits the boss `SEEN` encounter and ends at the boss UI's `firstMissing` timestamp. The later disappearance-confirmation delay therefore does not inflate the displayed fight duration.
+The fight timer begins at the first structurally armed boss-UI frame and ends at the boss UI's `firstMissing` timestamp. If OCR identity resolves later, the emitted `SEEN` event is back-timestamped to that original structural first-seen frame. The later disappearance-confirmation and post-disappearance identity work therefore do not inflate the displayed fight duration.
 
 `RETURNED` events, OCR data, template coverage, health-run diagnostics, and other detector internals remain available in the event/debug logs rather than being printed to ordinary users.
 
@@ -207,4 +231,10 @@ Map safety note: unknown or special map IDs fail closed; structural-only MAP_GON
 BossWatcher does not require the user to configure a monitor or game resolution. It reads the live Path of Exile 2 **client rectangle** from Windows. The boss UI capture is centered horizontally and its width is derived from client height, which keeps the expected UI scale stable across 16:9, ultrawide, and super-ultrawide aspect ratios.
 
 Only the boss region inside the game client is captured. The Windows title bar, window borders, taskbar, and the rest of the desktop are not part of the OCR image. In development-console mode, BossWatcher logs the detected client dimensions, simplified aspect ratio, boss-capture dimensions, and dual-boss lane rectangles whenever the client size changes.
+
+## v3.2.0 WGC structural hardening
+
+BossWatcher 0.4.3 adds two pre-OCR safety layers. First, generated ASLs write `poe2_load_state.txt`; while it is `LOADING`, BossWatcher cancels/suppresses boss acquisition so loading-screen artwork cannot become an anonymous encounter. Second, single-boss acquisition requires a boss-scale coherent health run across the full captured ROI before any OCR lane is considered. This prevents ordinary enemy bars such as `Drowned` from appearing full-width only because they fill a local crop.
+
+Single-boss OCR now removes long horizontal frame/border artifacts and blanks distant mask components outside the centered text cluster before `SingleLine` Tesseract OCR. The identity similarity threshold remains 0.72. Anonymous timing, ROI buffering, post-disappearance OCR, and route-specific fallback resolution remain unchanged.
 

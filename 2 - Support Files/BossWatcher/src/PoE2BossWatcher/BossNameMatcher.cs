@@ -12,6 +12,14 @@ public sealed class BossNameMatcher
 
     public BossMatch? Match(string? ocrText, double minSimilarity)
     {
+        var best = MatchBest(ocrText);
+        return best is not null && best.Similarity >= minSimilarity ? best : null;
+    }
+
+    // Diagnostic-only nearest candidate lookup. This never lowers the production acceptance
+    // threshold; it exposes what OCR almost matched so buffered failures can be tuned from logs.
+    public BossMatch? MatchBest(string? ocrText)
+    {
         var observed = Normalize(ocrText ?? "");
         if (Compact(observed).Length < 4) return null;
 
@@ -28,8 +36,7 @@ public sealed class BossNameMatcher
                     best = new BossMatch(boss, similarity, observed, candidate);
             }
         }
-
-        return best is not null && best.Similarity >= minSimilarity ? best : null;
+        return best;
     }
 
     private static double CompareObservedToCandidate(string observed, string candidate)

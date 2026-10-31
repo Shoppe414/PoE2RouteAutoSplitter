@@ -393,9 +393,11 @@ public sealed class TemplateMatcher : IDisposable
             return nonBlack >= Math.Ceiling(samplesY * requiredFraction);
         }
 
-        // CopyFromScreen captures anything layered over PoE2. On a pillarboxed
-        // ultrawide display, an always-on-top LiveSplit window in a black side
-        // bar therefore looks like a second island of "content". v0.3.8 used
+        // The pre-WGC screen-copy path could include desktop overlays layered over
+        // PoE2. On a pillarboxed ultrawide display, an always-on-top LiveSplit
+        // window in a black side bar could look like a second island of "content".
+        // Retain the defensive run-selection logic after the WGC refactor so
+        // archived diagnostics and unusual composited content remain robust. v0.3.8 used
         // the first non-black column and the last non-black column, joining that
         // overlay to the game image and moving the assumed screen center ~125 px
         // to the right on the 2048x576 diagnostic capture.

@@ -7,7 +7,7 @@ namespace PoE2GameTimeWatcher;
 
 internal static class Program
 {
-    private const string Version = "0.4.7-input-ui-profiles";
+    private const string Version = "0.5.0-wgc-shared-capture";
 
     [STAThread]
     private static int Main(string[] args)
@@ -84,7 +84,7 @@ internal static class Program
                     : Path.Combine(releaseRoot, "4-README's_and_Diagnostics", "Diagnostics");
             var writer = new StateWriter(stateFile, runtimeDiagnosticDirectory);
             var finder = new GameWindowFinder(config.ProcessNames);
-            var capture = new ScreenCapture();
+            using var capture = new ScreenCapture();
 
             Console.WriteLine($"PoE2 GameTimeWatcher v{Version} - optional manual-pause helper");
             Console.WriteLine("Detects manual pause / MTX state with structure-first visual confirmation.");
@@ -275,6 +275,7 @@ internal static class Program
                 bool fastCapture = stableState != ManualPauseVisualState.Running ||
                     candidateState != stableState || now < fastModeUntil;
                 int activeCaptureFps = fastCapture ? config.FastCaptureFps : config.CaptureFps;
+                capture.KeepAlive(activeCaptureFps);
                 if (window is null)
                 {
                     if (lastPid.HasValue)
@@ -322,7 +323,8 @@ internal static class Program
                             using var cap = capture.CaptureAnalysisViewport(
                                 window, false,
                                 Math.Max(1, (int)Math.Round(config.CanonicalHeight * (16.0 / 9.0))),
-                                config.CanonicalHeight);
+                                config.CanonicalHeight,
+                                activeCaptureFps);
                             if (cap != null)
                             {
                                 var analyzeWatch = Stopwatch.StartNew();

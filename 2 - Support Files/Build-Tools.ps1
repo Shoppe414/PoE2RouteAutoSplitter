@@ -3,6 +3,7 @@ $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $releaseRoot = Split-Path -Parent $root
 
 $bossRoot = Join-Path $root 'BossWatcher'
+$captureRoot = Join-Path $root 'CaptureHost'
 $requiredTessCodes = @('eng','fra','deu','spa','jpn','kor','por','rus','tha')
 $missingTess = @($requiredTessCodes | Where-Object { -not (Test-Path -LiteralPath (Join-Path $bossRoot ("tessdata\$_.traineddata")) -PathType Leaf) })
 if ($missingTess.Count -gt 0) {
@@ -15,6 +16,10 @@ Write-Host 'Building setup UI...'
 if ($LASTEXITCODE -ne 0) { throw "Setup UI build failed with exit code $LASTEXITCODE." }
 
 Write-Host ''
+Write-Host 'Building shared WGC CaptureHost...'
+& (Join-Path $captureRoot 'Build.ps1')
+if ($LASTEXITCODE -ne 0) { throw "CaptureHost build failed with exit code $LASTEXITCODE." }
+
 Write-Host 'Building BossWatcher...'
 & (Join-Path $bossRoot 'Build.ps1')
 if ($LASTEXITCODE -ne 0) { throw "BossWatcher build failed with exit code $LASTEXITCODE." }

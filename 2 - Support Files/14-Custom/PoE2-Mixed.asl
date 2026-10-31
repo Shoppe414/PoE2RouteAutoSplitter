@@ -1,6 +1,6 @@
 /*
 Path of Exile 2 Mixed Objective AutoSplitter for LiveSplit
-v1.3.11 authoritative load-end queue
+v1.3.12 anonymous-event resolution architecture
 
 Combines Exploration area-completion events from Client.txt with Boss Rush GONE events
 from poe2_boss_events.log. One mixed objective file controls both sources.
@@ -249,9 +249,9 @@ startup
     // Chaos slots intentionally share the same pool because the game chooses the
     // encounter identity at runtime; the slot, not the identity, is the objective.
     vars.bossAnyMembers = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<string>>(System.StringComparer.OrdinalIgnoreCase);
-    string[] chaosBossPool = new string[] { "uxmal_beastlord", "chetza_feathered_plague", "bahlak_sky_seer" };
+    vars.chaosBossPool = new string[] { "uxmal_beastlord", "chetza_feathered_plague", "bahlak_sky_seer" };
     foreach (string chaosSlot in new string[] { "chaos_boss_1", "chaos_boss_2", "chaos_boss_3" })
-        vars.bossAnyMembers[chaosSlot] = new System.Collections.Generic.HashSet<string>(chaosBossPool, System.StringComparer.OrdinalIgnoreCase);
+        vars.bossAnyMembers[chaosSlot] = new System.Collections.Generic.HashSet<string>(vars.chaosBossPool, System.StringComparer.OrdinalIgnoreCase);
 
     // Dedicated Sekhemas trial runs may split Hadi and Rafiq separately. The two
     // slots share a restricted pool so either kill order is accepted and each row
@@ -268,7 +268,7 @@ startup
     foreach (int nth in new int[] { 1, 2, 3 })
     {
         string nthId = "chaos_final_" + nth;
-        vars.bossNthMembers[nthId] = new System.Collections.Generic.HashSet<string>(chaosBossPool, System.StringComparer.OrdinalIgnoreCase);
+        vars.bossNthMembers[nthId] = new System.Collections.Generic.HashSet<string>(vars.chaosBossPool, System.StringComparer.OrdinalIgnoreCase);
         vars.bossNthTarget[nthId] = nth;
     }
 
@@ -340,6 +340,18 @@ startup
     vars.suppressed = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
     vars.bossAllSeen = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<string>>(System.StringComparer.OrdinalIgnoreCase);
     vars.bossNthObserved = new System.Collections.Generic.Dictionary<string, int>(System.StringComparer.OrdinalIgnoreCase);
+    // v1.3.12 unresolved-boss route state. Timing and identity are intentionally separate:
+    // BossWatcher may emit a structurally verified ANON_GONE event, while this ordered route
+    // layer decides whether a deterministic trial rule or provisional sequence rule can consume it.
+    vars.provisionalKeys = new System.Collections.Generic.List<string>();
+    vars.provisionalSet = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+    vars.provisionalConflict = false;
+    vars.chaosSeenBosses = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+    vars.chaosAnonymousKeys = new System.Collections.Generic.List<string>();
+    vars.sekhemasFloor2SeenBosses = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+    vars.sekhemasFloor2AnonymousKeys = new System.Collections.Generic.List<string>();
+    vars.sekhemasFloor2AnonymousCount = 0;
+    vars.trialIdentityByKey = new System.Collections.Generic.Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase);
     vars.baseSegmentNames = new System.Collections.Generic.List<string>();
     vars.startAreaId = "";
     vars.ordered = false;
@@ -352,6 +364,9 @@ startup
     vars.pendingType = "";
     vars.pendingHasFirstMissing = false;
     vars.pendingFirstMissing = System.DateTimeOffset.MinValue;
+    vars.pendingProvisional = false;
+    vars.pendingResolution = "";
+    vars.pendingBossIdentity = "";
     vars.sameTimeCacheValid = false;
     vars.sameTimeCacheFirstMissing = System.DateTimeOffset.MinValue;
     vars.sameTimeCacheReal = System.TimeSpan.Zero;
@@ -370,6 +385,8 @@ startup
     settings.Add("gameTimeLoads", true, "Game Time: remove Client.txt-reported loading screens");
     settings.Add("manualPauseRemoval", false, "Game Time: pause with PoE2 pause menu / MTX shop (requires GameTimeWatcher)"); // SETUP_MANUAL_PAUSE_DEFAULT
     vars.gtManualPauseStatePath = System.IO.Path.Combine(vars.liveSplitDir, "poe2_manual_pause_state.txt");
+    vars.gtLoadStatePath = System.IO.Path.Combine(vars.liveSplitDir, "poe2_load_state.txt");
+    try { System.IO.File.WriteAllText(vars.gtLoadStatePath, "RUNNING"); } catch { }
     vars.gtDebugPath = System.IO.Path.Combine(vars.liveSplitDir, "poe2_gametime_debug.log");
     vars.gtReader = null;
     vars.gtClientPath = "";
@@ -512,6 +529,18 @@ init
     foreach (var bossAllDef in vars.bossAllMembers)
         vars.bossAllSeen[bossAllDef.Key] = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
     vars.bossNthObserved = new System.Collections.Generic.Dictionary<string, int>(System.StringComparer.OrdinalIgnoreCase);
+    // v1.3.12 unresolved-boss route state. Timing and identity are intentionally separate:
+    // BossWatcher may emit a structurally verified ANON_GONE event, while this ordered route
+    // layer decides whether a deterministic trial rule or provisional sequence rule can consume it.
+    vars.provisionalKeys = new System.Collections.Generic.List<string>();
+    vars.provisionalSet = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+    vars.provisionalConflict = false;
+    vars.chaosSeenBosses = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+    vars.chaosAnonymousKeys = new System.Collections.Generic.List<string>();
+    vars.sekhemasFloor2SeenBosses = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+    vars.sekhemasFloor2AnonymousKeys = new System.Collections.Generic.List<string>();
+    vars.sekhemasFloor2AnonymousCount = 0;
+    vars.trialIdentityByKey = new System.Collections.Generic.Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase);
     foreach (var bossNthDef in vars.bossNthTarget)
         vars.bossNthObserved[bossNthDef.Key] = 0;
     vars.customBossPool = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
@@ -528,6 +557,9 @@ init
     vars.pendingType = "";
     vars.pendingHasFirstMissing = false;
     vars.pendingFirstMissing = System.DateTimeOffset.MinValue;
+    vars.pendingProvisional = false;
+    vars.pendingResolution = "";
+    vars.pendingBossIdentity = "";
     vars.sameTimeCacheValid = false;
     vars.sameTimeCacheFirstMissing = System.DateTimeOffset.MinValue;
     vars.sameTimeCacheReal = System.TimeSpan.Zero;
@@ -1033,6 +1065,7 @@ update
                 if (!vars.gtLoadActive)
                 {
                     vars.gtLoadActive = true;
+                    try { System.IO.File.WriteAllText(vars.gtLoadStatePath, "LOADING"); } catch { }
                     vars.gtLoadObservedExclusiveSeconds = 0.0;
                     vars.gtLoadManualOverlapSeconds = 0.0;
                     vars.gtLoadSampleUtc = System.DateTime.MinValue;
@@ -1106,6 +1139,7 @@ update
                 }
 
                 vars.gtLoadActive = false;
+                try { System.IO.File.WriteAllText(vars.gtLoadStatePath, "RUNNING"); } catch { }
                 vars.gtLoadObservedExclusiveSeconds = 0.0;
                 vars.gtLoadManualOverlapSeconds = 0.0;
                 vars.gtLoadSampleUtc = System.DateTime.MinValue;
@@ -1126,6 +1160,37 @@ update
             string key = vars.completedOrder[vars.completedOrder.Count - 1];
             vars.completedOrder.RemoveAt(vars.completedOrder.Count - 1);
             vars.completed.Remove(key);
+            if (vars.provisionalSet.Contains(key))
+            {
+                vars.provisionalSet.Remove(key);
+                vars.provisionalKeys.Remove(key);
+                if (vars.provisionalKeys.Count == 0) vars.provisionalConflict = false;
+            }
+            vars.chaosAnonymousKeys.Remove(key);
+            vars.sekhemasFloor2AnonymousKeys.Remove(key);
+            vars.trialIdentityByKey.Remove(key);
+            if (key.StartsWith("bossany:chaos_boss_", System.StringComparison.OrdinalIgnoreCase))
+            {
+                vars.chaosSeenBosses.Clear();
+                foreach (var trialIdentity in vars.trialIdentityByKey)
+                    if (trialIdentity.Key.StartsWith("bossany:chaos_boss_", System.StringComparison.OrdinalIgnoreCase)) vars.chaosSeenBosses.Add(trialIdentity.Value);
+            }
+            if (key.StartsWith("bossany:sekhemas_floor2_", System.StringComparison.OrdinalIgnoreCase))
+            {
+                vars.sekhemasFloor2SeenBosses.Clear();
+                foreach (var trialIdentity in vars.trialIdentityByKey)
+                    if (trialIdentity.Key.StartsWith("bossany:sekhemas_floor2_", System.StringComparison.OrdinalIgnoreCase)) vars.sekhemasFloor2SeenBosses.Add(trialIdentity.Value);
+            }
+            if (System.String.Equals(key, "bossall:sekhemas_floor2", System.StringComparison.OrdinalIgnoreCase))
+            {
+                vars.sekhemasFloor2AnonymousCount = 0;
+                if (vars.bossAllSeen.ContainsKey("sekhemas_floor2")) vars.bossAllSeen["sekhemas_floor2"].Clear();
+            }
+            if (key.StartsWith("bossnth:chaos_final_", System.StringComparison.OrdinalIgnoreCase))
+            {
+                string targetId = key.Substring("bossnth:".Length);
+                if (vars.bossNthObserved.ContainsKey(targetId)) vars.bossNthObserved[targetId] = 0;
+            }
             if (vars.areaSuccessorCompletion && (key.StartsWith("area:", System.StringComparison.OrdinalIgnoreCase) || key.StartsWith("areaocc:", System.StringComparison.OrdinalIgnoreCase)))
                 vars.armedAreaObjectives.Add(key);
             vars.lastUndoneKey = key;
@@ -1250,6 +1315,9 @@ update
             vars.pendingType = "area";
             vars.pendingHasFirstMissing = false;
             vars.pendingFirstMissing = System.DateTimeOffset.MinValue;
+    vars.pendingProvisional = false;
+    vars.pendingResolution = "";
+    vars.pendingBossIdentity = "";
             vars.lastUndoneKey = "";
             return true;
         }
@@ -1349,9 +1417,201 @@ update
                         break;
                     }
 
+                    if (System.String.Equals(eventType, "ANON_GONE", System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        bool anonHasFirstMissing = false;
+                        System.DateTimeOffset anonFirstMissing = System.DateTimeOffset.MinValue;
+                        System.DateTimeOffset anonEncounterStart = System.DateTimeOffset.MinValue;
+                        for (int anonExtraIndex = 4; anonExtraIndex < parts.Length; anonExtraIndex++)
+                        {
+                            string anonExtra = parts[anonExtraIndex].Trim();
+                            if (anonExtra.StartsWith("firstMissing=", System.StringComparison.OrdinalIgnoreCase))
+                            {
+                                System.DateTimeOffset parsedAnonMissing;
+                                if (System.DateTimeOffset.TryParse(anonExtra.Substring("firstMissing=".Length), out parsedAnonMissing))
+                                { anonFirstMissing = parsedAnonMissing; anonHasFirstMissing = true; }
+                            }
+                            else if (anonExtra.StartsWith("encounterStart=", System.StringComparison.OrdinalIgnoreCase))
+                                System.DateTimeOffset.TryParse(anonExtra.Substring("encounterStart=".Length), out anonEncounterStart);
+                        }
+
+                        string anonExpectedKey = timer.CurrentSplitIndex >= 0 && timer.CurrentSplitIndex < vars.objectiveOrder.Count
+                            ? vars.objectiveOrder[timer.CurrentSplitIndex] : "";
+                        bool timerActive = timer.CurrentPhase == LiveSplit.Model.TimerPhase.Running || timer.CurrentPhase == LiveSplit.Model.TimerPhase.Paused;
+                        if (!timerActive || anonExpectedKey == "")
+                        {
+                            if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                                System.DateTime.Now.ToString("s") + " ANON_GONE_IGNORED | reason=no-active-expected-objective | expected=" + (anonExpectedKey == "" ? "<none>" : anonExpectedKey) + System.Environment.NewLine);
+                            continue;
+                        }
+
+vars.pendingBossIdentity = "";
+
+                                                // Trial context may resolve a safe objective independently of general route order.
+                        // This is intentionally restricted to fixed Sekhemas floors and the Chaos
+                        // encounter pool; it is never used as a broad campaign area->boss assumption.
+                        string trialObjectiveKey = "";
+                        if (vars.lastAreaId.StartsWith("Sanctum_1_", System.StringComparison.OrdinalIgnoreCase))
+                        {
+                            string k = "boss:rattlecage_earthbreaker";
+                            if (vars.objectiveSet.Contains(k) && !vars.completed.Contains(k) && !vars.suppressed.Contains(k)) trialObjectiveKey = k;
+                        }
+                        else if (vars.lastAreaId.StartsWith("Sanctum_2_", System.StringComparison.OrdinalIgnoreCase))
+                        {
+                            foreach (string k in vars.objectiveOrder)
+                            {
+                                if ((k.StartsWith("bossany:sekhemas_floor2_boss_", System.StringComparison.OrdinalIgnoreCase) || System.String.Equals(k, "bossall:sekhemas_floor2", System.StringComparison.OrdinalIgnoreCase))
+                                    && !vars.completed.Contains(k) && !vars.suppressed.Contains(k)) { trialObjectiveKey = k; break; }
+                            }
+                        }
+                        else if (vars.lastAreaId.StartsWith("Sanctum_3_", System.StringComparison.OrdinalIgnoreCase))
+                        {
+                            string k = "boss:ashar_sand_mother";
+                            if (vars.objectiveSet.Contains(k) && !vars.completed.Contains(k) && !vars.suppressed.Contains(k)) trialObjectiveKey = k;
+                        }
+                        else if (vars.lastAreaId.StartsWith("Sanctum_4_", System.StringComparison.OrdinalIgnoreCase))
+                        {
+                            string k = "boss:zarokh_temporal";
+                            if (vars.objectiveSet.Contains(k) && !vars.completed.Contains(k) && !vars.suppressed.Contains(k)) trialObjectiveKey = k;
+                        }
+                        else if (System.String.Equals(vars.lastAreaId, "G3_10", System.StringComparison.OrdinalIgnoreCase))
+                        {
+                            foreach (string k in vars.objectiveOrder)
+                            {
+                                if ((k.StartsWith("bossany:chaos_boss_", System.StringComparison.OrdinalIgnoreCase) || k.StartsWith("bossnth:chaos_final_", System.StringComparison.OrdinalIgnoreCase))
+                                    && !vars.completed.Contains(k) && !vars.suppressed.Contains(k)) { trialObjectiveKey = k; break; }
+                            }
+                        }
+                        if (trialObjectiveKey != "" && (!vars.ordered || System.String.Equals(trialObjectiveKey, anonExpectedKey, System.StringComparison.OrdinalIgnoreCase)))
+                            anonExpectedKey = trialObjectiveKey;
+
+                        // Sekhemas fixed-position fallback. Floors 1/3/4 have one deterministic
+                        // main-boss identity. Floor 2 has two known bosses in either kill order,
+                        // so its dynamic slots may consume the anonymous occurrence but identity
+                        // remains pending for later two-member elimination.
+                        bool sekhemaDirect = System.String.Equals(anonExpectedKey, "boss:rattlecage_earthbreaker", System.StringComparison.OrdinalIgnoreCase)
+                            || System.String.Equals(anonExpectedKey, "boss:ashar_sand_mother", System.StringComparison.OrdinalIgnoreCase)
+                            || System.String.Equals(anonExpectedKey, "boss:zarokh_temporal", System.StringComparison.OrdinalIgnoreCase);
+                        bool sekhemaFloor2Slot = anonExpectedKey.StartsWith("bossany:sekhemas_floor2_boss_", System.StringComparison.OrdinalIgnoreCase);
+                        bool sekhemaFloor2Composite = System.String.Equals(anonExpectedKey, "bossall:sekhemas_floor2", System.StringComparison.OrdinalIgnoreCase);
+                        bool chaosSlot = anonExpectedKey.StartsWith("bossany:chaos_boss_", System.StringComparison.OrdinalIgnoreCase);
+                        bool chaosNth = anonExpectedKey.StartsWith("bossnth:chaos_final_", System.StringComparison.OrdinalIgnoreCase);
+
+                        if (sekhemaDirect)
+                        {
+                            string expectedBossId = anonExpectedKey.Substring("boss:".Length);
+                            vars.pendingKey = anonExpectedKey;
+                            vars.pendingName = vars.bossNames.ContainsKey(expectedBossId) ? vars.bossNames[expectedBossId] : expectedBossId;
+                            vars.pendingType = "boss";
+                            vars.pendingHasFirstMissing = anonHasFirstMissing;
+                            vars.pendingFirstMissing = anonFirstMissing;
+                            vars.pendingProvisional = false;
+                            vars.pendingResolution = "sekhemas-fixed-position";
+                            vars.lastUndoneKey = "";
+                            if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                                System.DateTime.Now.ToString("s") + " ANON_GONE_RESOLVED | resolver=sekhemas-fixed-position | objective=" + anonExpectedKey
+                                + " | encounterStart=" + anonEncounterStart.ToString("O") + " | firstMissing=" + (anonHasFirstMissing ? anonFirstMissing.ToString("O") : "unavailable") + System.Environment.NewLine);
+                            break;
+                        }
+
+                        if (sekhemaFloor2Composite)
+                        {
+                            vars.sekhemasFloor2AnonymousCount = vars.sekhemasFloor2AnonymousCount + 1;
+                            int namedCount = vars.bossAllSeen.ContainsKey("sekhemas_floor2") ? vars.bossAllSeen["sekhemas_floor2"].Count : 0;
+                            if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                                System.DateTime.Now.ToString("s") + " SEKHEMAS_FLOOR2_ANON_PROGRESS | anonymous=" + vars.sekhemasFloor2AnonymousCount
+                                + " | named=" + namedCount + " | required=2" + System.Environment.NewLine);
+                            if (vars.sekhemasFloor2AnonymousCount + namedCount >= 2)
+                            {
+                                vars.pendingKey = anonExpectedKey;
+                                vars.pendingName = "Hadi + Rafiq";
+                                vars.pendingType = "bossall";
+                                vars.pendingHasFirstMissing = anonHasFirstMissing;
+                                vars.pendingFirstMissing = anonFirstMissing;
+                                vars.pendingProvisional = false;
+                                vars.pendingResolution = "sekhemas-floor2-two-kill-deterministic";
+                                vars.lastUndoneKey = "";
+                                break;
+                            }
+                            continue;
+                        }
+
+                        if (sekhemaFloor2Slot || chaosSlot)
+                        {
+                            vars.pendingKey = anonExpectedKey;
+                            vars.pendingName = sekhemaFloor2Slot ? "Sekhemas Floor 2 Boss (identity pending)" : "Chaos Boss (identity pending)";
+                            vars.pendingType = sekhemaFloor2Slot ? "bossany-sekhema-anon" : "bossany-chaos-anon";
+                            vars.pendingHasFirstMissing = anonHasFirstMissing;
+                            vars.pendingFirstMissing = anonFirstMissing;
+                            vars.pendingProvisional = false;
+                            vars.pendingResolution = sekhemaFloor2Slot ? "sekhemas-floor2-occurrence" : "chaos-occurrence";
+                            vars.lastUndoneKey = "";
+                            if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                                System.DateTime.Now.ToString("s") + " ANON_GONE_RESOLVED | resolver=" + vars.pendingResolution + " | objective=" + anonExpectedKey
+                                + " | identity=pending | firstMissing=" + (anonHasFirstMissing ? anonFirstMissing.ToString("O") : "unavailable") + System.Environment.NewLine);
+                            break;
+                        }
+
+                        if (chaosNth)
+                        {
+                            string targetId = anonExpectedKey.Substring("bossnth:".Length);
+                            if (!vars.bossNthObserved.ContainsKey(targetId)) vars.bossNthObserved[targetId] = 0;
+                            vars.bossNthObserved[targetId] = vars.bossNthObserved[targetId] + 1;
+                            int targetCount = vars.bossNthTarget.ContainsKey(targetId) ? vars.bossNthTarget[targetId] : 0;
+                            if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                                System.DateTime.Now.ToString("s") + " CHAOS_ANON_NTH_PROGRESS | objective=" + anonExpectedKey
+                                + " | observed=" + vars.bossNthObserved[targetId] + "/" + targetCount + System.Environment.NewLine);
+                            if (targetCount > 0 && vars.bossNthObserved[targetId] >= targetCount)
+                            {
+                                vars.pendingKey = anonExpectedKey;
+                                vars.pendingName = "Chaos Boss " + targetCount + " (identity unresolved)";
+                                vars.pendingType = "bossnth";
+                                vars.pendingHasFirstMissing = anonHasFirstMissing;
+                                vars.pendingFirstMissing = anonFirstMissing;
+                                vars.pendingProvisional = false;
+                                vars.pendingResolution = "chaos-nth-occurrence";
+                                vars.lastUndoneKey = "";
+                                break;
+                            }
+                            continue;
+                        }
+
+                        // General ordered/custom fallback: advance visually, but keep the objective
+                        // provisional until a later named boss matches the next expected boss.
+                        bool provisionalBossObjective = vars.ordered && !vars.provisionalConflict
+                            && (anonExpectedKey.StartsWith("boss:", System.StringComparison.OrdinalIgnoreCase)
+                                || anonExpectedKey.StartsWith("bossocc:", System.StringComparison.OrdinalIgnoreCase)
+                                || anonExpectedKey.StartsWith("bossslot:", System.StringComparison.OrdinalIgnoreCase)
+                                || anonExpectedKey.StartsWith("bossany:", System.StringComparison.OrdinalIgnoreCase));
+                        if (provisionalBossObjective)
+                        {
+                            vars.pendingKey = anonExpectedKey;
+                            vars.pendingName = "Unidentified boss — provisional";
+                            vars.pendingType = "boss-provisional";
+                            vars.pendingHasFirstMissing = anonHasFirstMissing;
+                            vars.pendingFirstMissing = anonFirstMissing;
+                            vars.pendingProvisional = true;
+                            vars.pendingResolution = "ordered-sequence-provisional";
+                            vars.lastUndoneKey = "";
+                            if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                                System.DateTime.Now.ToString("s") + " PROVISIONAL_SPLIT_REQUESTED | objective=" + anonExpectedKey
+                                + " | firstMissing=" + (anonHasFirstMissing ? anonFirstMissing.ToString("O") : "unavailable")
+                                + " | chainBefore=" + vars.provisionalKeys.Count + System.Environment.NewLine);
+                            break;
+                        }
+
+                        if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                            System.DateTime.Now.ToString("s") + " ANON_GONE_IGNORED | reason=no-safe-resolver | expected=" + anonExpectedKey
+                            + " | ordered=" + vars.ordered + " | provisionalConflict=" + vars.provisionalConflict + System.Environment.NewLine);
+                        continue;
+                    }
+
                     if (!System.String.Equals(eventType, "GONE", System.StringComparison.OrdinalIgnoreCase)) continue;
                     string bossId = parts[2].Trim();
                     string bossName = parts[3].Trim();
+                    vars.pendingProvisional = false;
+                    vars.pendingResolution = "ocr";
+                    vars.pendingBossIdentity = bossId;
                     if (vars.mapDiagEnabled && settings["debugLog"])
                     {
                         System.IO.File.AppendAllText(vars.debugPath,
@@ -1465,6 +1725,43 @@ update
                         break;
                     }
 
+                    bool namedMatchesCurrentExpected = directEligible || bossOccurrenceKey != "" || customBossSlotKey != "" || compositeKey != "" || bossAnyKey != "" || bossNthKey != "";
+                    if (vars.provisionalKeys.Count > 0)
+                    {
+                        bool matchesPriorProvisional = false;
+                        foreach (string provisionalKey in vars.provisionalKeys)
+                        {
+                            if (System.String.Equals(provisionalKey, directKey, System.StringComparison.OrdinalIgnoreCase)) { matchesPriorProvisional = true; break; }
+                            if (provisionalKey.StartsWith("bossocc:", System.StringComparison.OrdinalIgnoreCase))
+                            {
+                                string occurrenceId = provisionalKey.Substring("bossocc:".Length);
+                                int sep = occurrenceId.LastIndexOf('~');
+                                string occurrenceBoss = sep > 0 ? occurrenceId.Substring(0, sep) : occurrenceId;
+                                if (System.String.Equals(occurrenceBoss, bossId, System.StringComparison.OrdinalIgnoreCase)) { matchesPriorProvisional = true; break; }
+                            }
+                        }
+
+                        if (namedMatchesCurrentExpected)
+                        {
+                            if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                                System.DateTime.Now.ToString("s") + " PROVISIONAL_CHAIN_CONFIRMED | count=" + vars.provisionalKeys.Count
+                                + " | confirmingBoss=" + bossId + " | expected=" + expectedKey
+                                + " | objectives=" + System.String.Join(",", vars.provisionalKeys.ToArray()) + System.Environment.NewLine);
+                            vars.provisionalKeys.Clear();
+                            vars.provisionalSet.Clear();
+                        }
+                        else if (matchesPriorProvisional)
+                        {
+                            vars.provisionalConflict = true;
+                            if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                                System.DateTime.Now.ToString("s") + " PROVISIONAL_CONFLICT_REQUIRES_UNDO | identified=" + directKey
+                                + " | currentExpected=" + (expectedKey == "" ? "<none>" : expectedKey)
+                                + " | provisional=" + System.String.Join(",", vars.provisionalKeys.ToArray())
+                                + " | anonymousFallbackDisabled=true" + System.Environment.NewLine);
+                            continue;
+                        }
+                    }
+
                     if (!directEligible && bossOccurrenceKey == "" && customBossSlotKey == "" && compositeKey == "" && bossAnyKey == "" && bossNthKey == "")
                     {
                         if (settings["debugLog"])
@@ -1493,7 +1790,8 @@ update
                         if (!vars.bossAllSeen.ContainsKey(compositeId))
                             vars.bossAllSeen[compositeId] = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
                         vars.bossAllSeen[compositeId].Add(bossId);
-                        compositeComplete = vars.bossAllSeen[compositeId].Count >= vars.bossAllMembers[compositeId].Count;
+                        int anonymousCompositeCount = System.String.Equals(compositeId, "sekhemas_floor2", System.StringComparison.OrdinalIgnoreCase) ? vars.sekhemasFloor2AnonymousCount : 0;
+                        compositeComplete = vars.bossAllSeen[compositeId].Count + anonymousCompositeCount >= vars.bossAllMembers[compositeId].Count;
                         if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
                             System.DateTime.Now.ToString("s") + " BOSS_ALL_PROGRESS | objective=" + compositeKey
                             + " | member=" + bossId
@@ -1556,6 +1854,48 @@ update
 
                     if (bossAnyKey != "")
                     {
+                        bool isChaosNamedSlot = bossAnyKey.StartsWith("bossany:chaos_boss_", System.StringComparison.OrdinalIgnoreCase);
+                        bool isSekhemaFloor2NamedSlot = bossAnyKey.StartsWith("bossany:sekhemas_floor2_", System.StringComparison.OrdinalIgnoreCase);
+                        if (isChaosNamedSlot)
+                        {
+                            vars.chaosSeenBosses.Add(bossId);
+                            if (vars.chaosAnonymousKeys.Count == 1 && vars.chaosSeenBosses.Count == 2)
+                            {
+                                string inferredBoss = "";
+                                foreach (string candidateBoss in vars.chaosBossPool) if (!vars.chaosSeenBosses.Contains(candidateBoss)) { inferredBoss = candidateBoss; break; }
+                                if (inferredBoss != "")
+                                {
+                                    string inferredKey = vars.chaosAnonymousKeys[0];
+                                    int inferredIndex = vars.objectiveOrder.IndexOf(inferredKey);
+                                    try { int ri=0; foreach (LiveSplit.Model.ISegment seg in timer.Run) { if (ri==inferredIndex) { seg.Name = vars.bossNames.ContainsKey(inferredBoss) ? vars.bossNames[inferredBoss] : inferredBoss; timer.Run.HasChanged=true; timer.CallRunManuallyModified(); break; } ri++; } } catch {}
+                                    vars.chaosSeenBosses.Add(inferredBoss);
+                                    vars.chaosAnonymousKeys.Clear();
+                                    if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                                        System.DateTime.Now.ToString("s") + " CHAOS_IDENTITY_RETROACTIVE_RESOLVE | objective=" + inferredKey
+                                        + " | boss=" + inferredBoss + " | resolver=no-repeat-elimination" + System.Environment.NewLine);
+                                }
+                            }
+                        }
+                        if (isSekhemaFloor2NamedSlot)
+                        {
+                            vars.sekhemasFloor2SeenBosses.Add(bossId);
+                            if (vars.sekhemasFloor2AnonymousKeys.Count == 1 && vars.sekhemasFloor2SeenBosses.Count == 1)
+                            {
+                                string inferredBoss = System.String.Equals(bossId, "hadi_flaming_river", System.StringComparison.OrdinalIgnoreCase) ? "rafiq_frozen_spring" :
+                                    System.String.Equals(bossId, "rafiq_frozen_spring", System.StringComparison.OrdinalIgnoreCase) ? "hadi_flaming_river" : "";
+                                if (inferredBoss != "")
+                                {
+                                    string inferredKey = vars.sekhemasFloor2AnonymousKeys[0];
+                                    int inferredIndex = vars.objectiveOrder.IndexOf(inferredKey);
+                                    try { int ri=0; foreach (LiveSplit.Model.ISegment seg in timer.Run) { if (ri==inferredIndex) { seg.Name = System.String.Equals(inferredBoss, "hadi_flaming_river", System.StringComparison.OrdinalIgnoreCase) ? "Hadi" : "Rafiq"; timer.Run.HasChanged=true; timer.CallRunManuallyModified(); break; } ri++; } } catch {}
+                                    vars.sekhemasFloor2SeenBosses.Add(inferredBoss);
+                                    vars.sekhemasFloor2AnonymousKeys.Clear();
+                                    if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                                        System.DateTime.Now.ToString("s") + " SEKHEMAS_FLOOR2_RETROACTIVE_RESOLVE | objective=" + inferredKey
+                                        + " | boss=" + inferredBoss + " | resolver=two-boss-elimination" + System.Environment.NewLine);
+                                }
+                            }
+                        }
                         vars.pendingKey = bossAnyKey;
                         vars.pendingName = bossName == "" && vars.bossNames.ContainsKey(bossId) ? vars.bossNames[bossId] : bossName;
                         if (bossAnyKey.StartsWith("bossany:sekhemas_floor2_", System.StringComparison.OrdinalIgnoreCase))
@@ -1852,6 +2192,9 @@ update
                             vars.pendingType = "level";
                             vars.pendingHasFirstMissing = false;
                             vars.pendingFirstMissing = System.DateTimeOffset.MinValue;
+    vars.pendingProvisional = false;
+    vars.pendingResolution = "";
+    vars.pendingBossIdentity = "";
                             vars.lastUndoneKey = "";
                             if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath, System.DateTime.Now.ToString("s") + " LEVEL_OBJECTIVE | " + levelKey + System.Environment.NewLine);
                             break;
@@ -1924,6 +2267,25 @@ update
 
             if (areaId == "" || !vars.areaNames.ContainsKey(areaId)) continue;
             if (System.String.Equals(areaId, vars.lastAreaId, System.StringComparison.OrdinalIgnoreCase)) continue;
+            if (System.String.Equals(areaId, "G3_10_Airlock", System.StringComparison.OrdinalIgnoreCase))
+            {
+                vars.chaosSeenBosses.Clear();
+                vars.chaosAnonymousKeys.Clear();
+                var chaosIdentityKeys = new System.Collections.Generic.List<string>();
+                foreach (var trialIdentity in vars.trialIdentityByKey) if (trialIdentity.Key.StartsWith("bossany:chaos_boss_", System.StringComparison.OrdinalIgnoreCase)) chaosIdentityKeys.Add(trialIdentity.Key);
+                foreach (string identityKey in chaosIdentityKeys) vars.trialIdentityByKey.Remove(identityKey);
+                if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath, System.DateTime.Now.ToString("s") + " CHAOS_RESOLUTION_STATE_RESET | reason=trial-lobby" + System.Environment.NewLine);
+            }
+            if (System.String.Equals(areaId, "G2_13", System.StringComparison.OrdinalIgnoreCase))
+            {
+                vars.sekhemasFloor2SeenBosses.Clear();
+                vars.sekhemasFloor2AnonymousKeys.Clear();
+                vars.sekhemasFloor2AnonymousCount = 0;
+                var sekhemaIdentityKeys = new System.Collections.Generic.List<string>();
+                foreach (var trialIdentity in vars.trialIdentityByKey) if (trialIdentity.Key.StartsWith("bossany:sekhemas_floor2_", System.StringComparison.OrdinalIgnoreCase)) sekhemaIdentityKeys.Add(trialIdentity.Key);
+                foreach (string identityKey in sekhemaIdentityKeys) vars.trialIdentityByKey.Remove(identityKey);
+                if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath, System.DateTime.Now.ToString("s") + " SEKHEMAS_RESOLUTION_STATE_RESET | reason=trial-lobby" + System.Environment.NewLine);
+            }
             vars.lastAreaId = areaId;
             string areaName = vars.areaNames[areaId];
             string enteredKey = "area:" + areaId;
@@ -2014,6 +2376,9 @@ update
                     }
                     vars.pendingHasFirstMissing = false;
                     vars.pendingFirstMissing = System.DateTimeOffset.MinValue;
+    vars.pendingProvisional = false;
+    vars.pendingResolution = "";
+    vars.pendingBossIdentity = "";
                     vars.lastUndoneKey = "";
                     break;
                 }
@@ -2049,6 +2414,9 @@ update
             }
             vars.pendingHasFirstMissing = false;
             vars.pendingFirstMissing = System.DateTimeOffset.MinValue;
+    vars.pendingProvisional = false;
+    vars.pendingResolution = "";
+    vars.pendingBossIdentity = "";
             vars.lastUndoneKey = "";
             break;
         }
@@ -2087,13 +2455,16 @@ onSplit
         string key = vars.pendingKey;
         string name = vars.pendingName;
         string type = vars.pendingType;
+        string resolution = vars.pendingResolution == "" ? "native" : vars.pendingResolution;
+        string pendingBossIdentity = vars.pendingBossIdentity;
+        bool wasProvisional = vars.pendingProvisional;
         int completedIndex = timer.CurrentSplitIndex - 1;
         string finalReal = "<not found>";
 
         // BossWatcher confirms disappearance after a short delay. Backdate boss objective Real Time
         // and Game Time to firstMissing, preserving the tested BossRush timing behavior. Area
         // objectives keep the native LiveSplit timestamp.
-        if (type == "boss" || type == "bossocc" || type == "bossall" || type == "bossany" || type == "bossnth" || type == "bossslot" || type == "mapboss")
+        if (type == "boss" || type == "bossocc" || type == "bossall" || type == "bossany" || type == "bossnth" || type == "bossslot" || type == "mapboss" || type == "boss-provisional" || type == "bossany-chaos-anon" || type == "bossany-sekhema-anon")
         {
             try
             {
@@ -2120,7 +2491,7 @@ onSplit
                             else
                             {
                                 System.TimeSpan wallDelay = System.DateTimeOffset.Now - vars.pendingFirstMissing;
-                                if (wallDelay >= System.TimeSpan.Zero && wallDelay <= System.TimeSpan.FromSeconds(5))
+                                if (wallDelay >= System.TimeSpan.Zero && wallDelay <= System.TimeSpan.FromSeconds(45))
                                 {
                                     System.TimeSpan adjustedReal = completedSegment.SplitTime.RealTime.Value - wallDelay;
                                     if (adjustedReal < System.TimeSpan.Zero) adjustedReal = System.TimeSpan.Zero;
@@ -2152,6 +2523,23 @@ onSplit
             } catch {}
         }
 
+        if (wasProvisional)
+        {
+            if (!vars.provisionalSet.Contains(key))
+            {
+                vars.provisionalKeys.Add(key);
+                vars.provisionalSet.Add(key);
+            }
+            if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
+                System.DateTime.Now.ToString("s") + " PROVISIONAL_SPLIT_COMMITTED | objective=" + key
+                + " | chain=" + System.String.Join(",", vars.provisionalKeys.ToArray())
+                + " | resolution=" + resolution + System.Environment.NewLine);
+        }
+        if (pendingBossIdentity != "" && (key.StartsWith("bossany:chaos_boss_", System.StringComparison.OrdinalIgnoreCase) || key.StartsWith("bossany:sekhemas_floor2_", System.StringComparison.OrdinalIgnoreCase)))
+            vars.trialIdentityByKey[key] = pendingBossIdentity;
+        if (type == "bossany-chaos-anon" && !vars.chaosAnonymousKeys.Contains(key)) vars.chaosAnonymousKeys.Add(key);
+        if (type == "bossany-sekhema-anon" && !vars.sekhemasFloor2AnonymousKeys.Contains(key)) vars.sekhemasFloor2AnonymousKeys.Add(key);
+
         vars.completed.Add(key);
         vars.completedOrder.Add(key);
 
@@ -2182,6 +2570,9 @@ onSplit
         vars.pendingType = "";
         vars.pendingHasFirstMissing = false;
         vars.pendingFirstMissing = System.DateTimeOffset.MinValue;
+    vars.pendingProvisional = false;
+    vars.pendingResolution = "";
+    vars.pendingBossIdentity = "";
         vars.lastObservedIndex = timer.CurrentSplitIndex;
 
         string status = "Status: RUNNING" + System.Environment.NewLine
@@ -2189,13 +2580,19 @@ onSplit
             + "Last objective: " + key + " | " + name + System.Environment.NewLine
             + "Completed: " + vars.completed.Count + " / " + vars.objectiveOrder.Count + System.Environment.NewLine
             + "Suppressed: " + vars.suppressed.Count + System.Environment.NewLine
+            + "Provisional boss objectives: " + vars.provisionalKeys.Count + (vars.provisionalConflict ? " (CONFLICT - manual reconciliation required)" : "") + System.Environment.NewLine
             + "LiveSplit index: " + timer.CurrentSplitIndex + System.Environment.NewLine
-            + ((type == "boss" || type == "bossocc" || type == "bossall" || type == "bossany" || type == "bossnth" || type == "bossslot" || type == "mapboss") ? "Boss split RealTime: " + finalReal + System.Environment.NewLine : "");
+            + ((type == "boss" || type == "bossocc" || type == "bossall" || type == "bossany" || type == "bossnth" || type == "bossslot" || type == "mapboss" || type == "boss-provisional" || type == "bossany-chaos-anon" || type == "bossany-sekhema-anon") ? "Boss split RealTime: " + finalReal + System.Environment.NewLine : "");
         System.IO.File.WriteAllText(vars.statusPath, status);
         if (settings["debugLog"]) System.IO.File.AppendAllText(vars.debugPath,
             System.DateTime.Now.ToString("s") + " OBJECTIVE_SPLIT_COMMITTED | " + key + " " + name
             + " | completed=" + vars.completed.Count + "/" + vars.objectiveOrder.Count
-            + " | liveSplitIndex=" + timer.CurrentSplitIndex + System.Environment.NewLine);
+            + " | liveSplitIndex=" + timer.CurrentSplitIndex
+            + " | resolution=" + resolution
+            + " | provisionalOutstanding=" + vars.provisionalKeys.Count + System.Environment.NewLine);
+        if (timer.CurrentSplitIndex >= vars.objectiveOrder.Count && vars.provisionalKeys.Count > 0 && settings["debugLog"])
+            System.IO.File.AppendAllText(vars.debugPath, System.DateTime.Now.ToString("s") + " PROVISIONAL_AT_ROUTE_END | objectives="
+                + System.String.Join(",", vars.provisionalKeys.ToArray()) + " | runRequiresReview=true" + System.Environment.NewLine);
     }
 }
 
@@ -2318,6 +2715,18 @@ onReset
     foreach (var bossAllDef in vars.bossAllMembers)
         vars.bossAllSeen[bossAllDef.Key] = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
     vars.bossNthObserved = new System.Collections.Generic.Dictionary<string, int>(System.StringComparer.OrdinalIgnoreCase);
+    // v1.3.12 unresolved-boss route state. Timing and identity are intentionally separate:
+    // BossWatcher may emit a structurally verified ANON_GONE event, while this ordered route
+    // layer decides whether a deterministic trial rule or provisional sequence rule can consume it.
+    vars.provisionalKeys = new System.Collections.Generic.List<string>();
+    vars.provisionalSet = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+    vars.provisionalConflict = false;
+    vars.chaosSeenBosses = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+    vars.chaosAnonymousKeys = new System.Collections.Generic.List<string>();
+    vars.sekhemasFloor2SeenBosses = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+    vars.sekhemasFloor2AnonymousKeys = new System.Collections.Generic.List<string>();
+    vars.sekhemasFloor2AnonymousCount = 0;
+    vars.trialIdentityByKey = new System.Collections.Generic.Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase);
     foreach (var bossNthDef in vars.bossNthTarget)
         vars.bossNthObserved[bossNthDef.Key] = 0;
     vars.pendingKey = "";
@@ -2325,6 +2734,9 @@ onReset
     vars.pendingType = "";
     vars.pendingHasFirstMissing = false;
     vars.pendingFirstMissing = System.DateTimeOffset.MinValue;
+    vars.pendingProvisional = false;
+    vars.pendingResolution = "";
+    vars.pendingBossIdentity = "";
     vars.sameTimeCacheValid = false;
     vars.sameTimeCacheFirstMissing = System.DateTimeOffset.MinValue;
     vars.sameTimeCacheReal = System.TimeSpan.Zero;

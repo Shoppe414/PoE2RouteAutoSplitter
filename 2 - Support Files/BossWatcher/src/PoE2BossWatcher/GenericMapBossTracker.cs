@@ -197,8 +197,11 @@ public sealed class GenericMapBossTracker
     }
 
     private bool IsSingleStructuralCandidate(BossBarMetrics metrics)
-        => metrics.HealthRedRunFraction >= _config.OcrTriggerRedRunFraction
-        && metrics.NameGoldFraction >= _config.OcrMinNameGoldPixelFraction;
+        => metrics.GlobalHealthRedRunFraction >= _config.SingleBossMinGlobalHealthRunFraction
+        && metrics.HealthRedRunFraction >= _config.OcrTriggerRedRunFraction
+        && metrics.NameGoldFraction >= _config.OcrMinNameGoldPixelFraction
+        && metrics.NameGoldFraction <= _config.SingleBossMaxNameGoldFraction
+        && metrics.CenterNameGoldFraction <= _config.SingleBossMaxCenterNameGoldFraction;
 
     private MapOcrDecision TryIdentifySingle(Bitmap raw, MapBossEntry entry, IReadOnlyList<BossDefinition> expectedDefinitions)
     {

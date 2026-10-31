@@ -64,6 +64,15 @@ public sealed class EventWriter
     public void BossReturned(BossDefinition boss, DateTimeOffset when)
         => WriteEvent(when, "RETURNED", boss, "missingWindowCancelled=true", printToUserConsole: false);
 
+    public void AnonymousBossGone(DateTimeOffset encounterStart, DateTimeOffset firstMissing, DateTimeOffset verifyStarted, DateTimeOffset confirmed, int confirmMs)
+    {
+        var fightSeconds = Math.Max(0, (firstMissing - encounterStart).TotalSeconds);
+        WriteRawEvent(confirmed, "ANON_GONE", "unknown", "Unidentified Boss",
+            $"firstMissing={firstMissing:O}|verifyStarted={verifyStarted:O}|confirmMs={confirmMs}|encounterStart={encounterStart:O}|fightSeconds={fightSeconds:F3}|identity=unresolved|detector=structural",
+            displayWhen: firstMissing,
+            userMessage: $"Defeated unidentified boss | Fight time: {fightSeconds:F3} s");
+    }
+
     public void MapBossSeen(
         DateTimeOffset when,
         BossContextState context,

@@ -31,16 +31,36 @@ public sealed class BossEncounterTracker
     private Mode _mode = Mode.Scan;
     private DateTimeOffset _nextEncounterAcquireAllowed = DateTimeOffset.MinValue;
 
-    // Generic single-acquisition burst state.
+    // Single-boss structural acquisition is decoupled from identity OCR. A confirmed boss UI
+    // arms an anonymous encounter immediately; OCR resolves the identity independently while
+    // a bounded ROI ring buffer preserves short-lived encounters for delayed OCR.
     private int _singleCandidateFrames;
     private int _singleCenteredCandidateFrames;
     private int _singleCandidateLossFrames;
+    private DateTimeOffset? _singleCandidateFirstSeen;
     private DateTimeOffset _singleBurstEnd = DateTimeOffset.MinValue;
     private DateTimeOffset _nextSingleBurstAllowed = DateTimeOffset.MinValue;
     private DateTimeOffset _nextSingleOcr = DateTimeOffset.MinValue;
     private readonly OcrLaneHistory _singleOcrHistory;
+    private readonly BossRoiRingBuffer _singleRoiBuffer;
     private int _singleFailedOcrCycles;
     private DateTimeOffset _singleLastOcrDiagnostic = DateTimeOffset.MinValue;
+
+    // Anonymous single encounter state. The learned spatial template is identity-independent,
+    // so disappearance can be timed before Tesseract knows which boss is on screen.
+    private DateTimeOffset? _anonymousEncounterStart;
+    private DateTimeOffset? _anonymousFirstMissing;
+    private DateTimeOffset? _anonymousVerifyStarted;
+    private DateTimeOffset? _anonymousGoneConfirmedAt;
+    private BossNameTemplate? _anonymousTemplate;
+    private double _anonymousTemplateCoverage;
+    private double _anonymousNameBaseline;
+    private double _anonymousNameMissingThreshold;
+    private double _anonymousNameReturnedThreshold;
+    private BossBarMetrics? _anonymousStartMetrics;
+    private BufferedBossIdentityResult? _anonymousIdentity;
+    private Task<BufferedBossIdentityResult?>? _anonymousPostOcrTask;
+    private bool _anonymousPostOcrFinished;
 
     // Dual topology / acquisition state.
     private int _dualPresentFrames;
@@ -98,6 +118,7 @@ public sealed class BossEncounterTracker
         _matcher = matcher;
         _single = new BossTracker(config, events, images);
         _singleOcrHistory = new OcrLaneHistory(config.OcrTemporalFrameCount);
+        _singleRoiBuffer = new BossRoiRingBuffer(config.AnonymousRoiBufferFrames);
         _leftOcrHistory = new OcrLaneHistory(config.OcrTemporalFrameCount);
         _rightOcrHistory = new OcrLaneHistory(config.OcrTemporalFrameCount);
     }
@@ -105,7 +126,7 @@ public sealed class BossEncounterTracker
     public string StateLabel => _mode switch
     {
         Mode.Scan => "SCAN",
-        Mode.AcquireSingle => "ACQUIRE",
+        Mode.AcquireSingle => _anonymousVerifyStarted.HasValue ? "ANON_VERIFY" : "ANON_TRACK",
         Mode.SingleBackoff => "BACKOFF",
         Mode.TrackSingle => _single.IsMissingWindowActive ? "VERIFY_GONE" : "TRACK",
         Mode.AcquireDual => DateTimeOffset.Now < _nextDualBurstAllowed ? "DUAL_BACKOFF" : "DUAL_ACQUIRE",
@@ -115,7 +136,7 @@ public sealed class BossEncounterTracker
     };
 
     public bool IsDualMode => _mode is Mode.AcquireDual or Mode.TrackDual or Mode.ResolveDual;
-    public bool IsTrackingAny => _single.TrackedBoss is not null || _leftTrack is not null || _rightTrack is not null;
+    public bool IsTrackingAny => _anonymousEncounterStart.HasValue || _single.TrackedBoss is not null || _leftTrack is not null || _rightTrack is not null;
     public long OcrAttempts => _ocrAttempts;
     public int BurstAttempts => _burstAttempts;
     public DateTimeOffset LastOcrAt => _lastOcrAt;
@@ -129,6 +150,10 @@ public sealed class BossEncounterTracker
         {
             if (_mode == Mode.TrackSingle && _single.TrackedBoss is not null)
                 return _single.TrackedBoss.Name;
+            if (_mode == Mode.AcquireSingle && _anonymousEncounterStart.HasValue)
+                return _anonymousIdentity is not null
+                    ? $"{_anonymousIdentity.Match.Boss.Name} (anonymous timing)"
+                    : "Unknown boss (OCR pending)";
             if (_leftTrack is not null || _rightTrack is not null)
                 return $"L:{_leftTrack?.Boss.Name ?? "-"} R:{_rightTrack?.Boss.Name ?? "-"}";
             if (_mode == Mode.AcquireDual && (_leftCandidate is not null || _rightCandidate is not null))
@@ -139,8 +164,8 @@ public sealed class BossEncounterTracker
         }
     }
 
-    public double SingleTemplateCoverage => _single.TemplateCoverage;
-    public bool SingleUsingTemplate => _single.UsingNameTemplate;
+    public double SingleTemplateCoverage => _mode == Mode.AcquireSingle ? _anonymousTemplateCoverage : _single.TemplateCoverage;
+    public bool SingleUsingTemplate => _mode == Mode.AcquireSingle ? _anonymousTemplate is not null : _single.UsingNameTemplate;
     public double SingleRecentRunReference => _single.RecentRedRunReference;
     public double SingleRunDropRatio => _single.RedRunDropRatio;
     public bool SingleRunCollapse => _single.RedRunCollapseActive;
@@ -185,111 +210,315 @@ public sealed class BossEncounterTracker
         var baseCandidate = IsSingleOcrBaseStructuralCandidate(metrics);
         if (!baseCandidate)
         {
-            _singleCandidateFrames = 0;
-            _singleCenteredCandidateFrames = 0;
+            ResetPendingSingleCandidate();
             return;
         }
 
+        if (!_singleCandidateFirstSeen.HasValue)
+        {
+            _singleCandidateFirstSeen = now;
+            _singleRoiBuffer.Clear();
+        }
+
+        _singleRoiBuffer.Add(now, raw, metrics);
         _singleCandidateFrames++;
         var centeredName = metrics.CenterNameGoldFraction >= _config.SingleOcrMinCenterNameGoldFraction;
         _singleCenteredCandidateFrames = centeredName ? _singleCenteredCandidateFrames + 1 : 0;
+        var strongOneFrame =
+            metrics.GlobalHealthRedRunFraction >= _config.SingleBossMinGlobalHealthRunFraction &&
+            metrics.HealthRedRunFraction >= _config.AnonymousStrongArmRedRunFraction &&
+            metrics.CenterNameGoldFraction >= _config.AnonymousStrongArmCenterNameGoldFraction;
         var fastConfirmed = _singleCenteredCandidateFrames >= _config.OcrCandidateConsecutiveFrames;
         var persistentFallbackConfirmed = _singleCandidateFrames >= _config.SingleOcrWeakCenterConfirmFrames;
-        if (!fastConfirmed && !persistentFallbackConfirmed) return;
+        if (!strongOneFrame && !fastConfirmed && !persistentFallbackConfirmed) return;
         if (now < _nextSingleBurstAllowed) return;
 
+        var gate = strongOneFrame ? "strong-one-frame" : fastConfirmed ? "centered-fast" : "weak-center-persistent";
+        BeginAnonymousSingle(now, raw, metrics, gate);
+        ObserveSingleAcquisition(now, raw, metrics);
+    }
+
+    private bool IsSingleOcrBaseStructuralCandidate(BossBarMetrics metrics)
+        => metrics.GlobalHealthRedRunFraction >= _config.SingleBossMinGlobalHealthRunFraction
+        && metrics.HealthRedRunFraction >= _config.OcrTriggerRedRunFraction
+        && metrics.NameGoldFraction >= _config.OcrMinNameGoldPixelFraction
+        && metrics.NameGoldFraction <= _config.SingleBossMaxNameGoldFraction
+        && metrics.CenterNameGoldFraction <= _config.SingleBossMaxCenterNameGoldFraction;
+
+    private void BeginAnonymousSingle(DateTimeOffset now, Bitmap raw, BossBarMetrics metrics, string gate)
+    {
         _mode = Mode.AcquireSingle;
+        _anonymousEncounterStart = _singleCandidateFirstSeen ?? now;
+        _anonymousFirstMissing = null;
+        _anonymousVerifyStarted = null;
+        _anonymousGoneConfirmedAt = null;
+        _anonymousIdentity = null;
+        _anonymousPostOcrTask = null;
+        _anonymousPostOcrFinished = false;
+        _anonymousStartMetrics = metrics;
+
+        var capturedTemplate = BossNameTemplate.Capture(raw, _config);
+        if (capturedTemplate.ReferencePixelCount >= _config.TrackedTemplateMinReferencePixels)
+        {
+            _anonymousTemplate = capturedTemplate;
+            _anonymousTemplateCoverage = 1.0;
+        }
+        else
+        {
+            _anonymousTemplate = null;
+            _anonymousTemplateCoverage = 0;
+        }
+
+        _anonymousNameBaseline = metrics.NameGoldFraction;
+        _anonymousNameMissingThreshold = Math.Max(
+            _config.TrackedNameMissingAbsoluteFraction,
+            _anonymousNameBaseline * _config.TrackedNameMissingRelativeFraction);
+        _anonymousNameReturnedThreshold = Math.Max(
+            _config.TrackedNameReturnedAbsoluteFraction,
+            _anonymousNameBaseline * _config.TrackedNameReturnedRelativeFraction);
+
         _singleBurstEnd = now.AddMilliseconds(_config.OcrBurstDurationMs);
         _nextSingleOcr = now;
         _singleCandidateLossFrames = 0;
         _singleFailedOcrCycles = 0;
         _singleOcrHistory.Clear();
         _burstAttempts = 0;
-        _events.Debug($"OCR_BURST_START | layout=single | redRun={metrics.HealthRedRunFraction:F4}" +
-            $" | nameGold={metrics.NameGoldFraction:F4} | centerName={metrics.CenterNameGoldFraction:F4}" +
-            $" | idleGate={(fastConfirmed ? "centered-fast" : "weak-center-persistent")}" +
-            $" | candidateFrames={_singleCandidateFrames}" +
-            $" | centeredFrames={_singleCenteredCandidateFrames}");
-        ObserveSingleAcquisition(now, raw, metrics);
-    }
 
-    private bool IsSingleOcrBaseStructuralCandidate(BossBarMetrics metrics)
-        => metrics.HealthRedRunFraction >= _config.OcrTriggerRedRunFraction
-        && metrics.NameGoldFraction >= _config.OcrMinNameGoldPixelFraction;
+        _events.Debug($"ANONYMOUS_TRACK_ARMED | encounterStart={_anonymousEncounterStart.Value:O}" +
+            $" | gate={gate} | templatePixels={capturedTemplate.ReferencePixelCount}" +
+            $" | presence={(_anonymousTemplate is not null ? "template" : "name-fallback")}" +
+            $" | globalRun={metrics.GlobalHealthRedRunFraction:F4} | redRun={metrics.HealthRedRunFraction:F4}" +
+            $" | nameGold={metrics.NameGoldFraction:F4} | centerName={metrics.CenterNameGoldFraction:F4}" +
+            $" | candidateFrames={_singleCandidateFrames} | centeredFrames={_singleCenteredCandidateFrames}" +
+            $" | roiBuffered={_singleRoiBuffer.Count}");
+        _events.Debug($"OCR_BURST_START | layout=single | anonymous=true | redRun={metrics.HealthRedRunFraction:F4}" +
+            $" | nameGold={metrics.NameGoldFraction:F4} | centerName={metrics.CenterNameGoldFraction:F4}" +
+            $" | idleGate={gate} | candidateFrames={_singleCandidateFrames}" +
+            $" | centeredFrames={_singleCenteredCandidateFrames}");
+    }
 
     private void ObserveSingleAcquisition(DateTimeOffset now, Bitmap raw, BossBarMetrics metrics)
     {
+        if (_mode != Mode.AcquireSingle || !_anonymousEncounterStart.HasValue) return;
+
+        PollAnonymousPostOcr(now);
         if (_mode != Mode.AcquireSingle) return;
 
-        // v0.1.14: do not spend the remainder of a 1.6 s OCR burst on a transient scan candidate.
-        // The acquisition gate is intentionally separate from tracked-boss disappearance logic.
-        // A tracked boss may have 0% health; this gate only decides whether idle OCR should run.
-        if (!IsSingleOcrBaseStructuralCandidate(metrics))
+        // Preserve recent native boss-ROI frames while the encounter is visibly present. The
+        // ring is intentionally independent of OCR cadence, so a 100-300 ms encounter still
+        // leaves several candidate frames at 30 FPS.
+        if (!_anonymousVerifyStarted.HasValue)
+            _singleRoiBuffer.Add(now, raw, metrics);
+
+        var missing = false;
+        var returned = false;
+        if (_anonymousTemplate is not null)
         {
-            _singleCandidateLossFrames++;
-            if (_singleCandidateLossFrames >= _config.SingleOcrCandidateLossFrames)
+            _anonymousTemplateCoverage = _anonymousTemplate.MeasureCoverage(raw, _config);
+            missing = _anonymousTemplateCoverage <= _config.TrackedTemplateMissingCoverage;
+            returned = _anonymousTemplateCoverage >= _config.TrackedTemplateReturnedCoverage;
+        }
+        else
+        {
+            missing = metrics.NameGoldFraction <= _anonymousNameMissingThreshold;
+            returned = metrics.NameGoldFraction >= _anonymousNameReturnedThreshold;
+        }
+
+        if (!_anonymousVerifyStarted.HasValue)
+        {
+            if (missing)
             {
-                _events.Debug($"SINGLE_ACQUIRE_CANCELLED | reason=structural candidate lost" +
-                    $" | lossFrames={_singleCandidateLossFrames}" +
-                    $" | redRun={metrics.HealthRedRunFraction:F4}" +
-                    $" | nameGold={metrics.NameGoldFraction:F4}" +
-                    $" | centerName={metrics.CenterNameGoldFraction:F4}" +
-                    $" | attempts={_burstAttempts}");
-                _mode = Mode.SingleBackoff;
-                _singleCandidateFrames = 0;
-                _singleCenteredCandidateFrames = 0;
-                _singleCandidateLossFrames = 0;
-                _singleFailedOcrCycles = 0;
-                _nextSingleBurstAllowed = now.AddMilliseconds(_config.OcrRetryCooldownMs);
-                _singleOcrHistory.Clear();
+                _anonymousFirstMissing = now;
+                _anonymousVerifyStarted = now;
+                _events.Debug($"ANONYMOUS_MISSING_STARTED | identity={_anonymousIdentity?.Match.Boss.Id ?? "pending"}" +
+                    $" | presence={(_anonymousTemplate is not null ? "template" : "name-fallback")}" +
+                    $" | coverage={_anonymousTemplateCoverage:F3} | nameGold={metrics.NameGoldFraction:F4}" +
+                    $" | firstMissing={now:O} | verifyStarted={now:O} | confirmMs={_config.DisappearConfirmMs}" +
+                    $" | roiBuffered={_singleRoiBuffer.Count}");
+                StartAnonymousPostOcr();
             }
-            return;
         }
-        _singleCandidateLossFrames = 0;
-
-        // Build OCR history from captured frames rather than OCR calls. The broad mask is allowed
-        // to recover live-rendered antialiasing that can fall outside the calibrated gold range.
-        _singleOcrHistory.AddFrame(raw, _config, BossLane.Single);
-
-        if (now >= _singleBurstEnd)
+        else if (returned)
         {
-            _mode = Mode.SingleBackoff;
-            _singleCandidateFrames = 0;
-            _singleCenteredCandidateFrames = 0;
-            _singleCandidateLossFrames = 0;
-            _nextSingleBurstAllowed = now.AddMilliseconds(_config.OcrRetryCooldownMs);
-            _events.Debug($"OCR_BURST_END | layout=single | matched=false | attempts={_burstAttempts}" +
-                $" | failedCycles={_singleFailedOcrCycles}");
-            // Failed-cycle count is per burst. A later, genuinely new candidate gets the calibrated
-            // fresh-frame fallback sequence again instead of inheriting an old idle-scan count.
-            _singleFailedOcrCycles = 0;
-            _singleOcrHistory.Clear();
-            return;
+            _events.Debug($"ANONYMOUS_MISSING_CANCELLED | identity={_anonymousIdentity?.Match.Boss.Id ?? "pending"}" +
+                $" | presence={(_anonymousTemplate is not null ? "template" : "name-fallback")}" +
+                $" | coverage={_anonymousTemplateCoverage:F3} | nameGold={metrics.NameGoldFraction:F4}");
+            _anonymousFirstMissing = null;
+            _anonymousVerifyStarted = null;
+            _anonymousGoneConfirmedAt = null;
         }
 
-        if (now < _nextSingleOcr)
-            return;
-
-        _nextSingleOcr = now.AddMilliseconds(_config.OcrAcquisitionCycleMs);
-        var result = ReadAcquisitionCycle(BossLane.Single, now, _singleOcrHistory, _singleFailedOcrCycles);
-
-        if (result.Match is null)
+        if (_anonymousIdentity is not null && !_anonymousVerifyStarted.HasValue)
         {
-            _singleFailedOcrCycles++;
-            MaybeSaveOcrFailure(now, raw, BossLane.Single, _singleOcrHistory, _singleFailedOcrCycles);
-            _single.Observe(now, raw, null, result.Read, null, metrics);
+            PromoteAnonymousToKnown(now, raw, metrics,
+                _anonymousIdentity.Source.StartsWith("buffer-", StringComparison.Ordinal) ? "buffer-recovered" : "live");
             return;
         }
 
-        _singleFailedOcrCycles = 0;
-        // Recompute diagnostics so SEEN contains the same full metrics as prior versions.
+        // Live OCR remains the primary identity mechanism. While the UI is present it runs at the
+        // normal acquisition cadence, then backs off to a lower-frequency retry cadence rather
+        // than dropping the structurally armed encounter.
+        if (_anonymousIdentity is null && !_anonymousVerifyStarted.HasValue && now >= _nextSingleOcr)
+        {
+            _singleOcrHistory.AddFrame(raw, _config, BossLane.Single);
+            var inInitialBurst = now < _singleBurstEnd;
+            _nextSingleOcr = now.AddMilliseconds(inInitialBurst
+                ? _config.OcrAcquisitionCycleMs
+                : _config.AnonymousOcrRetryMs);
+
+            var result = ReadAcquisitionCycle(BossLane.Single, now, _singleOcrHistory, _singleFailedOcrCycles);
+            if (result.Match is null)
+            {
+                _singleFailedOcrCycles++;
+                MaybeSaveOcrFailure(now, raw, BossLane.Single, _singleOcrHistory, _singleFailedOcrCycles);
+            }
+            else
+            {
+                _singleFailedOcrCycles = 0;
+                _anonymousIdentity = new BufferedBossIdentityResult(result.Read, result.Match, result.Source, now, 0);
+                PromoteAnonymousToKnown(now, raw, metrics, "live");
+                return;
+            }
+        }
+        else if (!_anonymousVerifyStarted.HasValue)
+        {
+            // History is frame-driven rather than OCR-call-driven. Keep it fresh even while OCR is
+            // in the low-frequency retry phase.
+            _singleOcrHistory.AddFrame(raw, _config, BossLane.Single);
+        }
+
+        if (!_anonymousVerifyStarted.HasValue) return;
+
+        PollAnonymousPostOcr(now);
+        if (!_anonymousVerifyStarted.HasValue || _mode != Mode.AcquireSingle) return;
+
+        var verifyElapsed = (now - _anonymousVerifyStarted.Value).TotalMilliseconds;
+        if (verifyElapsed < _config.DisappearConfirmMs) return;
+
+        _anonymousGoneConfirmedAt ??= now;
+        if (_anonymousIdentity is not null)
+        {
+            FinalizeAnonymousGone(now, raw);
+            return;
+        }
+
+        if (!_anonymousPostOcrFinished &&
+            (now - _anonymousGoneConfirmedAt.Value).TotalMilliseconds < _config.AnonymousIdentityResolveTimeoutMs)
+            return;
+
+        _events.Debug($"ANONYMOUS_GONE_UNRESOLVED | encounterStart={_anonymousEncounterStart!.Value:O}" +
+            $" | firstMissing={_anonymousFirstMissing!.Value:O} | confirmMs={_config.DisappearConfirmMs}" +
+            $" | identityTimeoutMs={_config.AnonymousIdentityResolveTimeoutMs}" +
+            $" | postOcrFinished={_anonymousPostOcrFinished} | eventDropped=false | emitted=ANON_GONE");
+        _events.AnonymousBossGone(_anonymousEncounterStart.Value, _anonymousFirstMissing.Value,
+            _anonymousVerifyStarted!.Value, now, _config.DisappearConfirmMs);
+        AbandonAnonymousEncounter(now);
+    }
+
+    private void PromoteAnonymousToKnown(DateTimeOffset now, Bitmap raw, BossBarMetrics metrics, string resolver)
+    {
+        if (_anonymousIdentity is null || !_anonymousEncounterStart.HasValue) return;
+
+        var identity = _anonymousIdentity;
+        var start = _anonymousEncounterStart.Value;
         var fullMetrics = BossBarMetrics.Analyze(raw, _config, includeDiagnostics: true);
-        _single.Observe(now, raw, null, result.Read, result.Match, fullMetrics);
-        if (_single.TrackedBoss is null) return;
+        _events.Debug($"ANONYMOUS_IDENTITY_RESOLVED | boss={identity.Match.Boss.Id}" +
+            $" | resolver={resolver} | source={identity.Source}" +
+            $" | score={identity.Match.Similarity:F3} | ocrConf={identity.Read.Confidence:F3}" +
+            $" | encounterStart={start:O} | frameWhen={identity.FrameWhen:O}");
 
-        _events.Debug($"OCR_BURST_END | layout=single | matched=true | source={result.Source}" +
-            $" | attempts={_burstAttempts}");
+        _single.ArmKnownBoss(now, raw, null, identity.Match.Boss, fullMetrics, identity.Read,
+            identity.Match.Similarity, emitSeen: true, encounterStartOverride: start,
+            seenMetricsOverride: _anonymousStartMetrics);
+        ClearAnonymousSingleState();
+        ResetPendingSingleCandidate();
+        _singleOcrHistory.Clear();
         _mode = Mode.TrackSingle;
+    }
+
+    private void StartAnonymousPostOcr()
+    {
+        if (_anonymousIdentity is not null || _anonymousPostOcrTask is not null || _anonymousPostOcrFinished)
+            return;
+
+        var frames = _singleRoiBuffer.SnapshotBest(_config.AnonymousPostOcrFrames);
+        if (frames.Count == 0)
+        {
+            _anonymousPostOcrFinished = true;
+            return;
+        }
+
+        _events.Debug($"ANONYMOUS_POST_OCR_START | frames={frames.Count}" +
+            $" | buffered={_singleRoiBuffer.Count} | worker=dedicated-tesseract");
+        _anonymousPostOcrTask = BufferedBossIdentityResolver.ResolveAsync(frames, _config, _matcher, _events.Debug, _images);
+    }
+
+    private void PollAnonymousPostOcr(DateTimeOffset now)
+    {
+        var task = _anonymousPostOcrTask;
+        if (task is null || !task.IsCompleted) return;
+
+        _anonymousPostOcrTask = null;
+        _anonymousPostOcrFinished = true;
+        try
+        {
+            var result = task.GetAwaiter().GetResult();
+            if (result is null)
+            {
+                _events.Debug("ANONYMOUS_POST_OCR_END | matched=false");
+                return;
+            }
+
+            _ocrAttempts += result.Attempts;
+            _anonymousIdentity = result;
+            _lastOcrAt = now;
+            _lastOcrSource = result.Source;
+            _lastOcr = BossNameMatcher.Normalize(result.Read.Text);
+            _lastMatch = result.Match.Boss.Name;
+            _events.Debug($"ANONYMOUS_POST_OCR_END | matched=true | boss={result.Match.Boss.Id}" +
+                $" | source={result.Source} | score={result.Match.Similarity:F3}" +
+                $" | conf={result.Read.Confidence:F3} | attempts={result.Attempts}" +
+                $" | frameWhen={result.FrameWhen:O}");
+        }
+        catch (Exception ex)
+        {
+            _events.Debug($"ANONYMOUS_POST_OCR_ERROR | {ex.GetType().Name}: {ex.Message}");
+        }
+    }
+
+    private void FinalizeAnonymousGone(DateTimeOffset now, Bitmap raw)
+    {
+        if (_anonymousIdentity is null || !_anonymousEncounterStart.HasValue ||
+            !_anonymousFirstMissing.HasValue || !_anonymousVerifyStarted.HasValue)
+            return;
+
+        var identity = _anonymousIdentity;
+        var startMetrics = _anonymousStartMetrics ?? BossBarMetrics.Analyze(raw, _config, includeDiagnostics: true);
+        _events.Debug($"ANONYMOUS_IDENTITY_RESOLVED | boss={identity.Match.Boss.Id}" +
+            $" | resolver={(identity.Source.StartsWith("buffer-", StringComparison.Ordinal) ? "post-disappearance" : "live")}" +
+            $" | source={identity.Source} | score={identity.Match.Similarity:F3}" +
+            $" | encounterStart={_anonymousEncounterStart.Value:O}" +
+            $" | firstMissing={_anonymousFirstMissing.Value:O}");
+
+        // SEEN is written with the original structural first-seen timestamp, even if identity was
+        // learned after death. GONE uses firstMissing, preserving the exact visual disappearance
+        // timestamp while the 5.5 s window remains verification only.
+        _events.BossSeen(identity.Match.Boss, _anonymousEncounterStart.Value, identity.Read,
+            startMetrics, identity.Match.Similarity, BossLane.Single);
+        if (_config.SaveStateChangeImages)
+            _images.Save("GONE_" + identity.Match.Boss.Id, raw, null);
+        _events.BossGone(identity.Match.Boss, _anonymousFirstMissing.Value,
+            _anonymousVerifyStarted.Value, now, _config.DisappearConfirmMs);
+
+        _mode = Mode.Scan;
+        _nextEncounterAcquireAllowed = now.AddMilliseconds(_config.ReacquireCooldownMs);
+        ResetSingleAcquisitionTransient();
+    }
+
+    private void AbandonAnonymousEncounter(DateTimeOffset now)
+    {
+        _mode = Mode.Scan;
+        _nextEncounterAcquireAllowed = now.AddMilliseconds(_config.ReacquireCooldownMs);
         ResetSingleAcquisitionTransient();
     }
 
@@ -372,6 +601,14 @@ public sealed class BossEncounterTracker
 
     private void BeginDualAcquisition(DateTimeOffset now, BossDefinition? existingSingle)
     {
+        if (_anonymousEncounterStart.HasValue)
+        {
+            _events.Debug("ANONYMOUS_TRACK_CANCELLED | reason=promoted-to-dual-topology");
+            ClearAnonymousSingleState();
+            ResetPendingSingleCandidate();
+            _singleOcrHistory.Clear();
+        }
+
         _mode = Mode.AcquireDual;
         _existingSingleBeforeDual = existingSingle;
         _leftCandidate = null;
@@ -1178,9 +1415,8 @@ public sealed class BossEncounterTracker
         _dualPresentFrames = 0;
         _dualAbsentFrames = 0;
         _dualLossCandidateAt = null;
-        _singleCandidateFrames = 0;
-        _singleCenteredCandidateFrames = 0;
-        _singleCandidateLossFrames = 0;
+        if (!_anonymousEncounterStart.HasValue)
+            ResetPendingSingleCandidate();
         _singleOcrHistory.Clear();
         _leftOcrHistory.Clear();
         _rightOcrHistory.Clear();
@@ -1200,15 +1436,42 @@ public sealed class BossEncounterTracker
 
     private void ResetSingleAcquisitionTransient()
     {
-        _singleCandidateFrames = 0;
-        _singleCenteredCandidateFrames = 0;
-        _singleCandidateLossFrames = 0;
+        ResetPendingSingleCandidate();
+        ClearAnonymousSingleState();
         _singleBurstEnd = DateTimeOffset.MinValue;
         _nextSingleOcr = DateTimeOffset.MinValue;
         _singleFailedOcrCycles = 0;
         _singleLastOcrDiagnostic = DateTimeOffset.MinValue;
         _singleOcrHistory.Clear();
         _burstAttempts = 0;
+    }
+
+    private void ResetPendingSingleCandidate()
+    {
+        _singleCandidateFrames = 0;
+        _singleCenteredCandidateFrames = 0;
+        _singleCandidateLossFrames = 0;
+        _singleCandidateFirstSeen = null;
+        if (!_anonymousEncounterStart.HasValue)
+            _singleRoiBuffer.Clear();
+    }
+
+    private void ClearAnonymousSingleState()
+    {
+        _anonymousEncounterStart = null;
+        _anonymousFirstMissing = null;
+        _anonymousVerifyStarted = null;
+        _anonymousGoneConfirmedAt = null;
+        _anonymousTemplate = null;
+        _anonymousTemplateCoverage = 0;
+        _anonymousNameBaseline = 0;
+        _anonymousNameMissingThreshold = 0;
+        _anonymousNameReturnedThreshold = 0;
+        _anonymousStartMetrics = null;
+        _anonymousIdentity = null;
+        _anonymousPostOcrTask = null;
+        _anonymousPostOcrFinished = false;
+        _singleRoiBuffer.Clear();
     }
 
     private void ClearDualAcquisitionTransient(bool clearExisting = false)

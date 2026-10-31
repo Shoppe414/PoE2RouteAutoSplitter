@@ -79,7 +79,7 @@ $configHash = if (Test-Path -LiteralPath $configPath) { (Get-FileHash -LiteralPa
     "64-bit OS: $([System.Environment]::Is64BitOperatingSystem)",
     "64-bit PowerShell process: $([System.Environment]::Is64BitProcess)",
     "Sample interval ms: $SampleMs",
-    "Launcher revision: v3.1.0 centralized diagnostics",
+    "Launcher revision: v3.2.0 centralized diagnostics",
     ""
 ) | Set-Content -LiteralPath $metaPath -Encoding UTF8
 

@@ -35,7 +35,7 @@ public sealed class AppConfig
     // longest continuous red run in this region as a cheap structural pre-gate for OCR.
     public NormalizedRect BossHealthRoi { get; set; } = new(0.30, 0.15, 0.40, 0.30);
 
-    public int CaptureFps { get; set; } = 20;
+    public int CaptureFps { get; set; } = 30;
     public int OcrUpscale { get; set; } = 5;
     public string InputUiMode { get; set; } = "MouseKeyboard";
     public int ConsoleUpdateMs { get; set; } = 200;
@@ -69,6 +69,25 @@ public sealed class AppConfig
     public int OcrTemporalFallbackAfterFailedCycles { get; set; } = 2;
     public int OcrFailureDiagnosticAfterCycles { get; set; } = 4;
     public int OcrFailureDiagnosticIntervalMs { get; set; } = 15000;
+
+    // Anonymous single-boss encounters are structurally armed before identity OCR completes.
+    // Keep a short native-resolution ROI history so very short encounters can be identified
+    // after the health bar has already vanished. Live OCR remains primary; buffered OCR is a
+    // post-disappearance fallback and runs on a separate worker engine.
+    public int AnonymousRoiBufferFrames { get; set; } = 24;
+    public int AnonymousPostOcrFrames { get; set; } = 8;
+
+    // Structural hardening. The historical BossHealthRoi is intentionally narrow and can make a
+    // normal centered enemy bar look full-width after cropping. Measure the coherent red run over
+    // the complete captured boss ROI before any OCR lane is considered.
+    public double SingleBossMinGlobalHealthRunFraction { get; set; } = 0.50;
+    public double SingleBossMaxNameGoldFraction { get; set; } = 0.20;
+    public double SingleBossMaxCenterNameGoldFraction { get; set; } = 0.35;
+    public double SingleOcrHorizontalArtifactMinFraction { get; set; } = 0.18;
+    public double AnonymousStrongArmRedRunFraction { get; set; } = 0.75;
+    public double AnonymousStrongArmCenterNameGoldFraction { get; set; } = 0.06;
+    public int AnonymousOcrRetryMs { get; set; } = 900;
+    public int AnonymousIdentityResolveTimeoutMs { get; set; } = 6000;
 
     // PoE2 boss names are orange/gold rather than white. These thresholds isolate that text.
     public int OcrRedMin { get; set; } = 140;
@@ -134,6 +153,9 @@ public sealed class AppConfig
     public double DualLayoutMinLaneNameGoldFraction { get; set; } = 0.006;
     public double DualLayoutMaxCenterNameGoldFraction { get; set; } = 0.020;
     public double DualLayoutMinLaneHealthRunFraction { get; set; } = 0.05;
+    // Full-ROI lane-scale corroboration is evaluated before left/right OCR crops. A normal centered
+    // enemy bar must not become a dual boss merely because it fills much of one local lane.
+    public double DualBossMinGlobalLaneHealthRunFraction { get; set; } = 0.15;
     public int DualLayoutConfirmFrames { get; set; } = 2;
 
     // v0.1.14 idle dual optimization. Initial NONE -> DUAL candidates must persist slightly
@@ -256,6 +278,21 @@ public sealed class AppConfig
             throw new InvalidOperationException("OcrFailureDiagnosticAfterCycles must be 1-100.");
         if (OcrFailureDiagnosticIntervalMs < 1000 || OcrFailureDiagnosticIntervalMs > 60000)
             throw new InvalidOperationException("OcrFailureDiagnosticIntervalMs must be 1000-60000.");
+        if (AnonymousRoiBufferFrames < 4 || AnonymousRoiBufferFrames > 120)
+            throw new InvalidOperationException("AnonymousRoiBufferFrames must be 4-120.");
+        if (AnonymousPostOcrFrames < 1 || AnonymousPostOcrFrames > AnonymousRoiBufferFrames)
+            throw new InvalidOperationException("AnonymousPostOcrFrames must be 1-AnonymousRoiBufferFrames.");
+        if (AnonymousStrongArmRedRunFraction is < 0 or > 1 || AnonymousStrongArmCenterNameGoldFraction is < 0 or > 1)
+            throw new InvalidOperationException("Anonymous strong-arm thresholds must be 0-1.");
+        if (SingleBossMinGlobalHealthRunFraction is < 0 or > 1 ||
+            SingleBossMaxNameGoldFraction is < 0 or > 1 ||
+            SingleBossMaxCenterNameGoldFraction is < 0 or > 1 ||
+            SingleOcrHorizontalArtifactMinFraction is < 0 or > 1)
+            throw new InvalidOperationException("Single-boss geometry/OCR hardening fractions must be 0-1.");
+        if (AnonymousOcrRetryMs < 100 || AnonymousOcrRetryMs > 5000)
+            throw new InvalidOperationException("AnonymousOcrRetryMs must be 100-5000.");
+        if (AnonymousIdentityResolveTimeoutMs < 1000 || AnonymousIdentityResolveTimeoutMs > 30000)
+            throw new InvalidOperationException("AnonymousIdentityResolveTimeoutMs must be 1000-30000.");
         if (TrackedTemplateMinReferencePixels < 1 || TrackedTemplateMinReferencePixels > 100000)
             throw new InvalidOperationException("TrackedTemplateMinReferencePixels must be 1-100000.");
         if (TrackedTemplatePixelSearchRadius < 0 || TrackedTemplatePixelSearchRadius > 4)
@@ -287,7 +324,8 @@ public sealed class AppConfig
 
         if (DualLayoutMinLaneNameGoldFraction is < 0 or > 1 ||
             DualLayoutMaxCenterNameGoldFraction is < 0 or > 1 ||
-            DualLayoutMinLaneHealthRunFraction is < 0 or > 1)
+            DualLayoutMinLaneHealthRunFraction is < 0 or > 1 ||
+            DualBossMinGlobalLaneHealthRunFraction is < 0 or > 1)
             throw new InvalidOperationException("Dual-layout thresholds must be 0-1.");
         if (DualLayoutConfirmFrames < 1 || DualLayoutConfirmFrames > 20)
             throw new InvalidOperationException("DualLayoutConfirmFrames must be 1-20.");
