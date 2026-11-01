@@ -2,7 +2,7 @@
 
 A setup tool and LiveSplit autosplitter for **Path of Exile 2 campaign speedrunning**.
 
-Current release: **v3.1.0**.
+Current release: **v3.2.0**.
 
 PoE2 Route AutoSplitter provides premade and custom routes for:
 
@@ -484,3 +484,10 @@ Diagnostic PNG captures are stored under:
 **PoE2 Route AutoSplitter 3.x**
 
 Version 3 adds multilingual SetupUI/game-language support, authoritative localized boss and area display names, expanded Campaign/Trials/Vaal Ruins/Maps route policies, centralized diagnostics and verification files, and adaptive height-relative BossWatcher capture geometry for standard, ultrawide, and super-ultrawide game clients.
+
+## Boss detection reliability and fast-kill fallbacks
+
+BossWatcher now suppresses boss acquisition during loading screens and validates boss-scale UI geometry before OCR. Normal enemy health bars and gold-heavy loading artwork are therefore rejected before they can become anonymous boss events. Boss-name OCR also removes long frame artifacts and isolates the centered text cluster before recognition.
+
+OCR remains the primary identity mechanism. If a verified boss disappears before OCR resolves, the system keeps the structural timestamps and applies only safe route-specific fallbacks: ordered/custom ordered routes may split provisionally and confirm from later route order; Sekhemas uses its deterministic floor sequence; Trial of Chaos can use no-repeat elimination. General unordered campaign routing does not guess a boss from the current area.
+
